@@ -22,6 +22,7 @@ func main() {
 	hub := newHub()
 	r := mux.NewRouter()
 
+	r.PathPrefix("/ui/").Handler(http.StripPrefix("", http.FileServer(http.Dir("./")))).Methods(http.MethodGet)
 	r.HandleFunc("/ws/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
