@@ -46,6 +46,8 @@
     <div class="buttons">
       <b-button type="is-danger is-light" @click="offer">offer</b-button>
       <b-button type="is-warning is-light" @click="sendMsg">Send</b-button>
+      <b-button type="is-warning is-light" @click="getPeerList">getPeerList</b-button>
+      <b-button type="is-warning is-light" @click="test()">show file list</b-button>
       <b-button type="is-warning is-light" @click="ff">F</b-button>
     </div>
   </div>
@@ -105,6 +107,10 @@ export default {
           } else if (msg.ice != null) {
             //onIncomingICE(msg.ice);
             this.onIncomingICE(msg.ice);
+          } else if (msg.req != null) {
+            this.putPeerList()
+          } else if (msg.res != null) {
+            this.showConfirm(msg.res)
           } else {
             console.log("RECV: EEEEEEEEEEEEEEEEEEEEEE")
             console.log(msg)
@@ -204,10 +210,40 @@ export default {
     deleteDropFile(index) {
       this.dropFiles.splice(index, 1)
     },
+    fileList() {
+      let list = []
+      if (this.dropFiles.length != 0) {
+        this.dropFiles.forEach(file => {
+          list.push({
+            name: file.name,
+            size: file.size,
+            type: file.type
+          })
+        })
+      }
+      return list
+    },
+    getPeerList() {
+      this.cable.send(JSON.stringify({
+        req: this.fileList()
+      }))
+    },
+    putPeerList() {
+      this.cable.send(JSON.stringify({
+        res: this.fileList()
+      }))
+    },
+    showConfirm(data) {
+      this.$buefy.dialog.confirm({
+        message: 'Continue on this task?',
+        //message: JSON.stringify(data),
+        onConfirm: () => this.$buefy.toast.open('User confirmed')
+      })
+    },
+    test() {},
     ff() {
       if (this.dropFiles.length != 0) {
         //console.log(this.dropFiles[0].stream().getReader())
-        //let _this = this
         this.dropFiles[0].text().then(v => {
           console.log(v)
           this.channel.send(v)
