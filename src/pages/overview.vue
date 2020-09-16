@@ -47,13 +47,15 @@
       <b-button type="is-danger is-light" @click="offer">offer</b-button>
       <b-button type="is-warning is-light" @click="sendMsg">Send</b-button>
       <b-button type="is-warning is-light" @click="getPeerList">getPeerList</b-button>
-      <b-button type="is-warning is-light" @click="test()">show file list</b-button>
-      <b-button type="is-warning is-light" @click="ff">F</b-button>
+      <b-button type="is-warning is-light" @click="sendFile()">sendFile</b-button>
+      <b-button type="is-warning is-light" @click="onFileTransferComplete()">onFileTransferComplete</b-button>
     </div>
   </div>
 </template>
 
 <script>
+import streamSaver from 'streamsaver'
+
 export default {
   data: () => ({
     name: 'John Silver',
@@ -64,6 +66,7 @@ export default {
     cable: {},
     message: "",
     dropFiles: [],
+    fileStream: {},
   }),
   created() {
     this.connect(() => {
@@ -90,6 +93,7 @@ export default {
 
       cable.onclose = event => {
         console.log("ws close")
+        this.onFileTransferComplete()
       }
 
       cable.onmessage = event => {
@@ -165,9 +169,7 @@ export default {
         //pc.setLocalDescription({ type: 'answer', sdp: answer.sdp });
         //cable.send(JSON.stringify({'sdp': { type: 'answer', sdp: answer.sdp }}));
         this.cable.send(JSON.stringify(offer));
-        //document.getElementById('local-sdp').value = answer.sdp;
       });
-
 
     },
     onAnswer(sdp) {
@@ -181,6 +183,17 @@ export default {
         this.receiveChannel = event.channel;
         this.receiveChannel.onmessage = ev => {
           console.log(ev.data)
+          let blob = new Blob([ev.data]);
+          const readableStream = blob.stream()
+          console.log(blob)
+
+          const reader = readableStream.getReader()
+          const pump = () => reader.read()
+            .then(res => res.done
+              ? null
+              : this.fileStream.write(res.value).then(pump))
+
+          pump()
         }
       }
 
@@ -227,6 +240,7 @@ export default {
       this.cable.send(JSON.stringify({
         req: this.fileList()
       }))
+      this.fileStream = streamSaver.createWriteStream('filename.txt').getWriter()
     },
     putPeerList() {
       this.cable.send(JSON.stringify({
@@ -240,16 +254,32 @@ export default {
         onConfirm: () => this.$buefy.toast.open('User confirmed')
       })
     },
-    test() {},
-    ff() {
+    slice(file, piece = 1024 * 1024 * 5) {
+      let totalSize = file.size;
+      let start = 0;
+      let end = start + piece;
+      let chunks = []
+      while (start < totalSize) {
+        let blob = file.slice(start, end);
+        chunks.push(blob)
+
+        start = end;
+        end = start + piece;
+      }
+      return chunks
+    },
+    onFileTransferComplete() {
+      this.fileStream.close()
+    },
+    sendFile() {
       if (this.dropFiles.length != 0) {
-        //console.log(this.dropFiles[0].stream().getReader())
-        this.dropFiles[0].text().then(v => {
-          console.log(v)
-          this.channel.send(v)
-        }).catch(
-          d => console.log(d)
-        )
+        this.slice(this.dropFiles[0], 262144).map(chunk => {
+          chunk.arrayBuffer().then(buffer => {
+            this.channel.send(buffer)
+          })
+        })
+
+        this.cable.close()
       }
     },
   }
