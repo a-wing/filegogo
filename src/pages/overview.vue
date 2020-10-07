@@ -115,6 +115,8 @@ export default {
             this.putPeerList()
           } else if (msg.res != null) {
             this.showConfirm(msg.res)
+          } else if (msg.close != null) {
+            this.onFileTransferComplete()
           } else {
             console.log("RECV: EEEEEEEEEEEEEEEEEEEEEE")
             console.log(msg)
@@ -279,7 +281,7 @@ export default {
           })
         })
 
-        this.cable.close()
+        this.cable.send(JSON.stringify({'close': "" }));
       }
     },
   }
