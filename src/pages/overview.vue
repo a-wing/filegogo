@@ -47,8 +47,7 @@
       <b-button type="is-danger is-light" @click="offer">offer</b-button>
       <b-button type="is-warning is-light" @click="sendMsg">Send</b-button>
       <b-button type="is-warning is-light" @click="getPeerList">getPeerList</b-button>
-      <b-button type="is-warning is-light" @click="sendFile()">sendFile</b-button>
-      <b-button type="is-warning is-light" @click="onFileTransferComplete()">onFileTransferComplete</b-button>
+      <b-button type="is-warning is-light" @click="onFileComplete">onFileComplete</b-button>
     </div>
   </div>
 </template>
@@ -67,6 +66,9 @@ export default {
     message: "",
     dropFiles: [],
     fileStream: {},
+		pointer: 0,
+		step: 1024 * 256,
+		isComplete: false,
   }),
   created() {
     this.connect(() => {
@@ -158,6 +160,7 @@ export default {
       let pc = this.pc
 
       this.channel = pc.createDataChannel("sendDataChannel", { reliable: true });
+      this.signChannel = pc.createDataChannel("signChannel", { reliable: true });
 
       this.channel.onopen = () => {
         console.log("data channel open")
@@ -165,6 +168,13 @@ export default {
       this.channel.onclose = () => {
         console.log("data channel close")
       }
+
+			this.signChannel.onmessage = ev => {
+				if (ev.target.label == "signChannel") {
+					this.sendBlob()
+				}
+			}
+
       pc.createOffer().then(offer => {
         console.log(offer)
         pc.setLocalDescription(offer);
@@ -182,6 +192,11 @@ export default {
       let pc = this.pc
 
       pc.ondatachannel = event => {
+        console.log(event)
+
+				if (event.channel.label == "signChannel") {
+					this.signChannel = event.channel;
+				} else {
         this.receiveChannel = event.channel;
         this.receiveChannel.onmessage = ev => {
           console.log(ev.data)
@@ -192,11 +207,12 @@ export default {
           const reader = readableStream.getReader()
           const pump = () => reader.read()
             .then(res => res.done
-              ? null
+              ? this.signChannel.send("req")
               : this.fileStream.write(res.value).then(pump))
 
           pump()
         }
+				}
       }
 
       this.pc.setRemoteDescription(sdp);
@@ -218,6 +234,9 @@ export default {
         console.log(ev)
       });
     },
+		reqData() {
+			this.cable.send(JSON.stringify({'event': "req" }));
+		},
     sendMsg() {
       console.log(this.message)
       this.channel.send(this.message)
@@ -243,6 +262,7 @@ export default {
         req: this.fileList()
       }))
       this.fileStream = streamSaver.createWriteStream('filename.txt').getWriter()
+			this.signChannel.send("req")
     },
     putPeerList() {
       this.cable.send(JSON.stringify({
@@ -250,40 +270,18 @@ export default {
       }))
     },
     showConfirm(data) {
-      this.$buefy.dialog.confirm({
-        message: 'Continue on this task?',
-        //message: JSON.stringify(data),
-        onConfirm: () => this.$buefy.toast.open('User confirmed')
-      })
+			// TODO
     },
-    slice(file, piece = 1024 * 1024 * 5) {
-      let totalSize = file.size;
-      let start = 0;
-      let end = start + piece;
-      let chunks = []
-      while (start < totalSize) {
-        let blob = file.slice(start, end);
-        chunks.push(blob)
-
-        start = end;
-        end = start + piece;
-      }
-      return chunks
-    },
-    onFileTransferComplete() {
+		onFileComplete() {
       this.fileStream.close()
-    },
-    sendFile() {
-      if (this.dropFiles.length != 0) {
-        this.slice(this.dropFiles[0], 262144).map(chunk => {
-          chunk.arrayBuffer().then(buffer => {
-            this.channel.send(buffer)
-          })
-        })
-
-        this.cable.send(JSON.stringify({'close': "" }));
-      }
-    },
+		},
+    sendBlob() {
+		  let p = this.pointer
+			this.dropFiles[0].slice(p, p + this.step).arrayBuffer().then(buffer => {
+				this.channel.send(buffer)
+			})
+			this.pointer = p + this.step
+		},
   }
 }
 </script>
