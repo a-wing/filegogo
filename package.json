@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --hot --mode development --debug --devtool eval-cheap-module-source-map",
+    "lint": "eslint --ext .js,.vue src/",
     "build": "webpack --progress --hide-modules --mode production"
   },
   "devDependencies": {
@@ -15,6 +16,13 @@
     "@babel/preset-env": "^7.11.0",
     "babel-loader": "^8.1.0",
     "css-loader": "^3.6.0",
+    "eslint": "^7.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-vue": "^7.0.1",
     "file-loader": "^6.0.0",
     "vue-loader": "^15.9.3",
     "vue-style-loader": "^4.1.2",
