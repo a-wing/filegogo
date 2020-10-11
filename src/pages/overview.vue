@@ -37,7 +37,6 @@
     </section>
 
     <div class="buttons">
-      <b-button type="is-danger is-light" @click="offer">offer</b-button>
       <b-button type="is-warning is-light" @click="getPeerList">getPeerList</b-button>
       <b-button type="is-warning is-light" @click="onFileComplete">onFileComplete</b-button>
     </div>
@@ -61,20 +60,31 @@ export default {
     isComplete: false
   }),
   created() {
-    this.connect(() => {
-      if (this.$route.params.id) {
-        this.offer()
-      }
-    })
+    this.connect()
+  },
+  computed: {
+    isServer() {
+      return this.$route.params.id ? false : true
+    }
   },
   methods: {
-    connect(callback) {
+    onPWSConnect() {
+      if (!this.isServer) {
+        this.getPeerList()
+      }
+    },
+    onP2PConnect() {
+      if (!this.isServer) {
+        this.signChannel.send('req')
+      }
+    },
+    connect() {
       const cable = new WebSocket(this.address)
       this.cable = cable
 
       cable.onopen = event => {
         console.log('ws open')
-        callback()
+        this.onPWSConnect()
       }
 
       cable.onclose = event => {
@@ -85,7 +95,7 @@ export default {
         try {
           const msg = JSON.parse(event.data)
           if (msg.sdp != null) {
-            console.log(msg.type)
+            console.log('Recv:', msg.type)
             if (msg.type === 'offer') {
               this.answer(msg)
             } else {
@@ -94,8 +104,11 @@ export default {
           } else if (msg.ice != null) {
             this.onIncomingICE(msg.ice)
           } else if (msg.req != null) {
+            // Server
             this.putPeerList()
+            this.offer()
           } else if (msg.res != null) {
+            // Client
             this.showConfirm(msg.res)
           } else if (msg.close != null) {
             this.onFileTransferComplete()
@@ -149,7 +162,7 @@ export default {
       }
 
       pc.createOffer().then(offer => {
-        console.log(offer)
+        console.log('on Create offer')
         pc.setLocalDescription(offer)
         this.cable.send(JSON.stringify(offer))
       })
@@ -169,6 +182,12 @@ export default {
           this.signChannel = event.channel
         } else {
           this.dataChannel = event.channel
+
+            this.dataChannel.onopen = () => {
+              console.log('data channel open')
+                this.onP2PConnect()
+            }
+
           this.dataChannel.onmessage = ev => {
             console.log(ev.data)
             const blob = new Blob([ev.data])
@@ -226,7 +245,6 @@ export default {
         req: this.fileList()
       }))
       this.fileStream = streamSaver.createWriteStream('filename.txt').getWriter()
-      this.signChannel.send('req')
     },
     putPeerList() {
       this.cable.send(JSON.stringify({
