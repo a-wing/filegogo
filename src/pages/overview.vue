@@ -55,6 +55,8 @@ export default {
     signChannel: {},
     dropFiles: [],
     fileStream: {},
+    blobs: [],
+    buffer: 10,
     pointer: 0,
     step: 1024 * 256,
     isComplete: false
@@ -180,27 +182,21 @@ export default {
 
         if (event.channel.label === 'signChannel') {
           this.signChannel = event.channel
+          this.signChannel.onopen = () => {
+            console.log('data channel open')
+            this.onP2PConnect()
+          }
         } else {
           this.dataChannel = event.channel
 
-            this.dataChannel.onopen = () => {
-              console.log('data channel open')
-                this.onP2PConnect()
+          this.dataChannel.onmessage = ev => {
+            this.blobs.push(ev.data)
+            if (this.blobs.length >= this.buffer) {
+              this.write(this.blobs)
+              this.blobs = []
             }
 
-          this.dataChannel.onmessage = ev => {
-            console.log(ev.data)
-            const blob = new Blob([ev.data])
-            const readableStream = blob.stream()
-            console.log(blob)
-
-            const reader = readableStream.getReader()
-            const pump = () => reader.read()
-              .then(res => res.done
-                ? this.signChannel.send('req')
-                : this.fileStream.write(res.value).then(pump))
-
-            pump()
+            this.signChannel.send('req')
           }
         }
       }
@@ -211,6 +207,19 @@ export default {
         pc.setLocalDescription(answer)
         this.cable.send(JSON.stringify(answer))
       })
+    },
+    write(buf) {
+      const blob = new Blob(buf)
+      const readableStream = blob.stream()
+      console.log(blob)
+
+      const reader = readableStream.getReader()
+      const pump = () => reader.read()
+        .then(res => res.done
+          ? null
+          : this.fileStream.write(res.value).then(pump))
+
+      pump()
     },
     onIncomingICE(ice) {
       const candidate = new RTCIceCandidate(ice)
