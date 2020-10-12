@@ -113,7 +113,8 @@ export default {
             // Client
             this.showConfirm(msg.res)
           } else if (msg.close != null) {
-            this.onFileTransferComplete()
+            this.isComplete = true
+            this.next()
           } else {
             console.log(msg)
           }
@@ -216,10 +217,20 @@ export default {
       const reader = readableStream.getReader()
       const pump = () => reader.read()
         .then(res => res.done
-          ? null
+          ? this.next()
           : this.fileStream.write(res.value).then(pump))
 
       pump()
+    },
+    next() {
+      if (this.isComplete) {
+        if (this.blobs.length != 0) {
+          this.write(this.blobs)
+          this.blobs = []
+        } else {
+          this.onFileComplete()
+        }
+      }
     },
     onIncomingICE(ice) {
       const candidate = new RTCIceCandidate(ice)
@@ -268,6 +279,11 @@ export default {
     },
     sendBlob() {
       let p = this.pointer
+
+      if (p >= this.dropFiles[0].size) {
+        this.cable.send(JSON.stringify({ close: true }))
+      }
+
       this.dropFiles[0].slice(p, p + this.step).arrayBuffer().then(buffer => {
         this.dataChannel.send(buffer)
       })
