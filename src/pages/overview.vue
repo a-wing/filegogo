@@ -4,6 +4,12 @@
       <b-input v-model="address"></b-input>
     </b-field>
     <section>
+      <div v-if="recv.name">
+        {{ recv.name }}
+        {{ recv.size }}
+        {{ recv.type }}
+        <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
+      </div>
       <b-field>
         <b-upload v-model="dropFiles"
                   multiple
@@ -51,6 +57,8 @@ export default {
     address: 'ws://localhost:8033/ws/1234',
     pc: {},
     cable: {},
+    send: {},
+    recv: {},
     dataChannel: {},
     signChannel: {},
     dropFiles: [],
@@ -75,7 +83,6 @@ export default {
     },
     onP2PConnect() {
       if (!this.isServer) {
-        this.signChannel.send('req')
       }
     },
     connect() {
@@ -109,7 +116,7 @@ export default {
             this.offer()
           } else if (msg.res != null) {
             // Client
-            this.showConfirm(msg.res)
+            this.recv = msg.res[0]
           } else if (msg.close != null) {
             this.isComplete = true
             this.next()
@@ -221,6 +228,10 @@ export default {
         this.signChannel.send('req')
       }
     },
+    confirmGet() {
+      this.fileStream = streamSaver.createWriteStream(this.recv.name).getWriter()
+      this.signChannel.send('req')
+    },
     onIncomingICE(ice) {
       const candidate = new RTCIceCandidate(ice)
       console.log(ice)
@@ -253,15 +264,11 @@ export default {
       this.cable.send(JSON.stringify({
         req: this.fileList()
       }))
-      this.fileStream = streamSaver.createWriteStream('filename.txt').getWriter()
     },
     putPeerList() {
       this.cable.send(JSON.stringify({
         res: this.fileList()
       }))
-    },
-    showConfirm(data) {
-      // TODO
     },
     onFileComplete() {
       this.fileStream.close()
