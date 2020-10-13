@@ -55,8 +55,6 @@ export default {
     signChannel: {},
     dropFiles: [],
     fileStream: {},
-    blobs: [],
-    buffer: 10,
     pointer: 0,
     step: 1024 * 256,
     isComplete: false
@@ -191,13 +189,7 @@ export default {
           this.dataChannel = event.channel
 
           this.dataChannel.onmessage = ev => {
-            this.blobs.push(ev.data)
-            if (this.blobs.length >= this.buffer) {
-              this.write(this.blobs)
-              this.blobs = []
-            }
-
-            this.signChannel.send('req')
+            this.write([ev.data])
           }
         }
       }
@@ -224,12 +216,9 @@ export default {
     },
     next() {
       if (this.isComplete) {
-        if (this.blobs.length != 0) {
-          this.write(this.blobs)
-          this.blobs = []
-        } else {
-          this.onFileComplete()
-        }
+        this.onFileComplete()
+      } else {
+        this.signChannel.send('req')
       }
     },
     onIncomingICE(ice) {
