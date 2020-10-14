@@ -10,42 +10,21 @@
         {{ recv.type }}
         <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
       </div>
-      <b-field>
-        <b-upload v-model="dropFiles"
-                  multiple
-                  drag-drop
-                  expanded>
-          <section class="section">
-            <div class="content has-text-centered">
-              <p>
-              <b-icon
-                icon="upload"
-                size="is-large">
-              </b-icon>
-              </p>
-              <p>Drop your files here or click to upload</p>
-            </div>
-          </section>
-        </b-upload>
-      </b-field>
-
-      <div class="tags">
-        <span v-for="(file, index) in dropFiles"
-              :key="index"
-              class="tag is-primary" >
-              {{file.name}}
-              <button class="delete is-small"
-                      type="button"
-                      @click="deleteDropFile(index)">
-              </button>
-        </span>
+      <div v-else>
+        <b-field class="file is-primary" :class="{'has-name': !!file}">
+          <b-upload v-model="file" class="file-label" @input=onSelect >
+              <span class="file-cta">
+                  <b-icon class="file-icon" icon="upload"></b-icon>
+                  <span class="file-label">Click to upload</span>
+              </span>
+              <span class="file-name" v-if="file">
+                  {{ file.name }}
+              </span>
+          </b-upload>
+        </b-field>
       </div>
-    </section>
+   </section>
 
-    <div class="buttons">
-      <b-button type="is-warning is-light" @click="getPeerList">getPeerList</b-button>
-      <b-button type="is-warning is-light" @click="onFileComplete">onFileComplete</b-button>
-    </div>
   </div>
 </template>
 
@@ -57,11 +36,11 @@ export default {
     address: 'ws://localhost:8033/ws/1234',
     pc: {},
     cable: {},
+    file: null,
     send: {},
     recv: {},
     dataChannel: {},
     signChannel: {},
-    dropFiles: [],
     fileStream: {},
     pointer: 0,
     step: 1024 * 256,
@@ -84,6 +63,9 @@ export default {
     onP2PConnect() {
       if (!this.isServer) {
       }
+    },
+    onSelect(file) {
+      this.putPeerList()
     },
     connect() {
       const cable = new WebSocket(this.address)
@@ -112,7 +94,9 @@ export default {
             this.onIncomingICE(msg.ice)
           } else if (msg.req != null) {
             // Server
-            this.putPeerList()
+            if (this.file !== null) {
+              this.putPeerList()
+            }
             this.offer()
           } else if (msg.res != null) {
             // Client
@@ -244,18 +228,13 @@ export default {
     reqData() {
       this.cable.send(JSON.stringify({ event: 'req' }))
     },
-    deleteDropFile(index) {
-      this.dropFiles.splice(index, 1)
-    },
     fileList() {
       let list = []
-      if (this.dropFiles.length !== 0) {
-        this.dropFiles.forEach(file => {
-          list.push({
-            name: file.name,
-            size: file.size,
-            type: file.type
-          })
+      if (this.file !== null) {
+        list.push({
+          name: this.file.name,
+          size: this.file.size,
+          type: this.file.type
         })
       }
       return list
@@ -276,11 +255,11 @@ export default {
     sendBlob() {
       let p = this.pointer
 
-      if (p >= this.dropFiles[0].size) {
+      if (p >= this.file.size) {
         this.cable.send(JSON.stringify({ close: true }))
       }
 
-      this.dropFiles[0].slice(p, p + this.step).arrayBuffer().then(buffer => {
+      this.file.slice(p, p + this.step).arrayBuffer().then(buffer => {
         this.dataChannel.send(buffer)
       })
       this.pointer = p + this.step
