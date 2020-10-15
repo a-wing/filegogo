@@ -3,6 +3,7 @@
     <b-field label="address">
       <b-input v-model="address"></b-input>
     </b-field>
+        <canvas ref="qrcode"></canvas>
     <section>
       <div v-if="recv.name">
         {{ recv.name }}
@@ -31,6 +32,7 @@
 <script>
 import streamSaver from 'streamsaver'
 import SparkMD5 from 'spark-md5'
+import QRCode from 'qrcode'
 
 export default {
   data: () => ({
@@ -53,6 +55,13 @@ export default {
     this.connect()
 
     this.spark = new SparkMD5.ArrayBuffer()
+
+  },
+  mounted() {
+    QRCode.toCanvas(this.$refs.qrcode, 'http://localhost:8080/#/t/1234', error => {
+      if (error) console.error(error)
+        console.log('success!');
+    })
   },
   computed: {
     isServer() {
