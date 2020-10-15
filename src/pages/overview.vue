@@ -30,6 +30,7 @@
 
 <script>
 import streamSaver from 'streamsaver'
+import SparkMD5 from 'spark-md5'
 
 export default {
   data: () => ({
@@ -42,12 +43,16 @@ export default {
     dataChannel: {},
     signChannel: {},
     fileStream: {},
+    spark: {},
+    checksum: '',
     pointer: 0,
     step: 1024 * 256,
     isComplete: false
   }),
   created() {
     this.connect()
+
+    this.spark = new SparkMD5.ArrayBuffer()
   },
   computed: {
     isServer() {
@@ -101,8 +106,10 @@ export default {
           } else if (msg.res != null) {
             // Client
             this.recv = msg.res[0]
-          } else if (msg.close != null) {
+          } else if (msg.checksum != null) {
             this.isComplete = true
+            this.checksum = msg.checksum
+            console.log(this.checksum)
             this.next()
           } else {
             console.log(msg)
@@ -180,6 +187,10 @@ export default {
           this.dataChannel = event.channel
 
           this.dataChannel.onmessage = ev => {
+
+            // Md5
+            this.spark.append(ev.data)
+
             this.write([ev.data])
           }
         }
@@ -207,6 +218,9 @@ export default {
     },
     next() {
       if (this.isComplete) {
+        if (this.spark.end() === this.checksum) {
+          console.log('Md5 check success')
+        }
         this.onFileComplete()
       } else {
         this.signChannel.send('req')
@@ -256,10 +270,16 @@ export default {
       let p = this.pointer
 
       if (p >= this.file.size) {
-        this.cable.send(JSON.stringify({ close: true }))
+        this.checksum = this.spark.end()
+        this.cable.send(JSON.stringify({ checksum: this.checksum }))
+        console.log(this.checksum)
       }
 
       this.file.slice(p, p + this.step).arrayBuffer().then(buffer => {
+
+        // Md5
+        this.spark.append(buffer)
+
         this.dataChannel.send(buffer)
       })
       this.pointer = p + this.step
