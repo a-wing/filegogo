@@ -33,10 +33,14 @@
 import streamSaver from 'streamsaver'
 import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
+import wretch from 'wretch'
 
 export default {
   data: () => ({
     address: 'ws://localhost:8033/ws/1234',
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' }
+    ],
     pc: {},
     cable: {},
     file: null,
@@ -61,6 +65,15 @@ export default {
     QRCode.toCanvas(this.$refs.qrcode, 'http://localhost:8080/#/t/1234', error => {
       if (error) console.error(error)
         console.log('success!');
+    })
+
+    wretch("./config.json").get().json()
+    .then(res => {
+      this.iceServers = res.iceServers
+      console.log(this.iceServers)
+    })
+    .catch(err => {
+      console.log(err)
     })
   },
   computed: {
@@ -130,9 +143,7 @@ export default {
     },
     init() {
       const configuration = {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' }
-        ]
+        iceServers: this.iceServers
       }
 
       const pc = new RTCPeerConnection(configuration)
