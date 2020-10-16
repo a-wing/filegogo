@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"filegogo/lightcable"
+
 	"github.com/gorilla/mux"
 )
 
@@ -19,15 +21,15 @@ func main() {
 		return
 	}
 
-	hub := NewHub()
+	hub := lightcable.NewHub()
 	sr := mux.NewRouter()
 
 	sr.HandleFunc("/topic/", func(w http.ResponseWriter, r *http.Request) {
-		createTopic(hub, w, r)
+		lightcable.CreateTopic(hub, w, r)
 	})
 
 	sr.HandleFunc("/topic/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		joinTopic(hub, w, r)
+		lightcable.JoinTopic(hub, w, r)
 	})
 
 	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.Dir("./")))).Methods(http.MethodGet)

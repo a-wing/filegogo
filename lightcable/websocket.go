@@ -1,4 +1,4 @@
-package main
+package lightcable
 
 import (
 	"bytes"
@@ -32,7 +32,7 @@ func getSequence() string {
 	return id
 }
 
-func createTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func CreateTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -59,7 +59,7 @@ func createTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	go readPump(topic, conn)
 }
 
-func joinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	log.Printf("topic ID: %v\n", vars["id"])
 	id := vars["id"]
