@@ -12,6 +12,12 @@
           </div>
         </div>
         <div v-else>
+
+          <div class="address" v-if="address !== ''">
+            <b-tag type="is-link is-light" class="address-text">{{ address }}</b-tag>
+            <b-button size="is-small" type="is-danger" rounded outlined @click="copy2clipboard">Copy</b-button>
+          </div>
+
           <b-upload v-model="file" @input=onSelect expanded>
             <a class="button is-success is-fullwidth">
               <b-icon icon="upload"></b-icon>
@@ -30,6 +36,7 @@ import streamSaver from 'streamsaver'
 import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
 import wretch from 'wretch'
+import copy from 'copy-to-clipboard'
 
 import { humanFileSize } from '../help.js'
 
@@ -38,6 +45,7 @@ export default {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' }
     ],
+    address: '',
     pc: {},
     cable: {},
     file: {},
@@ -92,6 +100,9 @@ export default {
     humanFileSize(size) {
       return humanFileSize(size, true, 2)
     },
+    copy2clipboard() {
+      copy(this.address)
+    },
     connect(address) {
       console.log(address)
       const cable = new WebSocket(address)
@@ -145,6 +156,7 @@ export default {
     },
     onTopic(topic) {
       let address = document.location.href + 't/' + topic
+      this.address = address
       QRCode.toCanvas(this.$refs.qrcode, address, {
         width: 400
       }, error => {
@@ -337,4 +349,15 @@ export default {
   flex-direction: column;
   justify-content: center;
 }
+
+.address {
+  margin: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.address-text {
+  margin: 3px;
+}
+
 </style>
