@@ -1,8 +1,5 @@
 <template>
   <div class="container">
-    <b-field label="address">
-      <b-input v-model="address"></b-input>
-    </b-field>
         <canvas ref="qrcode"></canvas>
     <section>
       <div v-if="recv.name">
@@ -37,7 +34,6 @@ import wretch from 'wretch'
 
 export default {
   data: () => ({
-    address: 'ws://localhost:8033/ws/1234',
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' }
     ],
@@ -49,31 +45,23 @@ export default {
     dataChannel: {},
     signChannel: {},
     fileStream: {},
-    spark: {},
+    spark: new SparkMD5.ArrayBuffer(),
     checksum: '',
     pointer: 0,
     step: 1024 * 256,
     isComplete: false
   }),
   created() {
-    this.connect()
-
-    this.spark = new SparkMD5.ArrayBuffer()
-
-  },
-  mounted() {
-    QRCode.toCanvas(this.$refs.qrcode, 'http://localhost:8080/#/t/1234', error => {
-      if (error) console.error(error)
-        console.log('success!');
-    })
-
+    let wsUrl = 'ws://localhost:8033/topic/'
     wretch("./config.json").get().json()
     .then(res => {
       this.iceServers = res.iceServers
       console.log(this.iceServers)
+      this.onConfigServer(wsUrl)
     })
     .catch(err => {
       console.log(err)
+      this.onConfigServer(wsUrl)
     })
   },
   computed: {
@@ -82,6 +70,12 @@ export default {
     }
   },
   methods: {
+    onConfigServer(wsUrl) {
+      this.connect(this.$route.params.id
+        ? wsUrl + this.$route.params.id
+        : wsUrl
+      )
+    },
     onPWSConnect() {
       if (!this.isServer) {
         this.getPeerList()
@@ -94,8 +88,9 @@ export default {
     onSelect(file) {
       this.putPeerList()
     },
-    connect() {
-      const cable = new WebSocket(this.address)
+    connect(address) {
+      console.log(address)
+      const cable = new WebSocket(address)
       this.cable = cable
 
       cable.onopen = event => {
@@ -117,6 +112,9 @@ export default {
             } else {
               this.onAnswer(msg)
             }
+          } else if (msg.topic != null) {
+            // Get topic name
+            this.onTopic(msg.topic)
           } else if (msg.ice != null) {
             this.onIncomingICE(msg.ice)
           } else if (msg.req != null) {
@@ -140,6 +138,13 @@ export default {
           console.log(e)
         }
       }
+    },
+    onTopic(topic) {
+      let address = document.location.href + 't/' + topic
+      QRCode.toCanvas(this.$refs.qrcode, address, error => {
+        if (error) console.error(error)
+        console.log('Create QRCode:', address);
+      })
     },
     init() {
       const configuration = {
