@@ -1,28 +1,27 @@
 <template>
-  <div class="container">
-        <canvas ref="qrcode"></canvas>
-    <section>
-      <div v-if="recv.name">
-        {{ recv.name }}
-        {{ recv.size }}
-        {{ recv.type }}
-        <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
-      </div>
-      <div v-else>
-        <b-field class="file is-primary" :class="{'has-name': !!file}">
-          <b-upload v-model="file" class="file-label" @input=onSelect >
-              <span class="file-cta">
-                  <b-icon class="file-icon" icon="upload"></b-icon>
-                  <span class="file-label">Click to upload</span>
-              </span>
-              <span class="file-name" v-if="file">
-                  {{ file.name }}
-              </span>
+  <div class="main">
+    <div class="card">
+      <canvas ref="qrcode"></canvas>
+      <section>
+        <div v-if="recv.name">
+          <div class="detail">
+            <div>Filename: {{ recv.name }}</div>
+            <div>Size: {{ humanFileSize(recv.size) }}</div>
+            <div>Type: {{ recv.type }}</div>
+            <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
+          </div>
+        </div>
+        <div v-else>
+          <b-upload v-model="file" @input=onSelect expanded>
+            <a class="button is-success is-fullwidth">
+              <b-icon icon="upload"></b-icon>
+              <span>{{ file.name || "Click to upload"}}</span>
+            </a>
           </b-upload>
-        </b-field>
-      </div>
-   </section>
+        </div>
+      </section>
 
+    </div>
   </div>
 </template>
 
@@ -32,6 +31,8 @@ import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
 import wretch from 'wretch'
 
+import { humanFileSize } from '../help.js'
+
 export default {
   data: () => ({
     iceServers: [
@@ -39,7 +40,7 @@ export default {
     ],
     pc: {},
     cable: {},
-    file: null,
+    file: {},
     send: {},
     recv: {},
     dataChannel: {},
@@ -87,6 +88,9 @@ export default {
     },
     onSelect(file) {
       this.putPeerList()
+    },
+    humanFileSize(size) {
+      return humanFileSize(size, true, 2)
     },
     connect(address) {
       console.log(address)
@@ -141,7 +145,9 @@ export default {
     },
     onTopic(topic) {
       let address = document.location.href + 't/' + topic
-      QRCode.toCanvas(this.$refs.qrcode, address, error => {
+      QRCode.toCanvas(this.$refs.qrcode, address, {
+        width: 400
+      }, error => {
         if (error) console.error(error)
         console.log('Create QRCode:', address);
       })
@@ -312,3 +318,23 @@ export default {
   }
 }
 </script>
+
+<style>
+.main {
+  margin: 100px 0px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.card {
+  flex-direction: column;
+}
+
+.detail {
+  margin: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+</style>
