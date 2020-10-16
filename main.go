@@ -20,15 +20,20 @@ func main() {
 	}
 
 	hub := newHub()
-	r := mux.NewRouter()
+	sr := mux.NewRouter()
 
-	r.PathPrefix("/ui/").Handler(http.StripPrefix("", http.FileServer(http.Dir("./")))).Methods(http.MethodGet)
-	r.HandleFunc("/ws/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+	sr.HandleFunc("/topic/", func(w http.ResponseWriter, r *http.Request) {
+		createTopic(hub, w, r)
 	})
+
+	sr.HandleFunc("/topic/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		joinTopic(hub, w, r)
+	})
+
+	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.Dir("./")))).Methods(http.MethodGet)
 
 	log.Println("===============")
 	log.Println("Listen Port", *address)
-	log.Fatal(http.ListenAndServe(*address, r))
+	log.Fatal(http.ListenAndServe(*address, sr))
 }
 
