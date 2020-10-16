@@ -32,16 +32,6 @@ func getSequence() string {
 	return id
 }
 
-func NewTopic(conn *websocket.Conn) *Cable {
-	return &Cable{
-		Message: &Message{
-			msg:  []byte{},
-			conn: conn,
-		},
-		conns: []*websocket.Conn{conn},
-	}
-}
-
 func createTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -50,7 +40,7 @@ func createTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	name := getSequence()
 	topic := NewTopic(conn)
-	hub.Cables[name] = topic
+	hub.Add(name, topic)
 
 	msg, err := json.Marshal(&struct {
 		Topic string `json:"topic"`
@@ -74,7 +64,7 @@ func joinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	log.Printf("topic ID: %v\n", vars["id"])
 	id := vars["id"]
 
-	if topic := hub.Cables[id]; topic != nil {
+	if topic := hub.Topics[id]; topic != nil {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println(err)
@@ -84,7 +74,7 @@ func joinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func readPump(topic *Cable, conn *websocket.Conn) {
+func readPump(topic *Topic, conn *websocket.Conn) {
 	log.Printf("Topic: %p, conn: %p opened", topic, conn)
 	defer func() {
 		topic.Unregister(conn)

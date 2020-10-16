@@ -19,7 +19,7 @@ func main() {
 		return
 	}
 
-	hub := newHub()
+	hub := NewHub()
 	sr := mux.NewRouter()
 
 	sr.HandleFunc("/topic/", func(w http.ResponseWriter, r *http.Request) {

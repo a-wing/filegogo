@@ -11,26 +11,22 @@ type Message struct {
 	msg  []byte
 }
 
-type Cable struct {
-	Message *Message
-	conns   []*websocket.Conn
+type Topic struct {
+	Name  string
+	conns []*websocket.Conn
 }
 
-func newCable(msg []byte, conn *websocket.Conn) *Cable {
-	return &Cable{
+func NewTopic(conn *websocket.Conn) *Topic {
+	return &Topic{
 		conns: []*websocket.Conn{conn},
-		Message: &Message{
-			conn: conn,
-			msg:  msg,
-		},
 	}
 }
 
-func (this *Cable) Register(conn *websocket.Conn) {
+func (this *Topic) Register(conn *websocket.Conn) {
 	this.conns = append(this.conns, conn)
 }
 
-func (this *Cable) Unregister(conn *websocket.Conn) {
+func (this *Topic) Unregister(conn *websocket.Conn) {
 	for index, link := range this.conns {
 		if link == conn {
 
@@ -41,10 +37,8 @@ func (this *Cable) Unregister(conn *websocket.Conn) {
 	}
 }
 
-func (this *Cable) Broadcast(msg *Message) {
-	log.Println("run Broadcast")
+func (this *Topic) Broadcast(msg *Message) {
 	for _, conn := range this.conns {
-		log.Println(&conn)
 		if msg.conn != conn {
 			err := conn.WriteMessage(websocket.TextMessage, msg.msg)
 			if err != nil {
@@ -57,28 +51,26 @@ func (this *Cable) Broadcast(msg *Message) {
 }
 
 type Hub struct {
-	Cables map[string]*Cable
+	Topics map[string]*Topic
 }
 
-func newHub() *Hub {
+func NewHub() *Hub {
 	return &Hub{
-		//broadcast:  make(chan []byte),
-		Cables: make(map[string]*Cable),
+		Topics: make(map[string]*Topic),
 	}
 }
 
-func (this *Hub) Add(name string, cable *Cable) {
-	this.Cables[name] = cable
+func (this *Hub) Add(name string, topic *Topic) {
+	this.Topics[name] = topic
 }
 
 func (this *Hub) Remove(name string) {
-	delete(this.Cables, name)
+	delete(this.Topics, name)
 }
 
 func (this *Hub) Broadcast(name string, msg *Message) {
-	if cable := this.Cables[name]; cable != nil {
-		log.Println(name, "cable is: ", cable)
-		cable.Broadcast(msg)
+	if topic := this.Topics[name]; topic != nil {
+		log.Println(name, "topic is: ", topic)
+		topic.Broadcast(msg)
 	}
 }
-
