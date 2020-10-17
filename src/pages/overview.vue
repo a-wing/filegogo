@@ -1,27 +1,39 @@
 <template>
   <div class="main">
     <div class="card">
-      <canvas ref="qrcode"></canvas>
       <section>
-        <div v-if="recv.name">
+        <div v-if="isReceiver">
           <div class="detail">
-            <div>Filename: {{ recv.name }}</div>
-            <div>Size: {{ humanFileSize(recv.size) }}</div>
-            <div>Type: {{ recv.type }}</div>
-            <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
+            <b-taglist attached>
+              <b-tag type="is-info is-light" size="is-large">Filename</b-tag>
+              <b-tag type="is-link is-light" size="is-large">{{ file.name }}</b-tag>
+            </b-taglist>
+            <b-taglist attached>
+              <b-tag type="is-warning is-light" size="is-large">Size</b-tag>
+              <b-tag type="is-danger is-light" size="is-large">{{ humanFileSize(file.size) }}</b-tag>
+            </b-taglist>
+            <b-taglist attached>
+              <b-tag type="is-success is-light" size="is-large">Type</b-tag>
+              <b-tag type="is-light" size="is-large">{{ file.type }}</b-tag>
+            </b-taglist>
           </div>
-
-          <b-progress type="is-warning" :value=downProgress format="percent"></b-progress>
         </div>
         <div v-else>
+          <canvas ref="qrcode"></canvas>
 
           <div class="address" v-if="address !== ''">
             <b-tag type="is-link is-light" class="address-text">{{ address }}</b-tag>
             <b-button size="is-small" type="is-danger" rounded outlined @click="copy2clipboard">Copy</b-button>
           </div>
 
-          <b-progress type="is-success" :value=upProgress format="percent"></b-progress>
+        </div>
 
+        <b-progress type="is-link" size="is-small" :value=progress format="percent"></b-progress>
+
+        <div v-if="isReceiver">
+          <b-button type="is-warning is-light is-fullwidth" icon-left="download" @click="confirmGet">{{ file.name || "File Error" }}</b-button>
+        </div>
+        <div v-else>
           <b-upload v-model="file" @input=onSelect expanded>
             <a class="button is-success is-fullwidth">
               <b-icon icon="upload"></b-icon>
@@ -29,6 +41,7 @@
             </a>
           </b-upload>
         </div>
+
       </section>
 
     </div>
@@ -55,8 +68,6 @@ export default {
     pc: {},
     cable: {},
     file: {},
-    send: {},
-    recv: {},
     dataChannel: {},
     signChannel: {},
     fileStream: {},
@@ -64,6 +75,7 @@ export default {
     checksum: '',
     pointer: 0,
     step: 1024 * 256,
+    isReceiver: false,
     isComplete: false
   }),
   created() {
@@ -80,11 +92,8 @@ export default {
     })
   },
   computed: {
-    upProgress() {
+    progress() {
       return ( this.pointer / this.file.size ) * 100
-    },
-    downProgress() {
-      return ( this.pointer / this.recv.size ) * 100
     },
     isServer() {
       return this.$route.params.id ? false : true
@@ -146,13 +155,14 @@ export default {
             this.onIncomingICE(msg.ice)
           } else if (msg.req != null) {
             // Server
-            if (this.file !== null) {
+            if (this.file.name) {
               this.putPeerList()
             }
             this.offer()
           } else if (msg.res != null) {
             // Client
-            this.recv = msg.res[0]
+            this.file = msg.res[0]
+            this.isReceiver = true
           } else if (msg.checksum != null) {
             this.isComplete = true
             this.checksum = msg.checksum
@@ -285,7 +295,7 @@ export default {
       }
     },
     confirmGet() {
-      this.fileStream = streamSaver.createWriteStream(this.recv.name).getWriter()
+      this.fileStream = streamSaver.createWriteStream(this.file.name).getWriter()
       this.signChannel.send('req')
     },
     onIncomingICE(ice) {
