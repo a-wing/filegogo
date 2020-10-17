@@ -43,6 +43,7 @@
     "streamsaver": "^2.0.4",
     "vue": "^2.6.11",
     "vue-router": "^3.4.2",
+    "web-streams-polyfill": "^3.0.0",
     "wretch": "^1.7.4"
   }
 }
