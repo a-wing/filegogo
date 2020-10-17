@@ -1,24 +1,24 @@
 import Vue from 'vue'
 import router from './router'
 
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSearch, faArrowUp, faAngleRight, faAngleLeft, faAngleUp, faAngleDown, faUpload } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-
-library.add(faSearch, faArrowUp, faAngleRight, faAngleLeft, faAngleUp, faAngleDown, faUpload);
-Vue.component('vue-fontawesome', FontAwesomeIcon);
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faUpload, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import Buefy from 'buefy'
-Vue.use(Buefy, {
-  defaultIconComponent: 'vue-fontawesome',
-  defaultIconPack: 'fas',
-});
-
 import 'buefy/dist/buefy.css'
 
 import App from './App.vue'
 
-new Vue({
+library.add(faUpload, faDownload)
+Vue.component('vue-fontawesome', FontAwesomeIcon)
+
+Vue.use(Buefy, {
+  defaultIconComponent: 'vue-fontawesome',
+  defaultIconPack: 'fas'
+})
+
+new Vue({ // eslint-disable-line no-new
   el: '#app',
   router,
   render: h => h(App)
