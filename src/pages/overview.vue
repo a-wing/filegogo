@@ -10,6 +10,8 @@
             <div>Type: {{ recv.type }}</div>
             <b-button type="is-warning is-light" @click="confirmGet">Confirm Recv</b-button>
           </div>
+
+          <b-progress type="is-warning" :value=downProgress format="percent"></b-progress>
         </div>
         <div v-else>
 
@@ -17,6 +19,8 @@
             <b-tag type="is-link is-light" class="address-text">{{ address }}</b-tag>
             <b-button size="is-small" type="is-danger" rounded outlined @click="copy2clipboard">Copy</b-button>
           </div>
+
+          <b-progress type="is-success" :value=upProgress format="percent"></b-progress>
 
           <b-upload v-model="file" @input=onSelect expanded>
             <a class="button is-success is-fullwidth">
@@ -76,6 +80,12 @@ export default {
     })
   },
   computed: {
+    upProgress() {
+      return ( this.pointer / this.file.size ) * 100
+    },
+    downProgress() {
+      return ( this.pointer / this.recv.size ) * 100
+    },
     isServer() {
       return this.$route.params.id ? false : true
     }
@@ -232,6 +242,9 @@ export default {
           this.dataChannel = event.channel
 
           this.dataChannel.onmessage = ev => {
+
+            // computed progress
+            this.pointer = this.pointer + this.step
 
             // Md5
             this.spark.append(ev.data)
