@@ -37,8 +37,7 @@ import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
 import wretch from 'wretch'
 import copy from 'copy-to-clipboard'
-
-import { humanFileSize } from '../help.js'
+import humanFileSize from 'filesize'
 
 export default {
   data: () => ({
@@ -98,7 +97,7 @@ export default {
       this.putPeerList()
     },
     humanFileSize(size) {
-      return humanFileSize(size, true, 2)
+      return humanFileSize(size)
     },
     copy2clipboard() {
       copy(this.address)
