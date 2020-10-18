@@ -208,21 +208,8 @@ export default {
       this.init()
       const pc = this.pc
 
-      this.dataChannel = pc.createDataChannel('dataChannel', { reliable: true })
-      this.signChannel = pc.createDataChannel('signChannel', { reliable: true })
-
-      this.dataChannel.onopen = () => {
-        console.log('data channel open')
-      }
-      this.dataChannel.onclose = () => {
-        console.log('data channel close')
-      }
-
-      this.signChannel.onmessage = ev => {
-        if (ev.target.label === 'signChannel') {
-          this.sendBlob()
-        }
-      }
+      this.setSignChannel(pc.createDataChannel('signChannel', { reliable: true }))
+      this.setDataChannel(pc.createDataChannel('dataChannel', { reliable: true }))
 
       pc.createOffer().then(offer => {
         console.log('on Create offer')
@@ -239,28 +226,9 @@ export default {
       const pc = this.pc
 
       pc.ondatachannel = event => {
-        console.log(event)
-
-        if (event.channel.label === 'signChannel') {
-          this.signChannel = event.channel
-          this.signChannel.onopen = () => {
-            console.log('data channel open')
-            this.onP2PConnect()
-          }
-        } else {
-          this.dataChannel = event.channel
-
-          this.dataChannel.onmessage = ev => {
-
-            // computed progress
-            this.pointer = this.pointer + this.step
-
-            // Md5
-            this.spark.append(ev.data)
-
-            this.write([ev.data])
-          }
-        }
+        event.channel.label === 'signChannel'
+          ? this.setSignChannel(event.channel)
+          : this.setDataChannel(event.channel)
       }
 
       this.pc.setRemoteDescription(sdp)
@@ -269,6 +237,27 @@ export default {
         pc.setLocalDescription(answer)
         this.cable.send(JSON.stringify(answer))
       })
+    },
+    onData(data) {
+      // computed progress
+      this.pointer = this.pointer + this.step
+
+      // Md5
+      this.spark.append(data)
+
+      this.write([data])
+    },
+    setSignChannel(channel) {
+      channel.onmessage = ev => ev.target.label === 'signChannel' ? this.sendBlob() : null
+      channel.onopen = () => console.log('sign channel open')
+      channel.onclose = () => console.log('sign channel close')
+      this.signChannel = channel
+    },
+    setDataChannel(channel) {
+      channel.onmessage = ev => ev.target.label === 'dataChannel' ? this.onData(ev.data) : null
+      channel.onopen = () => console.log('data channel open')
+      channel.onclose = () => console.log('data channel close')
+      this.dataChannel = channel
     },
     write(buf) {
       const blob = new Blob(buf)
