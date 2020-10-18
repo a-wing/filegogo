@@ -49,9 +49,8 @@
 </template>
 
 <script>
-import { WritableStream } from "web-streams-polyfill/ponyfill";
+import 'web-streams-polyfill/dist/polyfill.min.js'
 import streamSaver from 'streamsaver'
-streamSaver.WritableStream = WritableStream
 
 import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
