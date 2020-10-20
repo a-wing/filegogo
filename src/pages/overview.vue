@@ -86,7 +86,8 @@ export default {
     wretch("./config.json").get().json()
     .then(res => {
       this.iceServers = res.iceServers
-      console.log(this.iceServers)
+
+      wsUrl = res.wsUrl || wsUrl
       this.onConfigServer(wsUrl)
     })
     .catch(err => {
