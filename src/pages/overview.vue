@@ -245,7 +245,7 @@ export default {
       // Md5
       this.spark.append(data)
 
-      this.write([data])
+      this.write(data)
     },
     setSignChannel(channel) {
       channel.onmessage = ev => ev.target.label === 'signChannel' ? this.sendBlob() : null
@@ -260,9 +260,7 @@ export default {
       this.dataChannel = channel
     },
     write(buf) {
-      const blob = new Blob(buf)
-      const readableStream = blob.stream()
-      console.log(blob)
+      const readableStream = new Response(buf).body
 
       const reader = readableStream.getReader()
       const pump = () => reader.read()
