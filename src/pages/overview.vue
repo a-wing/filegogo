@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { Blob } from 'blob-polyfill'
 import 'web-streams-polyfill/dist/polyfill.min.js'
 import streamSaver from 'streamsaver'
 
@@ -73,7 +74,10 @@ export default {
     spark: new SparkMD5.ArrayBuffer(),
     checksum: '',
     pointer: 0,
-    step: 1024 * 256,
+    // safari default
+    step: 1024 * 64,
+    // chrome, firefox max-message-size
+    //step: 1024 * 256,
     isReceiver: false,
     isComplete: false
   }),
