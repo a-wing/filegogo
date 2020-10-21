@@ -18,8 +18,10 @@ Vue.use(Buefy, {
   defaultIconPack: 'fas'
 })
 
+const el = document.createElement('div')
+document.body.appendChild(el)
 new Vue({ // eslint-disable-line no-new
-  el: '#app',
+  el: el,
   router,
-  render: h => h(App)
+  extends: App
 })

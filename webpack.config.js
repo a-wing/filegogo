@@ -1,11 +1,13 @@
 const path = require('path')
 const { VueLoaderPlugin } = require('vue-loader')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+const packageJson = require('./package.json')
 
 module.exports = {
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/dist/',
     filename: 'build.js'
   },
   mode: 'development',
@@ -42,8 +44,11 @@ module.exports = {
     ]
   },
   plugins: [
-    // make sure to include the plugin for the magic
-    new VueLoaderPlugin()
+    new VueLoaderPlugin(),
+    new HtmlWebpackPlugin({
+      title: packageJson.name,
+      filename: 'index.html'
+    })
   ]
 }
 
