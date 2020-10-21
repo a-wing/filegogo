@@ -4,8 +4,10 @@ package main
 
 import (
 	"flag"
+	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"filegogo/data"
 	"filegogo/lightcable"
@@ -16,6 +18,7 @@ import (
 func main() {
 
 	address := flag.String("p", "0.0.0.0:8033", "set server port")
+	configPath := flag.String("c", "./config.json", "use config.json")
 	help := flag.Bool("h", false, "this help")
 	flag.Parse()
 
@@ -35,10 +38,23 @@ func main() {
 		lightcable.JoinTopic(hub, w, r)
 	})
 
+	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Read config: %s", *configPath)
+
+		w.Header().Add("Content-type", "application/json")
+		file, err := os.Open(*configPath)
+		if err != nil {
+			return
+		}
+		_, err = io.Copy(w, file)
+		if err != nil {
+			return
+		}
+	})
+
 	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(data.Dir))).Methods(http.MethodGet)
 
 	log.Println("===============")
 	log.Println("Listen Port", *address)
 	log.Fatal(http.ListenAndServe(*address, sr))
 }
-
