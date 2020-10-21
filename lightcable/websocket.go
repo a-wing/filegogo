@@ -39,7 +39,7 @@ func CreateTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := getSequence()
-	topic := NewTopic(conn)
+	topic := NewTopic(name, conn)
 	hub.Add(name, topic)
 
 	msg, err := json.Marshal(&struct {
@@ -56,7 +56,7 @@ func CreateTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		conn: nil,
 	})
 
-	go readPump(topic, conn)
+	go readPump(hub, topic, conn)
 }
 
 func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
@@ -70,18 +70,20 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 		topic.Register(conn)
-		go readPump(topic, conn)
+		go readPump(hub, topic, conn)
 	}
 }
 
-func readPump(topic *Topic, conn *websocket.Conn) {
+func readPump(hub *Hub, topic *Topic, conn *websocket.Conn) {
 	log.Printf("Topic: %p, conn: %p opened", topic, conn)
 	defer func() {
 		topic.Unregister(conn)
-		if len(topic.conns) == 0 {
-		}
 		conn.Close()
 		log.Printf("Topic: %p, conn: %p closed", topic, conn)
+		if len(topic.conns) == 0 {
+			hub.Remove(topic.Name)
+			log.Printf("Hub: %p, closed", topic)
+		}
 	}()
 	for {
 		t, message, err := conn.ReadMessage()

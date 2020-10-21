@@ -2,6 +2,7 @@ package lightcable
 
 import (
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,20 +14,25 @@ type Message struct {
 
 type Topic struct {
 	Name  string
+	mutex sync.Mutex
 	conns []*websocket.Conn
 }
 
-func NewTopic(conn *websocket.Conn) *Topic {
+func NewTopic(name string, conn *websocket.Conn) *Topic {
 	return &Topic{
+		Name:  name,
 		conns: []*websocket.Conn{conn},
 	}
 }
 
 func (this *Topic) Register(conn *websocket.Conn) {
+	this.mutex.Lock()
 	this.conns = append(this.conns, conn)
+	this.mutex.Unlock()
 }
 
 func (this *Topic) Unregister(conn *websocket.Conn) {
+	this.mutex.Lock()
 	for index, link := range this.conns {
 		if link == conn {
 
@@ -35,6 +41,7 @@ func (this *Topic) Unregister(conn *websocket.Conn) {
 			this.conns = this.conns[:len(this.conns)-1]
 		}
 	}
+	this.mutex.Unlock()
 }
 
 func (this *Topic) Broadcast(msg *Message) {
