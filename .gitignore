@@ -1,4 +1,5 @@
 filegogo
+data/*_vfsdata.go
 
 dist
 node_modules

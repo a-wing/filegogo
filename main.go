@@ -1,3 +1,5 @@
+//go:generate go run data/generate.go
+
 package main
 
 import (
@@ -5,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"filegogo/data"
 	"filegogo/lightcable"
 
 	"github.com/gorilla/mux"
@@ -32,7 +35,7 @@ func main() {
 		lightcable.JoinTopic(hub, w, r)
 	})
 
-	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.Dir("./")))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(data.Dir))).Methods(http.MethodGet)
 
 	log.Println("===============")
 	log.Println("Listen Port", *address)
