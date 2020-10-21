@@ -4,6 +4,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"filegogo/data"
 	"filegogo/lightcable"
+	"filegogo/version"
 
 	"github.com/gorilla/mux"
 )
@@ -20,10 +22,16 @@ func main() {
 	address := flag.String("p", "0.0.0.0:8033", "set server port")
 	configPath := flag.String("c", "./config.json", "use config.json")
 	help := flag.Bool("h", false, "this help")
+	flagVersion := flag.Bool("v", false, "show version")
 	flag.Parse()
 
 	if *help {
 		flag.Usage()
+		return
+	}
+
+	if *flagVersion {
+		fmt.Printf("filegogo %s %s\n", version.Version, version.BuildTime)
 		return
 	}
 
