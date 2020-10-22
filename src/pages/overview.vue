@@ -77,27 +77,27 @@ export default {
     // safari default
     step: 1024 * 64,
     // chrome, firefox max-message-size
-    //step: 1024 * 256,
+    // step: 1024 * 256,
     isReceiver: false,
     isComplete: false
   }),
   created() {
     let wsUrl = 'ws://localhost:8033/topic/'
-    wretch("./config.json").get().json()
-    .then(res => {
-      this.iceServers = res.iceServers
+    wretch('./config.json').get().json()
+      .then(res => {
+        this.iceServers = res.iceServers
 
-      wsUrl = res.wsUrl || wsUrl
-      this.onConfigServer(wsUrl)
-    })
-    .catch(err => {
-      console.log(err)
-      this.onConfigServer(wsUrl)
-    })
+        wsUrl = res.wsUrl || wsUrl
+        this.onConfigServer(wsUrl)
+      })
+      .catch(err => {
+        console.log(err)
+        this.onConfigServer(wsUrl)
+      })
   },
   computed: {
     progress() {
-      return ( this.pointer / this.file.size ) * 100
+      return (this.pointer / this.file.size) * 100
     },
     isServer() {
       return this.$route.params.id ? false : true
@@ -181,13 +181,13 @@ export default {
       }
     },
     onTopic(topic) {
-      let address = document.location.href + 't/' + topic
+      const address = document.location.href + 't/' + topic
       this.address = address
       QRCode.toCanvas(this.$refs.qrcode, address, {
         width: 400
       }, error => {
         if (error) console.error(error)
-        console.log('Create QRCode:', address);
+        console.log('Create QRCode:', address)
       })
     },
     init() {
@@ -302,7 +302,7 @@ export default {
       this.cable.send(JSON.stringify({ event: 'req' }))
     },
     fileList() {
-      let list = []
+      const list = []
       if (this.file !== null) {
         list.push({
           name: this.file.name,
@@ -326,7 +326,7 @@ export default {
       this.fileStream.close()
     },
     sendBlob() {
-      let p = this.pointer
+      const p = this.pointer
 
       if (p >= this.file.size) {
         this.checksum = this.spark.end()
