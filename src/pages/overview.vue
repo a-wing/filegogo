@@ -49,8 +49,13 @@
 </template>
 
 <script>
-import { Blob } from 'blob-polyfill'
+
+// Safari
+import 'blob-polyfill'
+
+// Firefox, Safari
 import 'web-streams-polyfill/dist/polyfill.min.js'
+
 import streamSaver from 'streamsaver'
 
 import SparkMD5 from 'spark-md5'
