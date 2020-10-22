@@ -28,6 +28,8 @@ generate:
 
 data: frontend generate
 
+test: data
+
 run:
 	go run -tags=dev ./main.go
 
