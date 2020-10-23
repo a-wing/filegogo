@@ -31,7 +31,10 @@
         <b-progress type="is-link" size="is-small" :value=progress format="percent"></b-progress>
 
         <div v-if="isReceiver">
-          <b-button type="is-warning is-light is-fullwidth" icon-left="download" @click="confirmGet">{{ file.name || "File Error" }}</b-button>
+          <b-button type="is-warning is-light is-fullwidth" :disabled="!isConnect" icon-left="download" @click="confirmGet">{{ file.name || "File Error" }}</b-button>
+        </div>
+        <div v-else-if="!pwsConnect">
+          <b-button type="is-danger is-light is-fullwidth" disabled icon-left="upload">{{ "Not Connect" }}</b-button>
         </div>
         <div v-else>
           <b-upload v-model="file" @input=onSelect expanded>
@@ -83,6 +86,8 @@ export default {
     step: 1024 * 64,
     // chrome, firefox max-message-size
     // step: 1024 * 256,
+    pwsConnect: false,
+    p2pConnect: false,
     isReceiver: false,
     isComplete: false
   }),
@@ -101,6 +106,9 @@ export default {
       })
   },
   computed: {
+    isConnect() {
+      return this.pwsConnect && this.p2pConnect
+    },
     progress() {
       return (this.pointer / this.file.size) * 100
     },
@@ -140,10 +148,12 @@ export default {
 
       cable.onopen = event => {
         console.log('ws open')
+        this.pwsConnect = true
         this.onPWSConnect()
       }
 
       cable.onclose = event => {
+        this.pwsConnect = false
         console.log('ws close')
       }
 
@@ -205,6 +215,7 @@ export default {
 
       pc.addEventListener('iceconnectionstatechange', () => {
         console.log('iceconnectionstatechange', pc.iceConnectionState)
+        this.p2pConnect = pc.iceConnectionState === 'connected' ? true : false
       })
       pc.addEventListener('icecandidate', ev => {
         if (ev.candidate === null) {
