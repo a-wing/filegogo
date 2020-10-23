@@ -1,0 +1,12 @@
+[Unit]
+Description=A file transfer tool that can be used in the browser webrtc p2p
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/filegogo -c /etc/filegogo.json
+Restart=always
+
+[Install]
+WantedBy=default.target

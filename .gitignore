@@ -1,4 +1,5 @@
 filegogo
+config.json
 data/*_vfsdata.go
 
 bin

@@ -1,9 +1,12 @@
+OS=
+ARCH=
+PROFIX=
 NAME=filegogo
 BINDIR=bin
 VERSION=$(shell git describe --tags || git rev-parse --short HEAD || echo "unknown version")
 BUILD_TIME=$(shell date +%FT%T%z)
 LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.BuildTime=$(BUILD_TIME)"'
-GOBUILD=CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) \
+GOBUILD=CGO_ENABLED=0 \
 				go build -ldflags $(LD_FLAGS)
 
 PLATFORM_LIST = \
@@ -17,6 +20,13 @@ PLATFORM_LIST = \
 WINDOWS_ARCH_LIST = \
 										windows-386 \
 										windows-amd64
+default: data
+	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME)
+
+install:
+	install -Dm755 ${NAME} -t ${PROFIX}/usr/bin/
+	install -Dm644 conf/config.json -t ${PROFIX}/etc/${NAME}.json
+	install -Dm644 conf/${NAME}.service -t ${PROFIX}/lib/systemd/system/
 
 all: linux-amd64 darwin-amd64 windows-amd64 # Most used
 
