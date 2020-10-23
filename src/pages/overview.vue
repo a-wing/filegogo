@@ -28,7 +28,14 @@
 
         </div>
 
-        <b-progress type="is-link" size="is-small" :value=progress format="percent"></b-progress>
+        <div v-if="progress > 0 && progress < 100">
+          <b-progress type="is-link" size="is-small" :value=progress format="percent"></b-progress>
+        </div>
+
+        <div v-else-if="progress >= 100">
+          <b-button type="is-success is-light is-fullwidth" disabled>{{ "Completed" }}</b-button>
+        </div>
+        <div v-else>
 
         <div v-if="isReceiver">
           <b-button type="is-warning is-light is-fullwidth" :disabled="!isConnect" icon-left="download" @click="confirmGet">{{ file.name || "File Error" }}</b-button>
@@ -43,6 +50,8 @@
               <span>{{ file.name || "Click to upload"}}</span>
             </a>
           </b-upload>
+        </div>
+
         </div>
 
       </section>
