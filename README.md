@@ -2,34 +2,58 @@
 
 A file transfer tool that can be used in the browser webrtc p2p
 
-## Architecture
+## Build && Install
 
-```mermaid
-sequenceDiagram
+```sh
+npm install
+make
+sudo make install
+sudo systemctl start filegogo
+```
 
-Sender ->> Cloud: Create channel request
-loop Check
-    Cloud ->> Cloud: Create Channel
-end
-Cloud ->> Sender: Channel name (url)
+## Run Development
 
-Sender -->> Recver: Channel name (url)
-Note over Sender, Recver: Need Other IM send
+```sh
+cp conf/config.json .
 
-Recver ->> Cloud: Join Channel
-Cloud ->> Recver: Join Success
-loop SDP
-    Recver ->> Recver: Create Offer
-end
-Recver ->> Cloud: Send Webrtc Offer
+npm install
 
-Cloud ->> Sender: Send Webrtc Offer
-loop SDP
-    Sender ->> Sender: Create Answer
-end
-Sender ->> Cloud: Send Webrtc Answer
+# server
+make run
 
-Cloud ->> Recver: Send Webrtc Answer
-Recver ->> Sender: P2P Connected
+# frontend
+npm run dev
+```
+
+## Config
+
+```json
+{
+  "wsUrl": "ws://localhost:8033/topic/",
+  "iceServers": [
+    {
+      "urls": "stun:stun.services.mozilla.com",
+      "username": "louis@mozilla.com",
+      "credential": "webrtcdemo"
+    }, {
+      "urls": ["stun:stun.example.com", "stun:stun-1.example.com"]
+    }
+  ]
+}
+```
+
+[Reference iceServer config](https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer)
+
+iceServer Use Other
+
+For example [coturn](https://github.com/coturn/coturn) && [gortcd](https://github.com/gortc/gortcd)
+
+### coturn
+
+```sh
+apt install coturn
+
+# Change config
+vim /etc/turnserver.conf
 ```
 
