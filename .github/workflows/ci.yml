@@ -24,6 +24,7 @@ jobs:
       - name: Get dependencies and run test
         run: |
           npm install
+          npm run lint
           make test
           make
       - name: Build

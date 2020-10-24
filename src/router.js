@@ -1,8 +1,8 @@
-import Vue from 'vue';
-import Router from 'vue-router';
-Vue.use(Router);
+import Vue from 'vue'
+import Router from 'vue-router'
 
-import Overview from './pages/overview.vue';
+import Overview from './pages/overview.vue'
+Vue.use(Router)
 
 const routes = [
   {
@@ -12,9 +12,9 @@ const routes = [
   {
     path: '/t/:id',
     component: Overview
-  },
+  }
 ]
 
 export default new Router({
   routes
-});
+})

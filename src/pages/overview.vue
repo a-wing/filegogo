@@ -122,7 +122,7 @@ export default {
       return (this.pointer / this.file.size) * 100
     },
     isServer() {
-      return this.$route.params.id ? false : true
+      return !this.$route.params.id
     }
   },
   methods: {
@@ -224,7 +224,7 @@ export default {
 
       pc.addEventListener('iceconnectionstatechange', () => {
         console.log('iceconnectionstatechange', pc.iceConnectionState)
-        this.p2pConnect = pc.iceConnectionState === 'connected' ? true : false
+        this.p2pConnect = pc.iceConnectionState === 'connected'
       })
       pc.addEventListener('icecandidate', ev => {
         if (ev.candidate === null) {
@@ -246,7 +246,6 @@ export default {
         pc.setLocalDescription(offer)
         this.cable.send(JSON.stringify(offer))
       })
-
     },
     onAnswer(sdp) {
       this.pc.setRemoteDescription(sdp)
@@ -360,7 +359,6 @@ export default {
       }
 
       this.file.slice(p, p + this.step).arrayBuffer().then(buffer => {
-
         // Md5
         this.spark.append(buffer)
 
