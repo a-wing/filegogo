@@ -48,14 +48,27 @@ npm run dev
 
 iceServer Use Other
 
-For example [coturn](https://github.com/coturn/coturn) && [gortcd](https://github.com/gortc/gortcd)
+For example [coturn](https://github.com/coturn/coturn) Or [gortcd](https://github.com/gortc/gortcd)
 
 ### coturn
 
 ```sh
 apt install coturn
-
-# Change config
-vim /etc/turnserver.conf
 ```
 
+```ini
+# /etc/turnserver.conf
+
+listening-ip={YOUR_IP_ADDRESS}
+relay-ip={YOUR_IP_ADDRESS}
+
+# Public ip
+# if aws, aliyun
+external-ip={YOUR_IP_ADDRESS}
+
+fingerprint
+lt-cred-mech
+user=filegogo:filegogo
+realm=filegogo
+
+```
