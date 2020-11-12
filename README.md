@@ -2,6 +2,12 @@
 
 A file transfer tool that can be used in the browser webrtc p2p
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/a-wing/filegogo)](https://goreportcard.com/report/github.com/a-wing/filegogo)
+[![GitHub release](https://img.shields.io/github/tag/a-wing/filegogo.svg?label=release)](https://github.com/a-wing/filegogo/releases)
+[![license](https://img.shields.io/github/license/a-wing/filegogo.svg?maxAge=2592000)](https://github.com/a-wing/filegogo/blob/master/LICENSE)
+
+[send.22333.fun](https://send.22333.fun) | [send.cn.22333.fun](https://send.cn.22333.fun)
+
 [![Demo.gif](https://i.postimg.cc/wTyzyHMc/Peek-2020-10-24-11-29.gif)](https://postimg.cc/8jS992hj)
 
 ## Build && Install
