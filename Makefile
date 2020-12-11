@@ -25,7 +25,7 @@ default: data
 
 install:
 	install -Dm755 ${NAME} -t ${PROFIX}/usr/bin/
-	install -Dm644 conf/config.json -t ${PROFIX}/etc/${NAME}.json
+	install -Dm644 conf/config.json -t ${PROFIX}/etc/${NAME}/
 	install -Dm644 conf/${NAME}.service -t ${PROFIX}/lib/systemd/system/
 
 all: linux-amd64 darwin-amd64 windows-amd64 # Most used
