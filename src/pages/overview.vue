@@ -61,14 +61,9 @@
 </template>
 
 <script>
-
-// Safari
-import 'blob-polyfill'
-
-// Firefox, Safari
-import 'web-streams-polyfill/dist/polyfill.min.js'
-
 import streamSaver from 'streamsaver'
+
+import Transfer from '../lib/transfer'
 
 import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
@@ -82,19 +77,14 @@ export default {
       { urls: 'stun:stun.l.google.com:19302' }
     ],
     address: '',
+    transfer: {},
     pc: {},
     cable: {},
     file: {},
     dataChannel: {},
     signChannel: {},
     fileStream: {},
-    spark: new SparkMD5.ArrayBuffer(),
-    checksum: '',
-    pointer: 0,
-    // safari default
-    step: 1024 * 64,
-    // chrome, firefox max-message-size
-    // step: 1024 * 256,
+    running: false,
     pwsConnect: false,
     p2pConnect: false,
     isReceiver: false,
@@ -193,9 +183,7 @@ export default {
             this.isReceiver = true
           } else if (msg.checksum != null) {
             this.isComplete = true
-            this.checksum = msg.checksum
-            console.log(this.checksum)
-            this.next()
+            this.transfer.verify(msg.checksum)
           } else {
             console.log(msg)
           }
@@ -268,13 +256,7 @@ export default {
       })
     },
     onData(data) {
-      // computed progress
-      this.pointer = this.pointer + this.step
-
-      // Md5
-      this.spark.append(data)
-
-      this.write(data)
+      this.transfer.onData(data)
     },
     setSignChannel(channel) {
       channel.onmessage = ev => ev.target.label === 'signChannel' ? this.sendBlob() : null
@@ -288,29 +270,20 @@ export default {
       channel.onclose = () => console.log('data channel close')
       this.dataChannel = channel
     },
-    write(buf) {
-      const readableStream = new Response(buf).body
-
-      const reader = readableStream.getReader()
-      const pump = () => reader.read()
-        .then(res => res.done
-          ? this.next()
-          : this.fileStream.write(res.value).then(pump))
-
-      pump()
-    },
-    next() {
-      if (this.isComplete) {
-        if (this.spark.end() === this.checksum) {
-          console.log('Md5 check success')
-        }
-        this.onFileComplete()
-      } else {
-        this.signChannel.send('req')
-      }
-    },
     confirmGet() {
-      this.fileStream = streamSaver.createWriteStream(this.file.name).getWriter()
+      this.fileStream = streamSaver.createWriteStream(this.file.name, {
+        size: this.file.size,
+        //mitm: this.file.type
+      }).getWriter()
+
+      this.transfer = new Transfer(this.fileStream)
+      this.metadata = this.file
+      this.transfer.dataChannel = this.dataChannel
+      this.transfer.signChannel = this.signChannel
+      this.transfer.onComplete = () => {
+        this.onFileComplete()
+      }
+
       this.signChannel.send('req')
     },
     onIncomingICE(ice) {
@@ -350,21 +323,17 @@ export default {
       this.fileStream.close()
     },
     sendBlob() {
-      const p = this.pointer
-
-      if (p >= this.file.size) {
-        this.checksum = this.spark.end()
-        this.cable.send(JSON.stringify({ checksum: this.checksum }))
-        console.log(this.checksum)
+      if (!this.running) {
+        // presend
+        this.transfer = new Transfer(this.file)
+        this.transfer.dataChannel = this.dataChannel
+        this.transfer.signChannel = this.signChannel
+        this.transfer.onComplete = data => {
+          this.cable.send(data)
+        }
+        this.running = true
       }
-
-      this.file.slice(p, p + this.step).arrayBuffer().then(buffer => {
-        // Md5
-        this.spark.append(buffer)
-
-        this.dataChannel.send(buffer)
-      })
-      this.pointer = p + this.step
+      this.transfer.sendBlob()
     }
   }
 }
