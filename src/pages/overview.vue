@@ -78,6 +78,7 @@ export default {
     ],
     address: '',
     transfer: {},
+    progress: 0,
     pc: {},
     cable: {},
     file: {},
@@ -107,9 +108,6 @@ export default {
   computed: {
     isConnect() {
       return this.pwsConnect && this.p2pConnect
-    },
-    progress() {
-      return (this.pointer / this.file.size) * 100
     },
     isServer() {
       return !this.$route.params.id
@@ -276,11 +274,13 @@ export default {
         //mitm: this.file.type
       }).getWriter()
 
-      this.transfer = new Transfer(this.fileStream)
-      this.metadata = this.file
+      this.transfer = new Transfer(this.file)
+      this.transfer.fileStream = this.fileStream
       this.transfer.dataChannel = this.dataChannel
       this.transfer.signChannel = this.signChannel
-      this.transfer.onComplete = () => {
+      this.transfer.onProgress = progress => this.progress = progress
+      this.transfer.onComplete = checksum => {
+        //this.cable.send(JSON.stringify({ checksum: checksum }))
         this.onFileComplete()
       }
 
@@ -294,9 +294,6 @@ export default {
       }).catch(ev => {
         console.log(ev)
       })
-    },
-    reqData() {
-      this.cable.send(JSON.stringify({ event: 'req' }))
     },
     fileList() {
       const list = []
@@ -328,8 +325,9 @@ export default {
         this.transfer = new Transfer(this.file)
         this.transfer.dataChannel = this.dataChannel
         this.transfer.signChannel = this.signChannel
-        this.transfer.onComplete = data => {
-          this.cable.send(data)
+        this.transfer.onProgress = progress => this.progress = progress
+        this.transfer.onComplete = checksum => {
+          this.cable.send(JSON.stringify({ checksum: checksum }))
         }
         this.running = true
       }

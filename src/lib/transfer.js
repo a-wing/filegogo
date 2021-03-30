@@ -11,7 +11,7 @@ export default class Transfer {
   constructor(file) {
     // htmlDOMfile
     this.file = file
-    this.metadata = {}
+    this.fileStream = {}
 
     // safari default
     this.step = 1024 * 64,
@@ -20,45 +20,25 @@ export default class Transfer {
 
     this.dataChannel = {}
     this.onComplete = () => {}
+    this.onProgress = () => {}
     this.pointer = 0
     this.spark = new SparkMD5.ArrayBuffer()
   }
   sendBlob() {
-    const p = this.pointer
-
-    if (p >= this.file.size) {
-      this.checksum = this.spark.end()
-      this.onComplete(JSON.stringify({ checksum: this.checksum }))
-    }
-
-    this.file.slice(p, p + this.step).arrayBuffer().then(buffer => {
+    this.file.slice(this.pointer, this.pointer + this.step).arrayBuffer().then(buffer => {
       // Md5
       this.spark.append(buffer)
+      this.progress(buffer.byteLength)
 
       this.dataChannel.send(buffer)
     })
-    this.pointer = p + this.step
   }
-  onData(data) {
-    // computed progress
-    this.pointer = this.pointer + this.step
-
+  onData(buffer) {
     // Md5
-    this.spark.append(data)
+    this.spark.append(buffer)
+    this.progress(buffer.byteLength)
 
-    this.write(data)
-  }
-  write(buf) {
-    console.log(buf)
-    const readableStream = new Response(buf).body
-
-    const reader = readableStream.getReader()
-    const pump = () => reader.read()
-      .then(res => res.done
-        ? this.next()
-        : this.file.write(res.value).then(pump))
-
-    pump()
+    this.fileStream.write(new Uint8Array(buffer)).then(this.next())
   }
   next() {
     this.signChannel.send('req')
@@ -66,5 +46,15 @@ export default class Transfer {
   verify(checksum) {
     this.onComplete()
     return this.spark.end() === this.checks
+  }
+  progress(step) {
+    if (this.pointer >= this.file.size) {
+      this.onComplete(this.spark.end())
+      console.log("onComplete")
+    }
+    // computed progress
+    this.pointer = this.pointer + step
+
+    this.onProgress((this.pointer / this.file.size) * 100)
   }
 }
