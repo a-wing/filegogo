@@ -61,11 +61,8 @@
 </template>
 
 <script>
-import streamSaver from 'streamsaver'
+import { Sender, Recver } from '../lib/transfer'
 
-import Transfer from '../lib/transfer'
-
-import SparkMD5 from 'spark-md5'
 import QRCode from 'qrcode'
 import wretch from 'wretch'
 import copy from 'copy-to-clipboard'
@@ -84,8 +81,6 @@ export default {
     file: {},
     dataChannel: {},
     signChannel: {},
-    fileStream: {},
-    running: false,
     pwsConnect: false,
     p2pConnect: false,
     isReceiver: false,
@@ -128,9 +123,15 @@ export default {
     onP2PConnect() {
       if (!this.isServer) {
       }
+      if (this.file.name) {
+        this.preSend()
+      }
     },
     onSelect(file) {
       this.putPeerList()
+      if (this.p2pConnect) {
+        this.preSend()
+      }
     },
     humanFileSize(size) {
       return humanFileSize(size)
@@ -211,6 +212,7 @@ export default {
       pc.addEventListener('iceconnectionstatechange', () => {
         console.log('iceconnectionstatechange', pc.iceConnectionState)
         this.p2pConnect = pc.iceConnectionState === 'connected'
+        this.onP2PConnect()
       })
       pc.addEventListener('icecandidate', ev => {
         if (ev.candidate === null) {
@@ -224,8 +226,8 @@ export default {
       this.init()
       const pc = this.pc
 
-      this.setSignChannel(pc.createDataChannel('signChannel', { reliable: true }))
-      this.setDataChannel(pc.createDataChannel('dataChannel', { reliable: true }))
+      // Set dataChannel
+      this.dataChannel = pc.createDataChannel('channel')
 
       pc.createOffer().then(offer => {
         console.log('on Create offer')
@@ -240,11 +242,8 @@ export default {
       this.init()
       const pc = this.pc
 
-      pc.ondatachannel = event => {
-        event.channel.label === 'signChannel'
-          ? this.setSignChannel(event.channel)
-          : this.setDataChannel(event.channel)
-      }
+      // Set dataChannel
+      pc.ondatachannel = event => this.dataChannel = event.channel
 
       this.pc.setRemoteDescription(sdp)
 
@@ -253,38 +252,8 @@ export default {
         this.cable.send(JSON.stringify(answer))
       })
     },
-    onData(data) {
-      this.transfer.onData(data)
-    },
-    setSignChannel(channel) {
-      channel.onmessage = ev => ev.target.label === 'signChannel' ? this.sendBlob() : null
-      channel.onopen = () => console.log('sign channel open')
-      channel.onclose = () => console.log('sign channel close')
-      this.signChannel = channel
-    },
-    setDataChannel(channel) {
-      channel.onmessage = ev => ev.target.label === 'dataChannel' ? this.onData(ev.data) : null
-      channel.onopen = () => console.log('data channel open')
-      channel.onclose = () => console.log('data channel close')
-      this.dataChannel = channel
-    },
     confirmGet() {
-      this.fileStream = streamSaver.createWriteStream(this.file.name, {
-        size: this.file.size,
-        //mitm: this.file.type
-      }).getWriter()
-
-      this.transfer = new Transfer(this.file)
-      this.transfer.fileStream = this.fileStream
-      this.transfer.dataChannel = this.dataChannel
-      this.transfer.signChannel = this.signChannel
-      this.transfer.onProgress = progress => this.progress = progress
-      this.transfer.onComplete = checksum => {
-        //this.cable.send(JSON.stringify({ checksum: checksum }))
-        this.onFileComplete()
-      }
-
-      this.signChannel.send('req')
+      this.preRecv()
     },
     onIncomingICE(ice) {
       const candidate = new RTCIceCandidate(ice)
@@ -316,22 +285,27 @@ export default {
         res: this.fileList()
       }))
     },
-    onFileComplete() {
-      this.fileStream.close()
-    },
-    sendBlob() {
-      if (!this.running) {
-        // presend
-        this.transfer = new Transfer(this.file)
-        this.transfer.dataChannel = this.dataChannel
-        this.transfer.signChannel = this.signChannel
-        this.transfer.onProgress = progress => this.progress = progress
-        this.transfer.onComplete = checksum => {
-          this.cable.send(JSON.stringify({ checksum: checksum }))
-        }
-        this.running = true
+    preSend() {
+      this.transfer = new Sender(this.file, this.dataChannel)
+      this.transfer.onProgress = progress => this.progress = progress
+      this.transfer.onComplete = checksum => {
+        this.checksum = checksum
       }
-      this.transfer.sendBlob()
+    },
+    preRecv() {
+      this.transfer = new Recver(this.file, this.dataChannel)
+      this.transfer.onProgress = progress => this.progress = progress
+      this.transfer.onComplete = checksum => {
+        this.dataChannel.send(JSON.stringify({ checksum: checksum }))
+      }
+      this.transfer.start()
+    },
+    sendBlob(data) {
+      if (JSON.parse(data)["event"] == "req") {
+        this.transfer.sendBlob()
+      } else {
+        this.dataChannel.send(JSON.stringify({ checksum: this.checksum }))
+      }
     }
   }
 }
