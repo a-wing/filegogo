@@ -33,15 +33,30 @@ class Transfer {
     this.channel.send(JSON.stringify({ event: 'req' }))
   }
   sendBlob() {
-    this.file.slice(this.pointer, this.pointer + this.step).arrayBuffer().then(buffer => {
-      // Md5
-      this.spark.append(buffer)
-      this.progress(buffer.byteLength)
+    const p = this.pointer
+    this.file.slice(p, p + this.step).arrayBuffer()
+      .then(buffer => {
+        // Md5
+        this.spark.append(buffer)
+        this.progress(buffer.byteLength)
 
-      this.channel.send(buffer)
-    })
+        this.channel.send(buffer)
+      })
+      .catch(err => console.log(err))
   }
   onData(buffer) {
+    if (buffer instanceof Blob) {
+      // Firefox is Blob
+      // Need to ArrayBuffer
+      buffer.arrayBuffer().then(buffer => {
+        this.onArrayBuffer(buffer)
+      })
+    } else {
+      // Chrome, Safari is ArrayBuffer
+      this.onArrayBuffer(buffer)
+    }
+  }
+  onArrayBuffer(buffer) {
     if (this.isComplete()) {
       if (this.verify(JSON.parse(buffer)["checksum"])) {
         console.log("checksum success")
@@ -50,11 +65,11 @@ class Transfer {
       this.fileStream.close()
     } else {
 
-    // Md5
-    this.spark.append(buffer)
-    this.progress(buffer.byteLength)
+      // Md5
+      this.spark.append(buffer)
+      this.progress(buffer.byteLength)
 
-    this.fileStream.write(new Uint8Array(buffer)).then(this.next())
+      this.fileStream.write(new Uint8Array(buffer)).then(this.next())
     }
   }
   next() {
