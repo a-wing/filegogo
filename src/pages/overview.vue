@@ -63,6 +63,8 @@
 <script>
 import { Sender, Recver } from '../lib/transfer'
 
+import Webrtc from '../connect/webrtc'
+
 import QRCode from 'qrcode'
 import wretch from 'wretch'
 import copy from 'copy-to-clipboard'
@@ -78,6 +80,7 @@ export default {
     progress: 0,
     pc: {},
     cable: {},
+    webrtc: {},
     file: {},
     dataChannel: {},
     signChannel: {},
@@ -119,8 +122,15 @@ export default {
       if (!this.isServer) {
         this.getPeerList()
       }
+      this.webrtc = new Webrtc(this.iceServers, this.cable)
+      this.webrtc.onConnected = dataChannel => {
+        console.log("P2P onConnected")
+        this.dataChannel = dataChannel
+        this.onP2PConnect()
+      }
     },
     onP2PConnect() {
+      this.p2pConnect = true
       if (!this.isServer) {
       }
       if (this.file.name) {
@@ -158,24 +168,17 @@ export default {
       cable.onmessage = event => {
         try {
           const msg = JSON.parse(event.data)
-          if (msg.sdp != null) {
-            console.log('Recv:', msg.type)
-            if (msg.type === 'offer') {
-              this.answer(msg)
-            } else {
-              this.onAnswer(msg)
-            }
+          if (msg.sdp || msg.ice) {
+            this.webrtc.onMessage(event.data)
           } else if (msg.topic != null) {
             // Get topic name
             this.onTopic(msg.topic)
-          } else if (msg.ice != null) {
-            this.onIncomingICE(msg.ice)
           } else if (msg.req != null) {
             // Server
             if (this.file.name) {
               this.putPeerList()
             }
-            this.offer()
+            this.webrtc.offer()
           } else if (msg.res != null) {
             // Client
             this.file = msg.res[0]
@@ -201,68 +204,8 @@ export default {
         console.log('Create QRCode:', address)
       })
     },
-    init() {
-      const configuration = {
-        iceServers: this.iceServers
-      }
-
-      const pc = new RTCPeerConnection(configuration)
-      this.pc = pc
-
-      pc.addEventListener('iceconnectionstatechange', () => {
-        console.log('iceconnectionstatechange', pc.iceConnectionState)
-        this.p2pConnect = pc.iceConnectionState === 'connected'
-        this.onP2PConnect()
-      })
-      pc.addEventListener('icecandidate', ev => {
-        if (ev.candidate === null) {
-          console.log(pc)
-        } else {
-          this.cable.send(JSON.stringify({ ice: ev.candidate }))
-        }
-      })
-    },
-    offer() {
-      this.init()
-      const pc = this.pc
-
-      // Set dataChannel
-      this.dataChannel = pc.createDataChannel('channel')
-
-      pc.createOffer().then(offer => {
-        console.log('on Create offer')
-        pc.setLocalDescription(offer)
-        this.cable.send(JSON.stringify(offer))
-      })
-    },
-    onAnswer(sdp) {
-      this.pc.setRemoteDescription(sdp)
-    },
-    answer(sdp) {
-      this.init()
-      const pc = this.pc
-
-      // Set dataChannel
-      pc.ondatachannel = event => this.dataChannel = event.channel
-
-      this.pc.setRemoteDescription(sdp)
-
-      this.pc.createAnswer().then(answer => {
-        pc.setLocalDescription(answer)
-        this.cable.send(JSON.stringify(answer))
-      })
-    },
     confirmGet() {
       this.preRecv()
-    },
-    onIncomingICE(ice) {
-      const candidate = new RTCIceCandidate(ice)
-      console.log(ice)
-      this.pc.addIceCandidate(candidate).then(r => {
-        console.log(r)
-      }).catch(ev => {
-        console.log(ev)
-      })
     },
     fileList() {
       const list = []
