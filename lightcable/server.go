@@ -45,6 +45,7 @@ func (this *Topic) Unregister(conn *websocket.Conn) {
 }
 
 func (this *Topic) Broadcast(msg *Message) {
+	this.mutex.Lock()
 	for _, conn := range this.conns {
 		if msg.conn != conn {
 			err := conn.WriteMessage(websocket.TextMessage, msg.msg)
@@ -55,6 +56,7 @@ func (this *Topic) Broadcast(msg *Message) {
 
 		}
 	}
+	this.mutex.Unlock()
 }
 
 type Hub struct {
