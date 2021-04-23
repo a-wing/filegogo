@@ -16,11 +16,10 @@ class Transfer {
     this.fileStream = {}
 
     // safari default
-    this.step = 1024 * 64,
+    this.step = 1024 * 64
     // chrome, firefox max-message-size
-    // step: 1024 * 256,
+    // step: 1024 * 256
 
-    //channel.onmessage = ev => ev.target.label === 'dataChannel' ? this.onData(ev.data) : null
     channel.onmessage = ev => this.onData(ev.data)
     this.channel = channel
 
@@ -29,9 +28,11 @@ class Transfer {
     this.pointer = 0
     this.spark = new SparkMD5.ArrayBuffer()
   }
+
   start() {
     this.channel.send(JSON.stringify({ event: 'req' }))
   }
+
   sendBlob() {
     const p = this.pointer
     this.file.slice(p, p + this.step).arrayBuffer()
@@ -44,6 +45,7 @@ class Transfer {
       })
       .catch(err => console.log(err))
   }
+
   onData(buffer) {
     if (buffer instanceof Blob) {
       // Firefox is Blob
@@ -56,15 +58,15 @@ class Transfer {
       this.onArrayBuffer(buffer)
     }
   }
+
   onArrayBuffer(buffer) {
     if (this.isComplete()) {
-      if (this.verify(JSON.parse(buffer)["checksum"])) {
-        console.log("checksum success")
+      if (this.verify(JSON.parse(buffer).checksum)) {
+        console.log('checksum success')
       }
 
       this.fileStream.close()
     } else {
-
       // Md5
       this.spark.append(buffer)
       this.progress(buffer.byteLength)
@@ -72,12 +74,15 @@ class Transfer {
       this.fileStream.write(new Uint8Array(buffer)).then(this.next())
     }
   }
+
   next() {
     this.channel.send(JSON.stringify({ event: 'req' }))
   }
+
   verify(checksum) {
     return this.spark.end() === this.checks
   }
+
   progress(step) {
     // computed progress
     this.pointer = this.pointer + step
@@ -85,20 +90,18 @@ class Transfer {
     this.onProgress((this.pointer / this.file.size) * 100)
     if (this.isComplete()) {
       this.onComplete(this.spark.end())
-      console.log("onComplete")
+      console.log('onComplete')
     }
   }
+
   isComplete() {
     return this.pointer >= this.file.size
   }
 }
 
 export class Sender extends Transfer {
-  constructor(file, channel) {
-    super(file, channel)
-  }
   onData(data) {
-    if (JSON.parse(data)["event"] == "req") {
+    if (JSON.parse(data).event === 'req') {
       this.sendBlob()
     } else {
       this.channel.send(JSON.stringify({ checksum: this.checksum }))
@@ -112,9 +115,7 @@ export class Recver extends Transfer {
 
     this.fileStream = streamSaver.createWriteStream(file.name, {
       size: file.size,
-      //mitm: this.file.type
+      mitm: this.file.type
     }).getWriter()
-
   }
 }
-

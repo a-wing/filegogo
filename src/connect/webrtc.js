@@ -6,6 +6,7 @@ export default class Webrtc {
     this.dataChannel = {}
     this.onConnected = () => {}
   }
+
   onMessage(data) {
     const msg = JSON.parse(data)
     if (msg.sdp) {
@@ -19,6 +20,7 @@ export default class Webrtc {
       this.onIncomingICE(msg.ice)
     }
   }
+
   init() {
     this.pc = new RTCPeerConnection({
       iceServers: this.iceServers
@@ -28,13 +30,12 @@ export default class Webrtc {
       console.log('iceconnectionstatechange', this.pc.iceConnectionState)
     })
     this.pc.addEventListener('icecandidate', ev => {
-      if (ev.candidate === null) {
-        //console.log(this.pc)
-      } else {
+      if (ev.candidate) {
         this.channel.send(JSON.stringify({ ice: ev.candidate }))
       }
     })
   }
+
   onIncomingICE(ice) {
     const candidate = new RTCIceCandidate(ice)
     console.log(ice)
@@ -44,6 +45,7 @@ export default class Webrtc {
       console.log(ev)
     })
   }
+
   offer() {
     this.init()
     const pc = this.pc
@@ -58,15 +60,16 @@ export default class Webrtc {
       this.channel.send(JSON.stringify(offer))
     })
   }
+
   onAnswer(sdp) {
     this.pc.setRemoteDescription(sdp)
   }
+
   answer(sdp) {
     this.init()
     const pc = this.pc
 
     // Set dataChannel
-    //pc.ondatachannel = event => this.dataChannel = event.channel
     pc.ondatachannel = event => {
       this.dataChannel = event.channel
       event.channel.onopen = ev => this.onConnected(event.channel)
@@ -80,4 +83,3 @@ export default class Webrtc {
     })
   }
 }
-

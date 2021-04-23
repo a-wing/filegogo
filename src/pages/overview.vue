@@ -78,12 +78,10 @@ export default {
     address: '',
     transfer: {},
     progress: 0,
-    pc: {},
     cable: {},
     webrtc: {},
     file: {},
     dataChannel: {},
-    signChannel: {},
     pwsConnect: false,
     p2pConnect: false,
     isReceiver: false,
@@ -124,7 +122,7 @@ export default {
       }
       this.webrtc = new Webrtc(this.iceServers, this.cable)
       this.webrtc.onConnected = dataChannel => {
-        console.log("P2P onConnected")
+        console.log('P2P onConnected')
         this.dataChannel = dataChannel
         this.onP2PConnect()
       }
@@ -230,25 +228,18 @@ export default {
     },
     preSend() {
       this.transfer = new Sender(this.file, this.dataChannel)
-      this.transfer.onProgress = progress => this.progress = progress
+      this.transfer.onProgress = progress => { this.progress = progress }
       this.transfer.onComplete = checksum => {
         this.checksum = checksum
       }
     },
     preRecv() {
       this.transfer = new Recver(this.file, this.dataChannel)
-      this.transfer.onProgress = progress => this.progress = progress
+      this.transfer.onProgress = progress => { this.progress = progress }
       this.transfer.onComplete = checksum => {
         this.dataChannel.send(JSON.stringify({ checksum: checksum }))
       }
       this.transfer.start()
-    },
-    sendBlob(data) {
-      if (JSON.parse(data)["event"] == "req") {
-        this.transfer.sendBlob()
-      } else {
-        this.dataChannel.send(JSON.stringify({ checksum: this.checksum }))
-      }
     }
   }
 }
