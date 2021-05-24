@@ -52,7 +52,8 @@ func CreateTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	topic.Broadcast(&Message{
-		msg:  msg,
+		code: websocket.TextMessage,
+		data: msg,
 		conn: nil,
 	})
 
@@ -86,8 +87,7 @@ func readPump(hub *Hub, topic *Topic, conn *websocket.Conn) {
 		}
 	}()
 	for {
-		t, message, err := conn.ReadMessage()
-		log.Println(t)
+		code, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -98,7 +98,8 @@ func readPump(hub *Hub, topic *Topic, conn *websocket.Conn) {
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		log.Println(string(message))
 		topic.Broadcast(&Message{
-			msg:  message,
+			code: code,
+			data: message,
 			conn: conn,
 		})
 	}

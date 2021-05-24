@@ -9,7 +9,8 @@ import (
 
 type Message struct {
 	conn *websocket.Conn
-	msg  []byte
+	code int
+	data []byte
 }
 
 type Topic struct {
@@ -48,8 +49,7 @@ func (this *Topic) Broadcast(msg *Message) {
 	this.mutex.Lock()
 	for _, conn := range this.conns {
 		if msg.conn != conn {
-			err := conn.WriteMessage(websocket.TextMessage, msg.msg)
-			if err != nil {
+			if err := conn.WriteMessage(msg.code, msg.data); err != nil {
 				log.Println(err)
 				this.Unregister(conn)
 			}
