@@ -1,7 +1,6 @@
 package lightcable
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -10,11 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-)
-
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
 )
 
 var upgrader = websocket.Upgrader{
@@ -95,8 +89,6 @@ func readPump(hub *Hub, topic *Topic, conn *websocket.Conn) {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		log.Println(string(message))
 		topic.Broadcast(&Message{
 			code: code,
 			data: message,
