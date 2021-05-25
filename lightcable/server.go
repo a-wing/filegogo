@@ -1,85 +1,72 @@
 package lightcable
 
 import (
+	"encoding/base64"
+	"fmt"
 	"log"
-	"sync"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
-type Message struct {
-	conn *websocket.Conn
-	code int
-	data []byte
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
 
-type Topic struct {
-	Name  string
-	mutex sync.Mutex
-	conns []*websocket.Conn
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func NewTopic(name string, conn *websocket.Conn) *Topic {
-	return &Topic{
-		Name:  name,
-		conns: []*websocket.Conn{conn},
+func CreateTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
 	}
+
+	name := strconv.Itoa(rand.Intn(10000))
+	token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", &conn)))
+	hub.Cache.Add(token, &conn)
+	topic := NewTopic(name, conn)
+	hub.Add(name, topic)
+
+	if err := conn.WriteJSON(&struct {
+		Topic string `json:"topic"`
+		Token string `json:"token"`
+	}{
+		Topic: name,
+		Token: token,
+	}); err != nil {
+		log.Println(err)
+	}
+
+	go readPump(hub, topic, conn)
 }
 
-func (this *Topic) Register(conn *websocket.Conn) {
-	this.mutex.Lock()
-	this.conns = append(this.conns, conn)
-	this.mutex.Unlock()
-}
+func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Printf("topic ID: %v\n", vars["id"])
+	id := vars["id"]
 
-func (this *Topic) Unregister(conn *websocket.Conn) {
-	this.mutex.Lock()
-	for index, link := range this.conns {
-		if link == conn {
-
-			// Order is not important
-			this.conns[index] = this.conns[len(this.conns)-1]
-			this.conns = this.conns[:len(this.conns)-1]
+	if topic := hub.Topic[id]; topic != nil {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println(err)
 		}
-	}
-	this.mutex.Unlock()
-}
-
-func (this *Topic) Broadcast(msg *Message) {
-	this.mutex.Lock()
-	for _, conn := range this.conns {
-		if msg.conn != conn {
-			if err := conn.WriteMessage(msg.code, msg.data); err != nil {
+		topic.Register(conn)
+		go readPump(hub, topic, conn)
+	} else {
+		if _, ok := hub.Cache.Get(r.URL.Query().Get("token")); ok {
+			conn, err := upgrader.Upgrade(w, r, nil)
+			if err != nil {
 				log.Println(err)
-				this.Unregister(conn)
 			}
-
+			topic := NewTopic(id, conn)
+			hub.Add(id, topic)
+			go readPump(hub, topic, conn)
 		}
-	}
-	this.mutex.Unlock()
-}
-
-type Hub struct {
-	Topics map[string]*Topic
-}
-
-func NewHub() *Hub {
-	return &Hub{
-		Topics: make(map[string]*Topic),
-	}
-}
-
-func (this *Hub) Add(name string, topic *Topic) {
-	this.Topics[name] = topic
-}
-
-func (this *Hub) Remove(name string) {
-	delete(this.Topics, name)
-}
-
-func (this *Hub) Broadcast(name string, msg *Message) {
-	if topic := this.Topics[name]; topic != nil {
-		log.Println(name, "topic is: ", topic)
-		topic.Broadcast(msg)
 	}
 }
