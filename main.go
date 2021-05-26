@@ -1,21 +1,23 @@
-//go:generate go run data/generate.go
-
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
 
-	"filegogo/data"
 	"filegogo/lightcable"
 	"filegogo/version"
 
 	"github.com/gorilla/mux"
 )
+
+//go:embed dist
+var dist embed.FS
 
 func main() {
 
@@ -60,7 +62,11 @@ func main() {
 		}
 	})
 
-	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(data.Dir))).Methods(http.MethodGet)
+	fsys, err := fs.Sub(dist, "dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
 
 	log.Println("===============")
 	log.Println("Listen Port", *address)

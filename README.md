@@ -10,6 +10,10 @@ A file transfer tool that can be used in the browser webrtc p2p
 
 [![Demo.gif](https://i.postimg.cc/wTyzyHMc/Peek-2020-10-24-11-29.gif)](https://postimg.cc/8jS992hj)
 
+## Depend
+
+- golang >= 1.16
+
 ## Build && Install
 
 ```sh

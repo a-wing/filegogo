@@ -33,10 +33,7 @@ all: linux-amd64 darwin-amd64 windows-amd64 # Most used
 frontend:
 	npm run build
 
-generate:
-	@ go generate
-
-data: frontend generate
+data: frontend
 
 test: data
 
