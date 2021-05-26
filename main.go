@@ -41,7 +41,7 @@ func main() {
 	sr := mux.NewRouter()
 
 	sr.HandleFunc("/topic/", func(w http.ResponseWriter, r *http.Request) {
-		lightcable.CreateTopic(hub, w, r)
+		lightcable.JoinTopic(hub, w, r)
 	})
 
 	sr.HandleFunc("/topic/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
