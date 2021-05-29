@@ -168,7 +168,7 @@ export default {
           const msg = JSON.parse(event.data)
           if (msg.sdp || msg.ice) {
             this.webrtc.onMessage(event.data)
-          } else if (msg.topic != null) {
+          } else if (msg.topic != null && this.$route.params.id == null) {
             // Get topic name
             this.onTopic(msg.topic)
           } else if (msg.req != null) {
