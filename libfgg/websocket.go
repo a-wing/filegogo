@@ -3,8 +3,8 @@ package libfgg
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"filegogo/lightcable"
 
@@ -57,9 +57,9 @@ func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
 				if err := json.Unmarshal(*rpc.Params, msg); err == nil {
 					topic := ShareToWebSocket(addr + msg.Topic)
 
-					fmt.Println(topic)
-					fmt.Println(WebSocketToShare(topic))
-					fmt.Println("=========")
+					log.Println(topic)
+					log.Println(WebSocketToShare(topic))
+					log.Println("=========")
 
 					ws.Server = topic
 					ws.Token = msg.Token

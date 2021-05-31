@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,13 +32,15 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
 	rootCmd.PersistentFlags().StringP("addr", "a", "", "Signal Server Address (default is https://send.22333.fun)")
 	rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "name of license for the project")
-	rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
+
+	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
 	//viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
 	viper.BindPFlag("address", rootCmd.PersistentFlags().Lookup("addr"))
-	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+	viper.BindPFlag("level", rootCmd.PersistentFlags().Lookup("level"))
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("address", "http://localhost:8033")
 	viper.SetDefault("license", "MIT")
+	viper.SetDefault("level", "info")
 }
 
 func initConfig() {
@@ -63,4 +66,26 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
+	//log.SetReportCaller(true)
+	log.SetLevel(log.Level(getLogLevel()))
+	log.SetFormatter(&log.TextFormatter{
+		//FullTimestamp: true,
+	})
+}
+
+func getLogLevel() (ret int) {
+	switch viper.GetString("level") {
+	case "error":
+		ret = 2
+	case "warn":
+		ret = 3
+	case "info":
+		ret = 4
+	case "debug":
+		ret = 5
+	case "trace":
+		ret = 6
+	}
+	return
 }
