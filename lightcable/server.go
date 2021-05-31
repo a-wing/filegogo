@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SB-IM/jsonrpc-lite"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -58,15 +60,24 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// websocket response
-	if err := conn.WriteJSON(&struct {
-		Topic string `json:"topic"`
-		Token string `json:"token"`
-	}{
+	//if err := conn.WriteJSON(&MessageHello{
+	//	Topic: name,
+	//	Token: token,
+	//}); err != nil {
+	//	log.Println(err)
+	//}
+
+	if err := conn.WriteJSON(jsonrpc.NewNotify("server", &MessageHello{
 		Topic: name,
 		Token: token,
-	}); err != nil {
+	})); err != nil {
 		log.Println(err)
 	}
 
 	go readPump(hub, topic, conn)
+}
+
+type MessageHello struct {
+	Topic string `json:"topic"`
+	Token string `json:"token"`
 }
