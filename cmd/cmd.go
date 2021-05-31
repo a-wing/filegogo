@@ -31,7 +31,6 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
 	rootCmd.PersistentFlags().StringP("addr", "a", "", "Signal Server Address (default is https://send.22333.fun)")
-	rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "name of license for the project")
 
 	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
 	//viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
@@ -39,8 +38,11 @@ func init() {
 	viper.BindPFlag("level", rootCmd.PersistentFlags().Lookup("level"))
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("address", "http://localhost:8033")
-	viper.SetDefault("license", "MIT")
 	viper.SetDefault("level", "info")
+
+	// server
+	viper.SetDefault("listen", "0.0.0.0:8033")
+	viper.SetDefault("browser", "./config.json")
 }
 
 func initConfig() {

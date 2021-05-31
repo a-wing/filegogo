@@ -34,11 +34,12 @@ frontend:
 	npm run build
 
 data: frontend
+	cp -r dist server/
 
 test: data
 
 run:
-	go run -tags=dev ./main.go
+	go run -tags=dev main.go server
 
 darwin-amd64: data
 	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
