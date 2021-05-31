@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	//"os"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -17,7 +16,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "filegogo",
 		Short: "a p2p file transfer tool",
-		Long:  `A file transfer tool that can be used in the browser webrtc p2p`,
+		Long:  `A p2p file transfer tool that can be used in the webrtc p2p`,
 	}
 )
 
@@ -29,7 +28,7 @@ func Execute() error {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.filegogo.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
 	rootCmd.PersistentFlags().StringP("addr", "a", "", "Signal Server Address (default is https://send.22333.fun)")
 	rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "name of license for the project")
 	rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
@@ -39,9 +38,6 @@ func init() {
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("address", "http://localhost:8033")
 	viper.SetDefault("license", "MIT")
-
-	//rootCmd.AddCommand(addCmd)
-	//rootCmd.AddCommand(initCmd)
 }
 
 func initConfig() {
@@ -53,9 +49,13 @@ func initConfig() {
 		home, err := homedir.Dir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".filegogo" (without extension).
+		viper.SetConfigName("filegogo")
+		viper.SetConfigType("toml")
+
+		viper.AddConfigPath(".")
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".filegogo")
+		viper.AddConfigPath(home + "/.config/")
+		viper.AddConfigPath("/etc/filegogo/")
 	}
 
 	viper.AutomaticEnv()
