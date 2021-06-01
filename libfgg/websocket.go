@@ -13,15 +13,18 @@ import (
 )
 
 type WebSocketConn struct {
-	Conn           *websocket.Conn
-	Token          string
-	Server         string
-	OnConnected    func()
-	OnDisconnected func()
+	Conn    *websocket.Conn
+	Token   string
+	Server  string
+	OnOpen  func()
+	OnClose func()
 }
 
 func NewWebSocketConn() *WebSocketConn {
-	return &WebSocketConn{}
+	return &WebSocketConn{
+		OnOpen:  func() {},
+		OnClose: func() {},
+	}
 }
 
 func (c *WebSocketConn) Send(t int, data []byte) error {
@@ -43,26 +46,21 @@ func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
 		log.Println("read:", err)
 		return
 	}
-	log.Printf("recv: %s", message)
+	log.Debugf("recv: %s", message)
 
 	switch messageType {
 	case websocket.TextMessage:
 		rpc, err := jsonrpc.Parse(message)
 		if err != nil {
-			log.Println("read:", err)
+			log.Fatalln("read:", err)
 		} else {
 			switch rpc.Method {
 			case "server":
 				msg := &lightcable.MessageHello{}
 				if err := json.Unmarshal(*rpc.Params, msg); err == nil {
-					topic := ShareToWebSocket(addr + msg.Topic)
-
-					log.Println(topic)
-					log.Println(WebSocketToShare(topic))
-					log.Println("=========")
-
-					ws.Server = topic
+					ws.Server = ShareToWebSocket(addr + msg.Topic)
 					ws.Token = msg.Token
+					ws.OnOpen()
 				}
 			default:
 			}

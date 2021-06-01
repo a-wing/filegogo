@@ -2,7 +2,10 @@ package libfgg
 
 import (
 	"context"
+	"fmt"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Fgg struct {
@@ -14,12 +17,22 @@ func (f *Fgg) Topic() string {
 	return f.Server + "/topic/"
 }
 
+func (f *Fgg) OnShare(addr string) {
+	log.Println("=== WebSocket Connected ===")
+	fmt.Println(addr)
+	log.Println("=== =================== ===")
+}
+
 func (f *Fgg) Send(ctx context.Context, list []string) {
 	if len(list) == 0 {
 		panic("Need File")
 	}
 
 	ws := NewWebSocketConn()
+	ws.OnOpen = func() {
+		f.OnShare(WebSocketToShare(ws.Server))
+	}
+	ctx, cancel := context.WithCancel(ctx)
 	ws.Start(ctx, f.Topic())
 	go ws.Run(ctx)
 
@@ -33,6 +46,7 @@ func (f *Fgg) Send(ctx context.Context, list []string) {
 	}
 	transfer.Send()
 	transfer.Run()
+	cancel()
 }
 
 func (f *Fgg) Recv(ctx context.Context, list []string) {
@@ -46,6 +60,10 @@ func (f *Fgg) Recv(ctx context.Context, list []string) {
 	}
 
 	ws := NewWebSocketConn()
+	ws.OnOpen = func() {
+		f.OnShare(WebSocketToShare(ws.Server))
+	}
+	ctx, cancel := context.WithCancel(ctx)
 	ws.Start(ctx, f.Topic())
 	go ws.Run(ctx)
 
@@ -55,4 +73,5 @@ func (f *Fgg) Recv(ctx context.Context, list []string) {
 	}
 	transfer.Recv()
 	transfer.Run()
+	cancel()
 }

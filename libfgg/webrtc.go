@@ -2,7 +2,8 @@ package libfgg
 
 import (
 	"encoding/json"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/SB-IM/jsonrpc-lite"
 	"github.com/pion/datachannel"
@@ -12,8 +13,8 @@ import (
 const messageSize = 15
 
 type WebrtcConn struct {
-	sign        chan bool
-	DataChannel datachannel.ReadWriteCloser
+	sign chan bool
+	conn datachannel.ReadWriteCloser
 }
 
 func NewWebrtcConn() *WebrtcConn {
@@ -27,8 +28,8 @@ func (w *WebrtcConn) Send(t int, data []byte) error {
 	if t == BinaryMessage {
 		isString = false
 	}
-	_, err := w.DataChannel.WriteDataChannel(data, isString)
-	//fmt.Println(c, err)
+	_, err := w.conn.WriteDataChannel(data, isString)
+	//log.Println(c, err)
 	return err
 }
 
@@ -36,7 +37,7 @@ func (w *WebrtcConn) Recv() (int, []byte, error) {
 	t := TextMessage
 	data := make([]byte, 1024)
 	//data := make([]byte, messageSize)
-	c, isString, err := w.DataChannel.ReadDataChannel(data)
+	c, isString, err := w.conn.ReadDataChannel(data)
 	if !isString {
 		t = BinaryMessage
 	}
@@ -68,12 +69,11 @@ func (w *WebrtcConn) getPeerConnection() *webrtc.PeerConnection {
 	}
 
 	// Create a datachannel with label 'data'
-	//dataChannel, err := peerConnection.CreateDataChannel("data", nil)
-	dcNegotiated := true
-	dcID := uint16(1234)
+	negotiated := true
+	id := uint16(1234)
 	dataChannel, err := peerConnection.CreateDataChannel("data", &webrtc.DataChannelInit{
-		Negotiated: &dcNegotiated,
-		ID:         &dcID,
+		Negotiated: &negotiated,
+		ID:         &id,
 	})
 	if err != nil {
 		panic(err)
@@ -82,16 +82,11 @@ func (w *WebrtcConn) getPeerConnection() *webrtc.PeerConnection {
 	// Set the handler for ICE connection state
 	// This will notify you when the peer has connected/disconnected
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-		fmt.Printf("ICE Connection State has changed: %s\n", connectionState.String())
+		log.Printf("ICE Connection State has changed: %s\n", connectionState.String())
 	})
 
-	//dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-	//	fmt.Printf("Message from DataChannel '%s': '%s'\n", dataChannel.Label(), string(msg.Data))
-	//})
-
-	// Register channel opening handling
 	dataChannel.OnOpen(func() {
-		fmt.Printf("Data channel '%s'-'%d' open.\n", dataChannel.Label(), dataChannel.ID())
+		log.Printf("Data channel '%s'-'%d' open.\n", dataChannel.Label(), dataChannel.ID())
 
 		// Detach the data channel
 		raw, dErr := dataChannel.Detach()
@@ -99,7 +94,7 @@ func (w *WebrtcConn) getPeerConnection() *webrtc.PeerConnection {
 			panic(dErr)
 		}
 
-		w.DataChannel = raw
+		w.conn = raw
 		w.sign <- true
 	})
 
