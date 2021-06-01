@@ -1,6 +1,7 @@
 package libfgg
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,7 @@ type Transfer struct {
 	Conn Conn
 	Hash hash.Hash
 	send bool
+	buft io.Reader
 	info FileList
 	rate int64
 	run  bool
@@ -123,28 +125,29 @@ func (t *Transfer) createFile(list *FileList) (err error) {
 	return
 }
 
-func GetFileContentType(out *os.File) (string, error) {
-
+func (t *Transfer) GetFileContentType(out *os.File) (string, error) {
 	// Only the first 512 bytes are used to sniff the content type.
 	buffer := make([]byte, 512)
-
-	_, err := out.Read(buffer)
+	c, err := out.Read(buffer)
 	if err != nil {
 		return "", err
 	}
 
+	t.buft = bytes.NewReader(buffer[:c])
+
 	// Use the net/http package's handy DectectContentType function. Always returns a valid
 	// content-type by returning "application/octet-stream" if no others seemed to match.
-	contentType := http.DetectContentType(buffer)
-
+	contentType := http.DetectContentType(buffer[:c])
 	return contentType, nil
 }
 
 func (t *Transfer) reslist() {
 
 	// TODO: has use io.Reader here
-	//mimeType, _ := GetFileContentType(t.File)
-	mimeType := "xxxxxxxx"
+	// Maybe use https://github.com/gabriel-vasile/mimetype
+	mimeType, _ := t.GetFileContentType(t.File)
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+	// mimeType := "application/octet-stream"
 
 	stat, _ := t.File.Stat()
 	data, _ := jsonrpc.NewNotify("filelist", FileList{
@@ -157,7 +160,7 @@ func (t *Transfer) reslist() {
 
 func (t *Transfer) sendData() {
 	data := make([]byte, 1024)
-	count, err := t.File.Read(data)
+	count, err := io.MultiReader(t.buft, t.File).Read(data)
 	//log.Println(string(data))
 	if err != nil {
 		//log.Fatal(string(data) , err)
