@@ -22,6 +22,7 @@ func (c *Client) Topic() string {
 
 func (f *Client) OnShare(addr string) {
 	log.Println("=== WebSocket Connected ===")
+	ShowQRcode(addr)
 	fmt.Println(addr)
 	log.Println("=== =================== ===")
 }
