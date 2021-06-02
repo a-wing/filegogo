@@ -26,7 +26,7 @@ func (f *Client) OnShare(addr string) {
 	log.Println("=== =================== ===")
 }
 
-func (t *Client) OnPreTran(file *fgg.FileList) {
+func (t *Client) OnPreTran(file *fgg.MetaFile) {
 	t.bar = bar.New64(file.Size)
 }
 
@@ -47,17 +47,17 @@ func (f *Client) Send(ctx context.Context, list []string) {
 	if err != nil {
 		panic(err)
 	}
-	transfer := &fgg.Transfer{
+	transfer := &fgg.Fgg{
 		Conn: ws,
 		File: file,
-		OnProgress: func(c int64) {
-			f.bar.Add64(c)
-		},
-		OnPreTran: func(fl *fgg.FileList) {
+		OnPreTran: func(fl *fgg.MetaFile) {
 			f.OnPreTran(fl)
 		},
 	}
 	transfer.Send()
+	transfer.Tran.OnProgress = func(c int64) {
+		f.bar.Add64(c)
+	}
 	transfer.Run()
 	cancel()
 }
@@ -80,17 +80,17 @@ func (f *Client) Recv(ctx context.Context, list []string) {
 	ws.Start(ctx, f.Topic())
 	go ws.Run(ctx)
 
-	transfer := &fgg.Transfer{
+	transfer := &fgg.Fgg{
 		Conn: ws,
 		File: file,
-		OnProgress: func(c int64) {
-			f.bar.Add64(c)
-		},
-		OnPreTran: func(fl *fgg.FileList) {
+		OnPreTran: func(fl *fgg.MetaFile) {
 			f.OnPreTran(fl)
 		},
 	}
 	transfer.Recv()
+	transfer.Tran.OnProgress = func(c int64) {
+		f.bar.Add64(c)
+	}
 	transfer.Run()
 	cancel()
 }

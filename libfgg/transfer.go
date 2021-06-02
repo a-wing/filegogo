@@ -3,139 +3,79 @@ package libfgg
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"hash"
 	"io"
-	"log"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/SB-IM/jsonrpc-lite"
 )
 
-type Transfer struct {
-	File *os.File
-	Conn Conn
-	Hash hash.Hash
-	send bool
-	buft io.Reader
-	info FileList
-	rate int64
-	run  bool
-
-	// Callbacks
-	OnProgress func(c int64)
-	OnPreTran  func(*FileList)
-	OnPostTran func()
-}
-
-func (t *Transfer) Send() {
-	t.send = true
-	t.run = true
-	t.reslist()
-}
-
-func (t *Transfer) Recv() {
-	t.run = true
-	t.reqlist()
-}
-
-func (t *Transfer) Run() {
-	t.Hash = md5.New()
-	for t.run {
-		messageType, data, err := t.Conn.Recv()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if messageType == TextMessage {
-			rpc := jsonrpc.ParseObject(data)
-			switch rpc.Method {
-			case "reqlist":
-				t.reslist()
-			case "reqsdp":
-				rtc := NewWebrtcConn()
-				rtc.RunAnswer(t.Conn)
-				<-rtc.sign
-				fmt.Println("WebRTC Connected")
-				t.Conn = rtc
-
-			case "reqdata":
-				t.sendData()
-			case "reqsum":
-				t.ressum()
-			case "ressum":
-				sum := &Sum{}
-				//log.Println(string(*rpc.Params))
-				json.Unmarshal(*rpc.Params, sum)
-				t.Verify(sum.CheckSum)
-			case "filelist":
-				t.reqsdp()
-
-				rtc := NewWebrtcConn()
-				rtc.RunOffer(t.Conn)
-
-				list := &FileList{}
-				json.Unmarshal(*rpc.Params, list)
-				t.createFile(list)
-				t.OnPreTran(list)
-
-				<-rtc.sign
-				time.Sleep(time.Second)
-				fmt.Println("WebRTC Connected")
-				t.Conn = rtc
-
-				t.reqdata()
-			}
-		} else {
-			t.File.Write(data)
-			io.WriteString(t.Hash, string(data))
-			t.rate += int64(len(data))
-			t.OnProgress(int64(len(data)))
-			if t.rate >= t.info.Size {
-				t.File.Close()
-				t.reqsum()
-			} else {
-				t.reqdata()
-			}
-		}
-	}
-}
-
-func (t *Transfer) reqsdp() {
-	data, _ := jsonrpc.NewNotify("reqsdp", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
-}
-
-func (t *Transfer) reqlist() {
-	data, _ := jsonrpc.NewNotify("reqlist", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
-}
-
-func (t *Transfer) reqdata() {
-	data, _ := jsonrpc.NewNotify("reqdata", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
-}
-
-type FileList struct {
+type MetaFile struct {
 	File string `json:"file"`
 	Type string `json:"type"`
 	Size int64  `json:"size"`
 }
 
-func (t *Transfer) createFile(list *FileList) (err error) {
-	if t.File == nil {
-		t.File, err = os.Create(list.File)
-	}
-	t.info = *list
-	return
+type MetaHash struct {
+	Hash string `json:"hash"`
 }
 
-func (t *Transfer) GetFileContentType(out *os.File) (string, error) {
+type Transfer struct {
+	File *os.File
+	Hash hash.Hash
+
+	metaFile *MetaFile
+	//metaHash *MetaHash
+
+	finish bool
+	// progress total size
+	count int64
+
+	OnFinish   func()
+	OnProgress func(c int64)
+
+	// tmp buffer, because it mimetype
+	buft      io.Reader
+	chunkSize int
+}
+
+func NewTransfer(file *os.File) *Transfer {
+	return &Transfer{
+		File:       file,
+		Hash:       md5.New(),
+		OnFinish:   func() {},
+		OnProgress: func(c int64) {},
+		chunkSize:  1024,
+	}
+}
+
+func (t *Transfer) SetMetaFile(meta *MetaFile) {
+	if t.File == nil {
+		t.File, _ = os.Create(meta.File)
+	}
+	t.metaFile = meta
+}
+
+func (t *Transfer) GetMetaFile() *MetaFile {
+	// TODO: Maybe use https://github.com/gabriel-vasile/mimetype
+	mimeType, _ := t.getFileContentType()
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+	// mimeType := "application/octet-stream"
+
+	stat, _ := t.File.Stat()
+	meta := &MetaFile{
+		File: t.File.Name(),
+		Type: mimeType,
+		Size: stat.Size(),
+	}
+	t.metaFile = meta
+	return meta
+}
+
+func (t *Transfer) getFileContentType() (string, error) {
 	// Only the first 512 bytes are used to sniff the content type.
 	buffer := make([]byte, 512)
-	c, err := out.Read(buffer)
+	c, err := t.File.Read(buffer)
 	if err != nil {
 		return "", err
 	}
@@ -148,73 +88,54 @@ func (t *Transfer) GetFileContentType(out *os.File) (string, error) {
 	return contentType, nil
 }
 
-func (t *Transfer) reslist() {
+func (t *Transfer) getHash() string { return fmt.Sprintf("%x", t.Hash.Sum(nil)) }
 
-	// TODO: has use io.Reader here
-	// Maybe use https://github.com/gabriel-vasile/mimetype
-	mimeType, _ := t.GetFileContentType(t.File)
-	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
-	// mimeType := "application/octet-stream"
-
-	stat, _ := t.File.Stat()
-
-	fileinfo := FileList{
-		File: t.File.Name(),
-		Type: mimeType,
-		Size: stat.Size(),
+func (t *Transfer) GetMetaHash() *MetaHash {
+	return &MetaHash{
+		Hash: t.getHash(),
 	}
-
-	data, _ := jsonrpc.NewNotify("filelist", fileinfo).ToJSON()
-
-	t.OnPreTran(&fileinfo)
-	t.Conn.Send(TextMessage, data)
 }
 
-func (t *Transfer) sendData() {
-	data := make([]byte, 1024)
-	count, err := io.MultiReader(t.buft, t.File).Read(data)
-	//log.Println(string(data))
+func (t *Transfer) VerifyHash(meta *MetaHash) bool {
+	return meta.Hash == t.getHash()
+}
+
+func (t *Transfer) Read() ([]byte, error) {
+	if t.finish {
+		t.OnFinish()
+		return []byte{}, nil
+	}
+	data := make([]byte, t.chunkSize)
+	c, err := io.MultiReader(t.buft, t.File).Read(data)
 	if err != nil {
-		//log.Fatal(string(data) , err)
-		return
+		return data[:c], err
 	}
-	io.WriteString(t.Hash, string(data[:count]))
-	t.Conn.Send(BinaryMessage, data[:count])
-	t.rate += int64(count)
-	t.OnProgress(int64(count))
-}
+	t.Hash.Write(data[:c])
 
-type Sum struct {
-	CheckSum string `json:"checksum"`
-}
-
-func (t *Transfer) reqsum() {
-	data, _ := jsonrpc.NewNotify("reqsum", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
-}
-
-func (t *Transfer) ressum() {
-	data, _ := jsonrpc.NewNotify("ressum", &Sum{
-		CheckSum: t.getsum(),
-	}).ToJSON()
-	t.Conn.Send(TextMessage, data)
-
-	// Need Wait websocket send data
-	time.Sleep(time.Second)
-	t.run = false
-}
-
-func (t *Transfer) Verify(sum string) {
-	if t.getsum() == sum {
-		log.Println("md5 sum (ok): ", sum)
-	} else {
-		log.Println("send ms5: ", sum)
-		log.Println("recv ms5: ", t.getsum())
+	t.count += int64(c)
+	t.OnProgress(int64(c))
+	if t.count >= t.metaFile.Size {
+		t.OnFinish()
+		t.finish = true
+		t.File.Close()
 	}
-
-	t.run = false
+	return data[:c], err
 }
 
-func (t *Transfer) getsum() string {
-	return fmt.Sprintf("%x", t.Hash.Sum(nil))
+func (t *Transfer) Write(data []byte) error {
+	if t.finish {
+		t.OnFinish()
+		return nil
+	}
+	c, err := t.File.Write(data)
+	t.Hash.Write(data)
+	t.count += int64(c)
+	t.OnProgress(int64(c))
+
+	if t.count >= t.metaFile.Size {
+		t.OnFinish()
+		t.finish = true
+		t.File.Close()
+	}
+	return err
 }
