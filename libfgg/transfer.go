@@ -12,6 +12,8 @@ import (
 	"os"
 	"time"
 
+	bar "github.com/schollz/progressbar/v3"
+
 	"github.com/SB-IM/jsonrpc-lite"
 )
 
@@ -24,6 +26,7 @@ type Transfer struct {
 	info FileList
 	rate int64
 	run  bool
+	bar  *bar.ProgressBar
 }
 
 func (t *Transfer) Send() {
@@ -75,6 +78,8 @@ func (t *Transfer) Run() {
 				json.Unmarshal(*rpc.Params, list)
 				t.createFile(list)
 
+				t.bar = bar.New64(list.Size)
+
 				<-rtc.sign
 				time.Sleep(time.Second)
 				fmt.Println("WebRTC Connected")
@@ -86,6 +91,7 @@ func (t *Transfer) Run() {
 			t.File.Write(data)
 			io.WriteString(t.Hash, string(data))
 			t.rate += int64(len(data))
+			t.bar.Add(len(data))
 			if t.rate >= t.info.Size {
 				t.File.Close()
 				t.reqsum()
@@ -150,6 +156,10 @@ func (t *Transfer) reslist() {
 	// mimeType := "application/octet-stream"
 
 	stat, _ := t.File.Stat()
+
+	// Init ProgressBar
+	t.bar = bar.New64(stat.Size())
+
 	data, _ := jsonrpc.NewNotify("filelist", FileList{
 		File: t.File.Name(),
 		Type: mimeType,
@@ -169,6 +179,7 @@ func (t *Transfer) sendData() {
 	io.WriteString(t.Hash, string(data[:count]))
 	t.Conn.Send(BinaryMessage, data[:count])
 	t.rate += int64(count)
+	t.bar.Add(count)
 }
 
 type Sum struct {
