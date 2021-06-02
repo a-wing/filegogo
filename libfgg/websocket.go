@@ -35,6 +35,10 @@ func (c *WebSocketConn) Recv() (int, []byte, error) {
 	return c.Conn.ReadMessage()
 }
 
+func (c *WebSocketConn) Close() error {
+	return c.Conn.Close()
+}
+
 func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
 	c, _, err := websocket.DefaultDialer.Dial(ShareToWebSocket(addr), nil)
 	if err != nil {

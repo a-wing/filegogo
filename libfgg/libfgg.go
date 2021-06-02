@@ -57,7 +57,7 @@ func (t *Fgg) Run() {
 				rtc := NewWebrtcConn()
 				rtc.RunAnswer(t.Conn)
 				<-rtc.sign
-				fmt.Println("WebRTC Connected")
+				log.Println("WebRTC Connected")
 				t.Conn = rtc
 
 			case "reqdata":
@@ -141,10 +141,12 @@ func (t *Fgg) ressum() {
 
 	// Need Wait websocket send data
 	time.Sleep(time.Second)
+	t.Conn.Close()
 	t.run = false
 }
 
 func (t *Fgg) Verify(meta *MetaHash) {
+	log.Println()
 	if t.Tran.VerifyHash(meta) {
 		log.Println("md5 sum (ok): ", meta.Hash)
 	} else {

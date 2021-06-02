@@ -13,6 +13,7 @@ import (
 const messageSize = 15
 
 type WebrtcConn struct {
+	pc   *webrtc.PeerConnection
 	sign chan bool
 	conn datachannel.ReadWriteCloser
 }
@@ -67,6 +68,7 @@ func (w *WebrtcConn) getPeerConnection() *webrtc.PeerConnection {
 	if err != nil {
 		panic(err)
 	}
+	w.pc = peerConnection
 
 	// Create a datachannel with label 'data'
 	negotiated := true
@@ -188,4 +190,8 @@ func (w *WebrtcConn) RunAnswer(c Conn) {
 	}
 
 	c.Send(TextMessage, data)
+}
+
+func (w *WebrtcConn) Close() error {
+	return w.pc.Close()
 }
