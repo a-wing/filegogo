@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 
-	"filegogo/libfgg"
+	"filegogo/client"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,9 +19,9 @@ var recvCmd = &cobra.Command{
 	Long:  `Recv File or path. if not set, use raw filename`,
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fgg := &libfgg.Fgg{
+		client := &client.Client{
 			Server: viper.GetString("address"),
 		}
-		fgg.Recv(context.Background(), args)
+		client.Recv(context.Background(), args)
 	},
 }

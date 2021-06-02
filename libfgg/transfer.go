@@ -12,8 +12,6 @@ import (
 	"os"
 	"time"
 
-	bar "github.com/schollz/progressbar/v3"
-
 	"github.com/SB-IM/jsonrpc-lite"
 )
 
@@ -26,7 +24,11 @@ type Transfer struct {
 	info FileList
 	rate int64
 	run  bool
-	bar  *bar.ProgressBar
+
+	// Callbacks
+	OnProgress func(c int64)
+	OnPreTran  func(*FileList)
+	OnPostTran func()
 }
 
 func (t *Transfer) Send() {
@@ -77,8 +79,7 @@ func (t *Transfer) Run() {
 				list := &FileList{}
 				json.Unmarshal(*rpc.Params, list)
 				t.createFile(list)
-
-				t.bar = bar.New64(list.Size)
+				t.OnPreTran(list)
 
 				<-rtc.sign
 				time.Sleep(time.Second)
@@ -91,7 +92,7 @@ func (t *Transfer) Run() {
 			t.File.Write(data)
 			io.WriteString(t.Hash, string(data))
 			t.rate += int64(len(data))
-			t.bar.Add(len(data))
+			t.OnProgress(int64(len(data)))
 			if t.rate >= t.info.Size {
 				t.File.Close()
 				t.reqsum()
@@ -157,14 +158,15 @@ func (t *Transfer) reslist() {
 
 	stat, _ := t.File.Stat()
 
-	// Init ProgressBar
-	t.bar = bar.New64(stat.Size())
-
-	data, _ := jsonrpc.NewNotify("filelist", FileList{
+	fileinfo := FileList{
 		File: t.File.Name(),
 		Type: mimeType,
 		Size: stat.Size(),
-	}).ToJSON()
+	}
+
+	data, _ := jsonrpc.NewNotify("filelist", fileinfo).ToJSON()
+
+	t.OnPreTran(&fileinfo)
 	t.Conn.Send(TextMessage, data)
 }
 
@@ -179,7 +181,7 @@ func (t *Transfer) sendData() {
 	io.WriteString(t.Hash, string(data[:count]))
 	t.Conn.Send(BinaryMessage, data[:count])
 	t.rate += int64(count)
-	t.bar.Add(count)
+	t.OnProgress(int64(count))
 }
 
 type Sum struct {

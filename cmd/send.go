@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 
-	"filegogo/libfgg"
+	"filegogo/client"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,9 +19,9 @@ var sendCmd = &cobra.Command{
 	Long:  `Send File or path`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fgg := &libfgg.Fgg{
+		client := &client.Client{
 			Server: viper.GetString("address"),
 		}
-		fgg.Send(context.Background(), args)
+		client.Send(context.Background(), args)
 	},
 }
