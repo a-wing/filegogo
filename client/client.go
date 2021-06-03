@@ -6,6 +6,7 @@ import (
 	"os"
 
 	fgg "filegogo/libfgg"
+	"filegogo/client/qrcode"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ func (c *Client) Topic() string {
 
 func (f *Client) OnShare(addr string) {
 	log.Println("=== WebSocket Connected ===")
-	ShowQRcode(addr)
+	qrcode.ShowQRcode(addr, nil)
 	fmt.Println(addr)
 	log.Println("=== =================== ===")
 }
