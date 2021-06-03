@@ -1,11 +1,9 @@
 package libfgg
 
 import (
-	"bytes"
 	"crypto/md5"
 	"fmt"
 	"hash"
-	"io"
 	"net/http"
 	"os"
 )
@@ -34,8 +32,6 @@ type Transfer struct {
 	OnFinish   func()
 	OnProgress func(c int64)
 
-	// tmp buffer, because it mimetype
-	buft      io.Reader
 	chunkSize int
 }
 
@@ -76,11 +72,10 @@ func (t *Transfer) getFileContentType() (string, error) {
 	// Only the first 512 bytes are used to sniff the content type.
 	buffer := make([]byte, 512)
 	c, err := t.File.Read(buffer)
+	defer t.File.Seek(0, 0)
 	if err != nil {
 		return "", err
 	}
-
-	t.buft = bytes.NewReader(buffer[:c])
 
 	// Use the net/http package's handy DectectContentType function. Always returns a valid
 	// content-type by returning "application/octet-stream" if no others seemed to match.
@@ -106,7 +101,7 @@ func (t *Transfer) Read() ([]byte, error) {
 		return []byte{}, nil
 	}
 	data := make([]byte, t.chunkSize)
-	c, err := io.MultiReader(t.buft, t.File).Read(data)
+	c, err := t.File.Read(data)
 	if err != nil {
 		return data[:c], err
 	}
