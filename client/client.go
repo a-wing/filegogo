@@ -27,6 +27,12 @@ type Client struct {
 	bar    *bar.ProgressBar
 }
 
+func NewClient(config *ClientConfig) (*Client, error) {
+	return &Client{
+		Config: config,
+	}, nil
+}
+
 func (c *Client) Topic() string {
 	return c.Server + "/topic/"
 }
@@ -46,7 +52,15 @@ func (t *Client) OnShare(addr string) {
 }
 
 func (t *Client) OnPreTran(file *fgg.MetaFile) {
-	t.bar = bar.New64(file.Size)
+	if t.Config.Progress {
+		t.bar = bar.New64(file.Size)
+	}
+}
+
+func (t *Client) OnProgress(c int64) {
+	if t.Config.Progress {
+		t.bar.Add64(c)
+	}
 }
 
 func (f *Client) Send(ctx context.Context, list []string) {
@@ -74,9 +88,7 @@ func (f *Client) Send(ctx context.Context, list []string) {
 		},
 	}
 	transfer.Send()
-	transfer.Tran.OnProgress = func(c int64) {
-		f.bar.Add64(c)
-	}
+	transfer.Tran.OnProgress = f.OnProgress
 	transfer.Run()
 	cancel()
 }
@@ -107,9 +119,7 @@ func (f *Client) Recv(ctx context.Context, list []string) {
 		},
 	}
 	transfer.Recv()
-	transfer.Tran.OnProgress = func(c int64) {
-		f.bar.Add64(c)
-	}
+	transfer.Tran.OnProgress = f.OnProgress
 	transfer.Run()
 	cancel()
 }

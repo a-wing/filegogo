@@ -15,7 +15,9 @@ align = "left"
 
 [send]
 qrcode = false
+progress = false
 
 [recv]
 qrcode = false
+progress = false
 
