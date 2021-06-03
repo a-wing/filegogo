@@ -3,6 +3,7 @@ package libfgg
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 
 	log "github.com/sirupsen/logrus"
 
@@ -24,6 +25,20 @@ func NewWebSocketConn() *WebSocketConn {
 	return &WebSocketConn{
 		OnOpen:  func() {},
 		OnClose: func() {},
+	}
+}
+
+func (c *WebSocketConn) SetServer(addr string, msg *lightcable.MessageHello) {
+	if msg == nil {
+		c.Server = addr
+	} else {
+		if u, err := url.Parse(addr); err != nil {
+			return
+		} else {
+			u.Path = "/topic/" + msg.Topic
+			c.Token = msg.Token
+			c.Server = u.String()
+		}
 	}
 }
 
@@ -62,8 +77,7 @@ func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
 			case "server":
 				msg := &lightcable.MessageHello{}
 				if err := json.Unmarshal(*rpc.Params, msg); err == nil {
-					ws.Server = addr + msg.Topic
-					ws.Token = msg.Token
+					ws.SetServer(addr, msg)
 					ws.OnOpen()
 				}
 			default:
