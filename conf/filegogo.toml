@@ -1,2 +1,21 @@
 address = "http://localhost:8033"
 
+[qrcode]
+# black / red / green / yellow / blue / magenta / cyan / white
+foreground = "black"
+background = "white"
+
+# Error Recovery
+#  7% /   15%  / 25%  /  30%
+# low / medium / high / highest
+level = "low"
+
+# left / center / right
+align = "left"
+
+[send]
+qrcode = false
+
+[recv]
+qrcode = false
+

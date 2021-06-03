@@ -5,14 +5,24 @@ import (
 	"fmt"
 	"os"
 
-	fgg "filegogo/libfgg"
 	"filegogo/client/qrcode"
+	fgg "filegogo/libfgg"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
 )
 
+type ClientConfig struct {
+	Server   string
+	QRcode   bool
+	Progress bool
+
+	QRcodeConfig *qrcode.Config
+	Level        string
+}
+
 type Client struct {
+	Config *ClientConfig
 	Server string
 	bar    *bar.ProgressBar
 }
@@ -21,9 +31,16 @@ func (c *Client) Topic() string {
 	return c.Server + "/topic/"
 }
 
-func (f *Client) OnShare(addr string) {
+func (t *Client) OnShare(addr string) {
 	log.Println("=== WebSocket Connected ===")
-	qrcode.ShowQRcode(addr, nil)
+
+	// Show QRcode
+	if t.Config.QRcode {
+		fmt.Println()
+		qrcode.ShowQRcode(addr, t.Config.QRcodeConfig)
+		fmt.Println()
+	}
+
 	fmt.Println(addr)
 	log.Println("=== =================== ===")
 }
