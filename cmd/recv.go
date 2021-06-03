@@ -21,17 +21,16 @@ var recvCmd = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		qrconfig := &qrcode.Config{}
-		viper.Sub("qrcode").Unmarshal(qrconfig)
+		if viper.IsSet("qrcode_config") {
+			viper.Sub("qrcode_config").Unmarshal(qrconfig)
+		}
 
 		config := &client.ClientConfig{
 			QRcodeConfig: qrconfig,
 		}
-		viper.Sub("recv").Unmarshal(config)
+		viper.Unmarshal(config)
 
-		client := &client.Client{
-			Config: config,
-			Server: viper.GetString("address"),
-		}
-		client.Recv(context.Background(), args)
+		c, _ := client.NewClient(config)
+		c.Recv(context.Background(), args)
 	},
 }

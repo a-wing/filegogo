@@ -21,17 +21,16 @@ var sendCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		qrconfig := &qrcode.Config{}
-		viper.Sub("qrcode").Unmarshal(qrconfig)
+		if viper.IsSet("qrcode_config") {
+			viper.Sub("qrcode_config").Unmarshal(qrconfig)
+		}
 
 		config := &client.ClientConfig{
 			QRcodeConfig: qrconfig,
 		}
-		viper.Sub("send").Unmarshal(config)
+		viper.Unmarshal(config)
 
-		client := &client.Client{
-			Config: config,
-			Server: viper.GetString("address"),
-		}
-		client.Send(context.Background(), args)
+		c, _ := client.NewClient(config)
+		c.Send(context.Background(), args)
 	},
 }

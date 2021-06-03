@@ -23,7 +23,6 @@ type ClientConfig struct {
 
 type Client struct {
 	Config *ClientConfig
-	Server string
 	bar    *bar.ProgressBar
 }
 
@@ -34,7 +33,7 @@ func NewClient(config *ClientConfig) (*Client, error) {
 }
 
 func (c *Client) Topic() string {
-	return c.Server + "/topic/"
+	return c.Config.Server + "/topic/"
 }
 
 func (t *Client) OnShare(addr string) {

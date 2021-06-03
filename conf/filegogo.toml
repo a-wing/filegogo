@@ -1,6 +1,9 @@
-address = "http://localhost:8033"
+server = "http://localhost:8033"
+level = "trace"
+qrcode = false
+progress = true
 
-[qrcode]
+[qrcode_config]
 # black / red / green / yellow / blue / magenta / cyan / white
 foreground = "black"
 background = "white"
@@ -12,12 +15,4 @@ level = "low"
 
 # left / center / right
 align = "left"
-
-[send]
-qrcode = false
-progress = false
-
-[recv]
-qrcode = false
-progress = false
 

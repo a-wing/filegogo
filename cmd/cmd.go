@@ -30,14 +30,15 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
-	rootCmd.PersistentFlags().StringP("addr", "a", "", "Signal Server Address (default is https://send.22333.fun)")
+	rootCmd.PersistentFlags().StringP("server", "s", "", "Signal Server Address (default is https://send.22333.fun)")
+	rootCmd.PersistentFlags().BoolP("qrcode", "", false, "Show QRcode")
+	rootCmd.PersistentFlags().BoolP("progress", "", true, "Show Progress Bar")
 
 	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
-	//viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
-	viper.BindPFlag("address", rootCmd.PersistentFlags().Lookup("addr"))
-	viper.BindPFlag("level", rootCmd.PersistentFlags().Lookup("level"))
-	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
-	viper.SetDefault("address", "http://localhost:8033")
+	//viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
+	viper.BindPFlags(rootCmd.PersistentFlags())
+
+	viper.SetDefault("server", "http://localhost:8033")
 	viper.SetDefault("level", "info")
 
 	// server
