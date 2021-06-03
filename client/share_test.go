@@ -1,4 +1,4 @@
-package libfgg
+package client
 
 import "testing"
 

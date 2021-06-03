@@ -38,10 +38,10 @@ func (f *Client) Send(ctx context.Context, list []string) {
 
 	ws := fgg.NewWebSocketConn()
 	ws.OnOpen = func() {
-		f.OnShare(fgg.WebSocketToShare(ws.Server))
+		f.OnShare(WebSocketToShare(ws.Server))
 	}
 	ctx, cancel := context.WithCancel(ctx)
-	ws.Start(ctx, f.Topic())
+	ws.Start(ctx, ShareToWebSocket(f.Topic()))
 	go ws.Run(ctx)
 
 	file, err := os.Open(list[0])
@@ -75,10 +75,10 @@ func (f *Client) Recv(ctx context.Context, list []string) {
 
 	ws := fgg.NewWebSocketConn()
 	ws.OnOpen = func() {
-		f.OnShare(fgg.WebSocketToShare(ws.Server))
+		f.OnShare(WebSocketToShare(ws.Server))
 	}
 	ctx, cancel := context.WithCancel(ctx)
-	ws.Start(ctx, f.Topic())
+	ws.Start(ctx, ShareToWebSocket(f.Topic()))
 	go ws.Run(ctx)
 
 	transfer := &fgg.Fgg{

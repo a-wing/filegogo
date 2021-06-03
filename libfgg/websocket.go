@@ -40,7 +40,7 @@ func (c *WebSocketConn) Close() error {
 }
 
 func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
-	c, _, err := websocket.DefaultDialer.Dial(ShareToWebSocket(addr), nil)
+	c, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
@@ -62,7 +62,7 @@ func (ws *WebSocketConn) Start(ctx context.Context, addr string) {
 			case "server":
 				msg := &lightcable.MessageHello{}
 				if err := json.Unmarshal(*rpc.Params, msg); err == nil {
-					ws.Server = ShareToWebSocket(addr + msg.Topic)
+					ws.Server = addr + msg.Topic
 					ws.Token = msg.Token
 					ws.OnOpen()
 				}
