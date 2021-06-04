@@ -7,7 +7,11 @@ import (
 	"os"
 	"time"
 
+	"filegogo/libfgg/webrtc"
+
 	"github.com/SB-IM/jsonrpc-lite"
+	pion "github.com/pion/webrtc/v3"
+	"github.com/spf13/viper"
 )
 
 type Fgg struct {
@@ -17,6 +21,8 @@ type Fgg struct {
 	Hash hash.Hash
 	send bool
 	run  bool
+
+	rtc *webrtc.Conn
 
 	finish bool
 
@@ -42,6 +48,37 @@ func (t *Fgg) Recv() {
 }
 
 func (t *Fgg) Run() {
+	iceservers := &pion.Configuration{}
+	viper.Unmarshal(iceservers)
+	dd, _ := json.Marshal(iceservers)
+	log.Println(string(dd))
+	t.rtc = webrtc.NewConn(iceservers)
+
+	t.rtc.OnSignSend = func(data []byte) {
+		rpc := jsonrpc.NewNotify("webrtc", nil)
+		RawMessage := json.RawMessage(data)
+		rpc.Params = &RawMessage
+		raw, _ := rpc.ToJSON()
+
+		t.Conn.Send(TextMessage, raw)
+	}
+
+	t.rtc.OnOpen = func() {
+		log.Println("WebRTC Connected")
+
+		// TODO: Remove this
+		// Need switch t.Conn websocket => webrtc
+		// But. WebSocket recv blocked
+		data, _ := jsonrpc.NewNotify("xxx", nil).ToJSON()
+		t.Conn.Send(TextMessage, data)
+		// === Remove End ===
+
+		t.Conn = t.rtc
+		if !t.send {
+			t.reqdata()
+		}
+	}
+
 	for t.run {
 		messageType, data, err := t.Conn.Recv()
 		if err != nil {
@@ -50,19 +87,12 @@ func (t *Fgg) Run() {
 		if messageType == TextMessage {
 			rpc := jsonrpc.ParseObject(data)
 			switch rpc.Method {
+			case "webrtc":
+				t.rtc.SignRecv(*rpc.Params)
 			case "reqlist":
 				t.reslist()
 			case "reqsdp":
-				rtc := NewWebrtcConn()
-				sign := make(chan bool)
-				rtc.OnOpen = func() {
-					sign <- true
-				}
-				rtc.RunAnswer(t.Conn)
-				<-sign
-				log.Println("WebRTC Connected")
-				t.Conn = rtc
-
+				// TODO: Remove
 			case "reqdata":
 				t.sendData()
 			case "reqsum":
@@ -72,27 +102,16 @@ func (t *Fgg) Run() {
 				json.Unmarshal(*rpc.Params, hash)
 				t.Verify(hash)
 			case "filelist":
-				t.reqsdp()
+				t.rtc.Start()
 
-				rtc := NewWebrtcConn()
-				sign := make(chan bool)
-				rtc.OnOpen = func() {
-					sign <- true
-				}
-				rtc.RunOffer(t.Conn)
+				// TODO: Remove
+				//t.reqsdp()
 
 				meta := &MetaFile{}
 				json.Unmarshal(*rpc.Params, meta)
 
 				t.Tran.SetMetaFile(meta)
 				t.OnPreTran(meta)
-
-				<-sign
-				time.Sleep(time.Second)
-				log.Println("WebRTC Connected")
-				t.Conn = rtc
-
-				t.reqdata()
 			}
 		} else {
 			t.Tran.Write(data)
