@@ -14,13 +14,14 @@ const messageSize = 15
 
 type WebrtcConn struct {
 	pc   *webrtc.PeerConnection
-	sign chan bool
 	conn datachannel.ReadWriteCloser
+
+	OnOpen func()
 }
 
 func NewWebrtcConn() *WebrtcConn {
 	return &WebrtcConn{
-		sign: make(chan bool),
+		OnOpen: func() {},
 	}
 }
 
@@ -97,7 +98,7 @@ func (w *WebrtcConn) getPeerConnection() *webrtc.PeerConnection {
 		}
 
 		w.conn = raw
-		w.sign <- true
+		w.OnOpen()
 	})
 
 	return peerConnection

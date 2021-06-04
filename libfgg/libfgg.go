@@ -2,7 +2,6 @@ package libfgg
 
 import (
 	"encoding/json"
-	"fmt"
 	"hash"
 	"log"
 	"os"
@@ -55,8 +54,12 @@ func (t *Fgg) Run() {
 				t.reslist()
 			case "reqsdp":
 				rtc := NewWebrtcConn()
+				sign := make(chan bool)
+				rtc.OnOpen = func() {
+					sign <- true
+				}
 				rtc.RunAnswer(t.Conn)
-				<-rtc.sign
+				<-sign
 				log.Println("WebRTC Connected")
 				t.Conn = rtc
 
@@ -72,6 +75,10 @@ func (t *Fgg) Run() {
 				t.reqsdp()
 
 				rtc := NewWebrtcConn()
+				sign := make(chan bool)
+				rtc.OnOpen = func() {
+					sign <- true
+				}
 				rtc.RunOffer(t.Conn)
 
 				meta := &MetaFile{}
@@ -80,9 +87,9 @@ func (t *Fgg) Run() {
 				t.Tran.SetMetaFile(meta)
 				t.OnPreTran(meta)
 
-				<-rtc.sign
+				<-sign
 				time.Sleep(time.Second)
-				fmt.Println("WebRTC Connected")
+				log.Println("WebRTC Connected")
 				t.Conn = rtc
 
 				t.reqdata()
