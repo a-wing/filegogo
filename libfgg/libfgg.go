@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"filegogo/libfgg/webrtc"
+	"filegogo/libfgg/websocket"
 
 	"github.com/SB-IM/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
@@ -23,7 +24,7 @@ type Fgg struct {
 	send bool
 	run  bool
 
-	ws  Conn
+	ws  *websocket.Conn
 	rtc *webrtc.Conn
 
 	cancel context.CancelFunc
@@ -31,6 +32,7 @@ type Fgg struct {
 	finish bool
 
 	// Callbacks
+	OnShare    func(addr string)
 	OnPreTran  func(*MetaFile)
 	OnPostTran func(*MetaHash)
 }
@@ -51,7 +53,19 @@ func (t *Fgg) Recv() {
 	t.reqlist()
 }
 
+func (t *Fgg) Start(addr string) {
+	log.Println(addr)
+	t.ws = websocket.NewConn(addr)
+	if err := t.ws.Connect(); err != nil {
+		log.Println(t.ws.Server())
+		log.Fatal(err)
+	}
+	t.OnShare(t.ws.Server())
+	t.Conn = t.ws
+}
+
 func (t *Fgg) Run() {
+	// === WebRTC ===
 	iceservers := &pion.Configuration{}
 	viper.Unmarshal(iceservers)
 	dd, _ := json.Marshal(iceservers)
@@ -77,7 +91,7 @@ func (t *Fgg) Run() {
 		}
 	}
 
-	t.ws = t.Conn
+	//t.ws = t.Conn
 	go t.doRun()
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel

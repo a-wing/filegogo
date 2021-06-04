@@ -9,10 +9,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/SB-IM/jsonrpc-lite"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+)
+
+const (
+	PrefixShare = "share"
+	PrefixShort = "s"
 )
 
 func init() {
@@ -60,17 +63,10 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// websocket response
-	//if err := conn.WriteJSON(&MessageHello{
-	//	Topic: name,
-	//	Token: token,
-	//}); err != nil {
-	//	log.Println(err)
-	//}
-
-	if err := conn.WriteJSON(jsonrpc.NewNotify("server", &MessageHello{
-		Topic: name,
+	if err := conn.WriteJSON(&MessageHello{
+		Share: name,
 		Token: token,
-	})); err != nil {
+	}); err != nil {
 		log.Println(err)
 	}
 
@@ -78,6 +74,6 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 }
 
 type MessageHello struct {
-	Topic string `json:"topic"`
+	Share string `json:"share"`
 	Token string `json:"token"`
 }

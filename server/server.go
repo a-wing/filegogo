@@ -20,11 +20,11 @@ func Run(address, configPath string) {
 	hub := lightcable.NewHub()
 	sr := mux.NewRouter()
 
-	sr.HandleFunc("/topic/", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc("/"+lightcable.PrefixShare+"/", func(w http.ResponseWriter, r *http.Request) {
 		lightcable.JoinTopic(hub, w, r)
 	})
 
-	sr.HandleFunc("/topic/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc("/"+lightcable.PrefixShare+"/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		lightcable.JoinTopic(hub, w, r)
 	})
 

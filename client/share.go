@@ -3,6 +3,8 @@ package client
 import (
 	"net/url"
 	"strings"
+
+	"filegogo/lightcable"
 )
 
 func IsShareInit(addr string) bool {
@@ -19,9 +21,9 @@ func IsShareInit(addr string) bool {
 	}
 }
 
-// http://localhost:8033/t/1024"
+// http://localhost:8033/<PrefixShort>/1024"
 // To:
-// ws://localhost:8033/topic/1024"
+// ws://localhost:8033/<PrefixShare>/1024"
 func ShareToWebSocket(addr string) string {
 	if u, err := url.Parse(addr); err != nil {
 		return addr
@@ -33,15 +35,15 @@ func ShareToWebSocket(addr string) string {
 		}
 
 		if arr := strings.Split(u.Path, "/"); len(arr) > 2 {
-			u.Path = "/topic/" + arr[2]
+			u.Path = "/" + lightcable.PrefixShare + "/" + arr[2]
 		}
 		return u.String()
 	}
 }
 
-// ws://localhost:8033/topic/1024"
+// ws://localhost:8033/<PrefixShare>/1024"
 // To:
-// http://localhost:8033/t/1024"
+// http://localhost:8033/<PrefixShort>/1024"
 func WebSocketToShare(addr string) string {
 	if u, err := url.Parse(addr); err != nil {
 		return addr
@@ -53,7 +55,7 @@ func WebSocketToShare(addr string) string {
 		}
 
 		if arr := strings.Split(u.Path, "/"); len(arr) > 2 {
-			u.Path = "/t/" + arr[2]
+			u.Path = "/" + lightcable.PrefixShort + "/" + arr[2]
 		}
 		return u.String()
 	}
