@@ -1,6 +1,7 @@
 package libfgg
 
 import (
+	"context"
 	"encoding/json"
 	"hash"
 	"log"
@@ -22,7 +23,10 @@ type Fgg struct {
 	send bool
 	run  bool
 
+	ws  Conn
 	rtc *webrtc.Conn
+
+	cancel context.CancelFunc
 
 	finish bool
 
@@ -66,19 +70,21 @@ func (t *Fgg) Run() {
 	t.rtc.OnOpen = func() {
 		log.Println("WebRTC Connected")
 
-		// TODO: Remove this
-		// Need switch t.Conn websocket => webrtc
-		// But. WebSocket recv blocked
-		data, _ := jsonrpc.NewNotify("xxx", nil).ToJSON()
-		t.Conn.Send(TextMessage, data)
-		// === Remove End ===
-
 		t.Conn = t.rtc
+		go t.doRun()
 		if !t.send {
 			t.reqdata()
 		}
 	}
 
+	t.ws = t.Conn
+	go t.doRun()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.cancel = cancel
+	<-ctx.Done()
+}
+
+func (t *Fgg) doRun() {
 	for t.run {
 		messageType, data, err := t.Conn.Recv()
 		if err != nil {
@@ -91,8 +97,6 @@ func (t *Fgg) Run() {
 				t.rtc.SignRecv(*rpc.Params)
 			case "reqlist":
 				t.reslist()
-			case "reqsdp":
-				// TODO: Remove
 			case "reqdata":
 				t.sendData()
 			case "reqsum":
@@ -103,9 +107,6 @@ func (t *Fgg) Run() {
 				t.Verify(hash)
 			case "filelist":
 				t.rtc.Start()
-
-				// TODO: Remove
-				//t.reqsdp()
 
 				meta := &MetaFile{}
 				json.Unmarshal(*rpc.Params, meta)
@@ -122,11 +123,6 @@ func (t *Fgg) Run() {
 			}
 		}
 	}
-}
-
-func (t *Fgg) reqsdp() {
-	data, _ := jsonrpc.NewNotify("reqsdp", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
 }
 
 func (t *Fgg) reqlist() {
@@ -167,8 +163,7 @@ func (t *Fgg) ressum() {
 
 	// Need Wait websocket send data
 	time.Sleep(time.Second)
-	t.Conn.Close()
-	t.run = false
+	t.Close()
 }
 
 func (t *Fgg) Verify(meta *MetaHash) {
@@ -178,6 +173,12 @@ func (t *Fgg) Verify(meta *MetaHash) {
 	} else {
 		log.Println("source file ms5: ", meta.Hash)
 	}
+	t.Close()
+}
 
+func (t *Fgg) Close() {
+	//t.ws.Close()
+	t.rtc.Close()
 	t.run = false
+	t.cancel()
 }
