@@ -1,4 +1,4 @@
-package client
+package share
 
 import (
 	"net/url"

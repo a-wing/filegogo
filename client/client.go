@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"filegogo/client/qrcode"
+	"filegogo/client/share"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
 
@@ -72,7 +73,7 @@ func (c *Client) Send(ctx context.Context, files []string) {
 	fgg.OnPreTran = c.OnPreTran
 	fgg.IceServers = c.Config.IcsServers
 
-	fgg.Start(ShareToWebSocket(c.Config.Server))
+	fgg.Start(share.ShareToWebSocket(c.Config.Server))
 	if err := fgg.Send(files); err != nil {
 		panic(err)
 	}
@@ -86,7 +87,7 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	fgg.OnPreTran = c.OnPreTran
 	fgg.IceServers = c.Config.IcsServers
 
-	fgg.Start(ShareToWebSocket(c.Config.Server))
+	fgg.Start(share.ShareToWebSocket(c.Config.Server))
 	if err := fgg.Recv(files); err != nil {
 		panic(err)
 	}
