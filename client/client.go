@@ -3,10 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"filegogo/client/qrcode"
 	"filegogo/libfgg"
+	"filegogo/libfgg/transfer"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +50,7 @@ func (t *Client) OnShare(addr string) {
 	log.Println("=== =================== ===")
 }
 
-func (t *Client) OnPreTran(file *libfgg.MetaFile) {
+func (t *Client) OnPreTran(file *transfer.MetaFile) {
 	if t.Config.Progress {
 		t.bar = bar.New64(file.Size)
 	}
@@ -62,46 +62,28 @@ func (t *Client) OnProgress(c int64) {
 	}
 }
 
-func (c *Client) Send(ctx context.Context, list []string) {
-	if len(list) == 0 {
-		panic("Need File")
-	}
-
-	file, err := os.Open(list[0])
-	if err != nil {
-		panic(err)
-	}
-
-	fgg := libfgg.NewFgg(file)
+func (c *Client) Send(ctx context.Context, files []string) {
+	fgg := libfgg.NewFgg()
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
-	fgg.OnPreTran = func(fl *libfgg.MetaFile) {
-		c.OnPreTran(fl)
-	}
+	fgg.OnPreTran = c.OnPreTran
 
 	fgg.Start(ShareToWebSocket(c.Config.Server))
-	fgg.Send()
+	if err := fgg.Send(files); err != nil {
+		panic(err)
+	}
 	fgg.Run()
 }
 
-func (c *Client) Recv(ctx context.Context, list []string) {
-	var file *os.File
-	var err error
-	if len(list) != 0 {
-		file, err = os.Create(list[0])
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	fgg := libfgg.NewFgg(file)
+func (c *Client) Recv(ctx context.Context, files []string) {
+	fgg := libfgg.NewFgg()
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
-	fgg.OnPreTran = func(fl *libfgg.MetaFile) {
-		c.OnPreTran(fl)
-	}
+	fgg.OnPreTran = c.OnPreTran
 
 	fgg.Start(ShareToWebSocket(c.Config.Server))
-	fgg.Recv()
+	if err := fgg.Recv(files); err != nil {
+		panic(err)
+	}
 	fgg.Run()
 }

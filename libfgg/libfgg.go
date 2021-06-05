@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"os"
 	"time"
 
 	"filegogo/libfgg/webrtc"
 	"filegogo/libfgg/websocket"
+	"filegogo/libfgg/transfer"
 
 	"github.com/SB-IM/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
@@ -16,8 +16,7 @@ import (
 )
 
 type Fgg struct {
-	File *os.File
-	Tran *Transfer
+	Tran *transfer.Transfer
 	Conn Conn
 	send bool
 	run  bool
@@ -31,31 +30,39 @@ type Fgg struct {
 
 	// Callbacks
 	OnShare    func(addr string)
-	OnPreTran  func(*MetaFile)
-	OnPostTran func(*MetaHash)
+	OnPreTran  func(*transfer.MetaFile)
+	OnPostTran func(*transfer.MetaHash)
 }
 
-func NewFgg(file *os.File) *Fgg {
+func NewFgg() *Fgg {
 	return &Fgg{
-		Tran:       NewTransfer(file),
+		Tran:       transfer.NewTransfer(),
 		OnShare:    func(addr string) {},
-		OnPreTran:  func(meta *MetaFile) {},
-		OnPostTran: func(meta *MetaHash) {},
+		OnPreTran:  func(meta *transfer.MetaFile) {},
+		OnPostTran: func(meta *transfer.MetaHash) {},
 	}
 }
 
-func (t *Fgg) Send() {
+func (t *Fgg) Send(files []string) error {
+	if err := t.Tran.Send(files); err != nil {
+		return err
+	}
 	t.send = true
 	t.run = true
 	t.reslist()
+	return nil
 }
 
-func (t *Fgg) Recv() {
+func (t *Fgg) Recv(files []string) error {
+	if err := t.Tran.Recv(files); err != nil {
+		return err
+	}
 	t.Tran.OnFinish = func() {
 		t.finish = true
 	}
 	t.run = true
 	t.reqlist()
+	return nil
 }
 
 func (t *Fgg) Start(addr string) {
@@ -121,13 +128,13 @@ func (t *Fgg) doRun() {
 			case "reqsum":
 				t.ressum()
 			case "ressum":
-				hash := &MetaHash{}
+				hash := &transfer.MetaHash{}
 				json.Unmarshal(*rpc.Params, hash)
 				t.Verify(hash)
 			case "filelist":
 				t.rtc.Start()
 
-				meta := &MetaFile{}
+				meta := &transfer.MetaFile{}
 				json.Unmarshal(*rpc.Params, meta)
 
 				t.Tran.SetMetaFile(meta)
@@ -185,7 +192,7 @@ func (t *Fgg) ressum() {
 	t.Close()
 }
 
-func (t *Fgg) Verify(meta *MetaHash) {
+func (t *Fgg) Verify(meta *transfer.MetaHash) {
 	log.Println()
 	if t.Tran.VerifyHash(meta) {
 		log.Println("md5 sum (ok): ", meta.Hash)
