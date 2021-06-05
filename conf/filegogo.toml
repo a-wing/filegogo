@@ -16,3 +16,13 @@ level = "low"
 # left / center / right
 align = "left"
 
+# IceServers
+# https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration/iceServers#examples
+[[iceservers]]
+urls = [ "stun:stun.22333.fun", "stun:stun.example.com" ]
+
+[[iceservers]]
+urls = [ "stun:stun.services.mozilla.com" ]
+username = "louis@mozilla.com"
+credential = "webrtcdemo"
+

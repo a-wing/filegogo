@@ -8,6 +8,8 @@ import (
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
 
+	"github.com/pion/webrtc/v3"
+
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,7 +19,7 @@ type ClientConfig struct {
 
 	ShowQRcode   bool
 	ShowProgress bool
-
+	IcsServers   *webrtc.Configuration
 	QRcodeConfig *qrcode.Config
 	Level        string
 }
@@ -68,6 +70,7 @@ func (c *Client) Send(ctx context.Context, files []string) {
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
+	fgg.IceServers = c.Config.IcsServers
 
 	fgg.Start(ShareToWebSocket(c.Config.Server))
 	if err := fgg.Send(files); err != nil {
@@ -81,6 +84,7 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
+	fgg.IceServers = c.Config.IcsServers
 
 	fgg.Start(ShareToWebSocket(c.Config.Server))
 	if err := fgg.Recv(files); err != nil {

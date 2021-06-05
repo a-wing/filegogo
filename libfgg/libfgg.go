@@ -6,13 +6,12 @@ import (
 	"log"
 	"time"
 
+	"filegogo/libfgg/transfer"
 	"filegogo/libfgg/webrtc"
 	"filegogo/libfgg/websocket"
-	"filegogo/libfgg/transfer"
 
 	"github.com/SB-IM/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
-	"github.com/spf13/viper"
 )
 
 type Fgg struct {
@@ -23,6 +22,8 @@ type Fgg struct {
 
 	ws  *websocket.Conn
 	rtc *webrtc.Conn
+
+	IceServers *pion.Configuration
 
 	cancel context.CancelFunc
 
@@ -78,11 +79,7 @@ func (t *Fgg) Start(addr string) {
 
 func (t *Fgg) Run() {
 	// === WebRTC ===
-	iceservers := &pion.Configuration{}
-	viper.Unmarshal(iceservers)
-	dd, _ := json.Marshal(iceservers)
-	log.Println(string(dd))
-	t.rtc = webrtc.NewConn(iceservers)
+	t.rtc = webrtc.NewConn(t.IceServers)
 
 	t.rtc.OnSignSend = func(data []byte) {
 		rpc := jsonrpc.NewNotify("webrtc", nil)
