@@ -31,8 +31,8 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
 	rootCmd.PersistentFlags().StringP("server", "s", "", "Signal Server Address (default is https://send.22333.fun)")
-	rootCmd.PersistentFlags().BoolP("qrcode", "", false, "Show QRcode")
-	rootCmd.PersistentFlags().BoolP("progress", "", true, "Show Progress Bar")
+	rootCmd.PersistentFlags().BoolP("show-qrcode", "q", false, "Show QRcode")
+	rootCmd.PersistentFlags().BoolP("show-progress", "p", true, "Show Progress Bar")
 
 	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
 	//viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))

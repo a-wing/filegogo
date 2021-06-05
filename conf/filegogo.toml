@@ -1,9 +1,9 @@
 server = "http://localhost:8033"
 level = "trace"
-qrcode = false
-progress = true
+show-qrcode = false
+show-progress = true
 
-[qrcode_config]
+[qrcode]
 # black / red / green / yellow / blue / magenta / cyan / white
 foreground = "black"
 background = "white"

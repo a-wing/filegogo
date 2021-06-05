@@ -21,11 +21,13 @@ var sendCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		qrconfig := &qrcode.Config{}
-		if viper.IsSet("qrcode_config") {
-			viper.Sub("qrcode_config").Unmarshal(qrconfig)
+		if viper.IsSet("qrcode") {
+			viper.Sub("qrcode").Unmarshal(qrconfig)
 		}
 
 		config := &client.ClientConfig{
+			ShowQRcode:   viper.GetBool("show-qrcode"),
+			ShowProgress: viper.GetBool("show-progress"),
 			QRcodeConfig: qrconfig,
 		}
 		viper.Unmarshal(config)

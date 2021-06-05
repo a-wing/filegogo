@@ -13,9 +13,10 @@ import (
 )
 
 type ClientConfig struct {
-	Server   string
-	QRcode   bool
-	Progress bool
+	Server string
+
+	ShowQRcode   bool
+	ShowProgress bool
 
 	QRcodeConfig *qrcode.Config
 	Level        string
@@ -40,7 +41,7 @@ func (t *Client) OnShare(addr string) {
 	log.Println("=== WebSocket Connected ===")
 
 	// Show QRcode
-	if t.Config.QRcode {
+	if t.Config.ShowQRcode {
 		fmt.Println()
 		qrcode.ShowQRcode(addr, t.Config.QRcodeConfig)
 		fmt.Println()
@@ -51,13 +52,13 @@ func (t *Client) OnShare(addr string) {
 }
 
 func (t *Client) OnPreTran(file *transfer.MetaFile) {
-	if t.Config.Progress {
+	if t.Config.ShowProgress {
 		t.bar = bar.New64(file.Size)
 	}
 }
 
 func (t *Client) OnProgress(c int64) {
-	if t.Config.Progress {
+	if t.Config.ShowProgress {
 		t.bar.Add64(c)
 	}
 }
