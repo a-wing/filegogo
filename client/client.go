@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"filegogo/client/qrcode"
-	fgg "filegogo/libfgg"
+	"filegogo/libfgg"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +50,7 @@ func (t *Client) OnShare(addr string) {
 	log.Println("=== =================== ===")
 }
 
-func (t *Client) OnPreTran(file *fgg.MetaFile) {
+func (t *Client) OnPreTran(file *libfgg.MetaFile) {
 	if t.Config.Progress {
 		t.bar = bar.New64(file.Size)
 	}
@@ -71,17 +71,17 @@ func (c *Client) Send(ctx context.Context, list []string) {
 	if err != nil {
 		panic(err)
 	}
-	transfer := &fgg.Fgg{
-		File:    file,
-		OnShare: c.OnShare,
-		OnPreTran: func(fl *fgg.MetaFile) {
-			c.OnPreTran(fl)
-		},
+
+	fgg := libfgg.NewFgg(file)
+	fgg.OnShare = c.OnShare
+	fgg.Tran.OnProgress = c.OnProgress
+	fgg.OnPreTran = func(fl *libfgg.MetaFile) {
+		c.OnPreTran(fl)
 	}
-	transfer.Start(ShareToWebSocket(c.Config.Server))
-	transfer.Send()
-	transfer.Tran.OnProgress = c.OnProgress
-	transfer.Run()
+
+	fgg.Start(ShareToWebSocket(c.Config.Server))
+	fgg.Send()
+	fgg.Run()
 }
 
 func (c *Client) Recv(ctx context.Context, list []string) {
@@ -94,15 +94,14 @@ func (c *Client) Recv(ctx context.Context, list []string) {
 		}
 	}
 
-	transfer := &fgg.Fgg{
-		File:    file,
-		OnShare: c.OnShare,
-		OnPreTran: func(fl *fgg.MetaFile) {
-			c.OnPreTran(fl)
-		},
+	fgg := libfgg.NewFgg(file)
+	fgg.OnShare = c.OnShare
+	fgg.Tran.OnProgress = c.OnProgress
+	fgg.OnPreTran = func(fl *libfgg.MetaFile) {
+		c.OnPreTran(fl)
 	}
-	transfer.Start(ShareToWebSocket(c.Config.Server))
-	transfer.Recv()
-	transfer.Tran.OnProgress = c.OnProgress
-	transfer.Run()
+
+	fgg.Start(ShareToWebSocket(c.Config.Server))
+	fgg.Recv()
+	fgg.Run()
 }

@@ -3,7 +3,6 @@ package libfgg
 import (
 	"context"
 	"encoding/json"
-	"hash"
 	"log"
 	"os"
 	"time"
@@ -20,7 +19,6 @@ type Fgg struct {
 	File *os.File
 	Tran *Transfer
 	Conn Conn
-	Hash hash.Hash
 	send bool
 	run  bool
 
@@ -37,15 +35,22 @@ type Fgg struct {
 	OnPostTran func(*MetaHash)
 }
 
+func NewFgg(file *os.File) *Fgg {
+	return &Fgg{
+		Tran:       NewTransfer(file),
+		OnShare:    func(addr string) {},
+		OnPreTran:  func(meta *MetaFile) {},
+		OnPostTran: func(meta *MetaHash) {},
+	}
+}
+
 func (t *Fgg) Send() {
-	t.Tran = NewTransfer(t.File)
 	t.send = true
 	t.run = true
 	t.reslist()
 }
 
 func (t *Fgg) Recv() {
-	t.Tran = NewTransfer(t.File)
 	t.Tran.OnFinish = func() {
 		t.finish = true
 	}
