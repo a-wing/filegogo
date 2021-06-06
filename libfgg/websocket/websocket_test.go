@@ -22,7 +22,7 @@ func TestFillAddr(t *testing.T) {
 		t.Error(r)
 	}
 
-	if r := fillAddr("ws://localhost:8080/share/1234"); r != result + "1234" {
+	if r := fillAddr("ws://localhost:8080/share/1234"); r != result+"1234" {
 		t.Error(r)
 	}
 }
@@ -40,4 +40,3 @@ func TestServer(t *testing.T) {
 		t.Error(addr)
 	}
 }
-

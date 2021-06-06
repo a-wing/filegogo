@@ -13,10 +13,27 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	Type2Bool = map[int]bool{
+		1: true,
+		2: false,
+	}
+
+	Bool2Type = map[bool]int{
+		true:  1,
+		false: 2,
+	}
+)
+
 type Conn struct {
 	Conn   *websocket.Conn
 	token  string
 	server string
+
+	OnOpen    func()
+	OnClose   func()
+	OnError   func(error)
+	OnMessage func([]byte, bool)
 }
 
 func fillAddr(addr string) string {
@@ -34,7 +51,11 @@ func fillAddr(addr string) string {
 
 func NewConn(addr string) *Conn {
 	return &Conn{
-		server: fillAddr(addr),
+		server:    fillAddr(addr),
+		OnOpen:    func() {},
+		OnClose:   func() {},
+		OnError:   func(error) {},
+		OnMessage: func([]byte, bool) {},
 	}
 }
 
@@ -88,18 +109,24 @@ func (c *Conn) updateServer(share string) error {
 	}
 }
 
-func (c *Conn) Send(typ int, data []byte) error {
-	return c.Conn.WriteMessage(typ, data)
-}
-
-func (c *Conn) Recv() (int, []byte, error) {
-	return c.Conn.ReadMessage()
-}
-
 func (c *Conn) Close() error {
 	if err := c.Conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 		log.Println("write close:", err)
 		return err
 	}
 	return c.Conn.Close()
+}
+
+func (c *Conn) Run() {
+	for {
+		typ, data, err := c.Conn.ReadMessage()
+		if err != nil {
+			c.OnError(err)
+		}
+		c.OnMessage(data, Type2Bool[typ])
+	}
+}
+
+func (c *Conn) Send(data []byte, typ bool) error {
+	return c.Conn.WriteMessage(Bool2Type[typ], data)
 }

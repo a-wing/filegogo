@@ -17,17 +17,15 @@ import (
 type Fgg struct {
 	Tran *transfer.Transfer
 	Conn Conn
-	send bool
-	run  bool
 
 	ws  *websocket.Conn
 	rtc *webrtc.Conn
 
 	IceServers *pion.Configuration
 
-	cancel context.CancelFunc
-
+	sender bool
 	finish bool
+	cancel context.CancelFunc
 
 	// Callbacks
 	OnShare    func(addr string)
@@ -48,8 +46,7 @@ func (t *Fgg) Send(files []string) error {
 	if err := t.Tran.Send(files); err != nil {
 		return err
 	}
-	t.send = true
-	t.run = true
+	t.sender = true
 	t.reslist()
 	return nil
 }
@@ -61,7 +58,6 @@ func (t *Fgg) Recv(files []string) error {
 	t.Tran.OnFinish = func() {
 		t.finish = true
 	}
-	t.run = true
 	t.reqlist()
 	return nil
 }
@@ -69,17 +65,21 @@ func (t *Fgg) Recv(files []string) error {
 func (t *Fgg) Start(addr string) {
 	log.Println(addr)
 	t.ws = websocket.NewConn(addr)
+	t.ws.OnMessage = t.recv
 	if err := t.ws.Connect(); err != nil {
 		log.Println(t.ws.Server())
 		log.Fatal(err)
 	}
 	t.OnShare(t.ws.Server())
 	t.Conn = t.ws
+
+	go t.ws.Run()
 }
 
 func (t *Fgg) Run() {
 	// === WebRTC ===
 	t.rtc = webrtc.NewConn(t.IceServers)
+	t.rtc.OnMessage = t.recv
 
 	t.rtc.OnSignSend = func(data []byte) {
 		rpc := jsonrpc.NewNotify("webrtc", nil)
@@ -87,75 +87,75 @@ func (t *Fgg) Run() {
 		rpc.Params = &RawMessage
 		raw, _ := rpc.ToJSON()
 
-		t.Conn.Send(TextMessage, raw)
+		t.send(raw, true)
 	}
 
 	t.rtc.OnOpen = func() {
 		log.Println("WebRTC Connected")
 
+		// Debug use Disable Websocket OnMessage
+		// t.ws.OnMessage = func(b1 []byte, b2 bool) {}
+
 		t.Conn = t.rtc
-		go t.doRun()
-		if !t.send {
+		if !t.sender {
 			t.reqdata()
 		}
+
+		go t.rtc.Run()
 	}
 
-	//t.ws = t.Conn
-	go t.doRun()
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel
 	<-ctx.Done()
 }
 
-func (t *Fgg) doRun() {
-	for t.run {
-		messageType, data, err := t.Conn.Recv()
-		if err != nil {
-			log.Fatal(err)
+func (t *Fgg) send(data []byte, typ bool) error {
+	return t.Conn.Send(data, typ)
+}
+
+func (t *Fgg) recv(data []byte, typ bool) {
+	if typ {
+		rpc := jsonrpc.ParseObject(data)
+		switch rpc.Method {
+		case "webrtc":
+			t.rtc.SignRecv(*rpc.Params)
+		case "reqlist":
+			t.reslist()
+		case "reqdata":
+			t.sendData()
+		case "reqsum":
+			t.ressum()
+		case "ressum":
+			hash := &transfer.MetaHash{}
+			json.Unmarshal(*rpc.Params, hash)
+			t.Verify(hash)
+		case "filelist":
+			t.rtc.Start()
+
+			meta := &transfer.MetaFile{}
+			json.Unmarshal(*rpc.Params, meta)
+
+			t.Tran.SetMetaFile(meta)
+			t.OnPreTran(meta)
 		}
-		if messageType == TextMessage {
-			rpc := jsonrpc.ParseObject(data)
-			switch rpc.Method {
-			case "webrtc":
-				t.rtc.SignRecv(*rpc.Params)
-			case "reqlist":
-				t.reslist()
-			case "reqdata":
-				t.sendData()
-			case "reqsum":
-				t.ressum()
-			case "ressum":
-				hash := &transfer.MetaHash{}
-				json.Unmarshal(*rpc.Params, hash)
-				t.Verify(hash)
-			case "filelist":
-				t.rtc.Start()
-
-				meta := &transfer.MetaFile{}
-				json.Unmarshal(*rpc.Params, meta)
-
-				t.Tran.SetMetaFile(meta)
-				t.OnPreTran(meta)
-			}
+	} else {
+		t.Tran.Write(data)
+		if t.finish {
+			t.reqsum()
 		} else {
-			t.Tran.Write(data)
-			if t.finish {
-				t.reqsum()
-			} else {
-				t.reqdata()
-			}
+			t.reqdata()
 		}
 	}
 }
 
 func (t *Fgg) reqlist() {
 	data, _ := jsonrpc.NewNotify("reqlist", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
+	t.send(data, true)
 }
 
 func (t *Fgg) reqdata() {
 	data, _ := jsonrpc.NewNotify("reqdata", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
+	t.send(data, true)
 }
 
 func (t *Fgg) reslist() {
@@ -163,7 +163,7 @@ func (t *Fgg) reslist() {
 	data, _ := jsonrpc.NewNotify("filelist", meta).ToJSON()
 
 	t.OnPreTran(meta)
-	t.Conn.Send(TextMessage, data)
+	t.send(data, true)
 }
 
 func (t *Fgg) sendData() {
@@ -171,18 +171,21 @@ func (t *Fgg) sendData() {
 	if err != nil {
 		return
 	}
-	t.Conn.Send(BinaryMessage, data)
+	//t.Conn.Send(BinaryMessage, data)
+	t.send(data, false)
 }
 
 func (t *Fgg) reqsum() {
 	data, _ := jsonrpc.NewNotify("reqsum", nil).ToJSON()
-	t.Conn.Send(TextMessage, data)
+	//t.Conn.Send(TextMessage, data)
+	t.send(data, true)
 }
 
 func (t *Fgg) ressum() {
 	meta := t.Tran.GetMetaHash()
 	data, _ := jsonrpc.NewNotify("ressum", meta).ToJSON()
-	t.Conn.Send(TextMessage, data)
+	//t.Conn.Send(TextMessage, data)
+	t.send(data, true)
 
 	// Need Wait websocket send data
 	time.Sleep(time.Second)
@@ -202,6 +205,5 @@ func (t *Fgg) Verify(meta *transfer.MetaHash) {
 func (t *Fgg) Close() {
 	//t.ws.Close()
 	t.rtc.Close()
-	t.run = false
 	t.cancel()
 }

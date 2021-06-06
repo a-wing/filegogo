@@ -11,7 +11,6 @@ import (
 
 //const messageSize = 15
 
-
 const (
 	TextMessage   = 1
 	BinaryMessage = 2
@@ -43,19 +42,25 @@ type Conn struct {
 
 	config *webrtc.Configuration
 
-	OnOpen func()
-
 	OnSignSend func([]byte)
+
+	OnOpen    func()
+	OnClose   func()
+	OnError   func(error)
+	OnMessage func([]byte, bool)
 }
 
 func NewConn(config *webrtc.Configuration) *Conn {
 	return &Conn{
-		config: config,
-		OnOpen: func() {},
+		config:     config,
 		OnSignSend: func([]byte) {},
+
+		OnOpen:    func() {},
+		OnClose:   func() {},
+		OnError:   func(error) {},
+		OnMessage: func([]byte, bool) {},
 	}
 }
-
 
 func (c *Conn) SignRecv(raw []byte) {
 	log.Debug(string(raw))
@@ -195,25 +200,21 @@ func (c *Conn) getPeerConnection() *webrtc.PeerConnection {
 	return peerConnection
 }
 
-func (w *Conn) Send(t int, data []byte) error {
-	isString := true
-	if t == BinaryMessage {
-		isString = false
-	}
-	_, err := w.conn.WriteDataChannel(data, isString)
-	//log.Println(c, err)
+func (c *Conn) Send(data []byte, typ bool) error {
+	_, err := c.conn.WriteDataChannel(data, typ)
 	return err
 }
 
-func (w *Conn) Recv() (int, []byte, error) {
-	t := TextMessage
-	data := make([]byte, 1024)
-	//data := make([]byte, messageSize)
-	c, isString, err := w.conn.ReadDataChannel(data)
-	if !isString {
-		t = BinaryMessage
+func (c *Conn) Run() {
+	for {
+		data := make([]byte, 1024)
+		count, isString, err := c.conn.ReadDataChannel(data)
+		if err != nil {
+			c.OnError(err)
+		} else {
+			c.OnMessage(data[:count], isString)
+		}
 	}
-	return t, data[:c], err
 }
 
 func (w *Conn) Close() error {
