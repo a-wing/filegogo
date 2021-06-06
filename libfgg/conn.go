@@ -1,14 +1,9 @@
 package libfgg
 
 const (
-	TextMessage   = 1
-	BinaryMessage = 2
+	TypeStr = true
+	TypeBin = false
 )
-
-type Message struct {
-	Type int
-	Data []byte
-}
 
 type Conn interface {
 	Send([]byte, bool) error

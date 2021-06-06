@@ -77,7 +77,12 @@ func (c *Client) Send(ctx context.Context, files []string) {
 		panic(err)
 	}
 	fgg.UseWebRTC(c.Config.IcsServers)
-	fgg.Run()
+	if err := fgg.Run(); err != nil {
+		fmt.Println()
+		fmt.Println(err)
+	} else {
+		fmt.Println()
+	}
 }
 
 func (c *Client) Recv(ctx context.Context, files []string) {
@@ -85,9 +90,11 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = func(t *transfer.MetaFile) {
-		fgg.RunWebRTC()
 		c.OnPreTran(t)
-		fgg.GetFile()
+		go func() {
+			fgg.RunWebRTC()
+			fgg.GetFile()
+		}()
 	}
 
 	fgg.UseWebsocket(share.ShareToWebSocket(c.Config.Server))
@@ -95,5 +102,11 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 		panic(err)
 	}
 	fgg.UseWebRTC(c.Config.IcsServers)
-	fgg.Run()
+	if err := fgg.Run(); err != nil {
+		fmt.Println()
+		fmt.Println(err)
+	} else {
+		fmt.Println()
+		fmt.Println("md5 VerifyHash successful")
+	}
 }

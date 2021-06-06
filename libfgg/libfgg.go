@@ -3,6 +3,7 @@ package libfgg
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"filegogo/libfgg/transfer"
@@ -21,8 +22,8 @@ type Fgg struct {
 	ws  *websocket.Conn
 	rtc *webrtc.Conn
 
+	errors chan error
 	finish bool
-	cancel context.CancelFunc
 
 	// Callbacks
 	OnShare    func(addr string)
@@ -33,6 +34,7 @@ type Fgg struct {
 func NewFgg() *Fgg {
 	return &Fgg{
 		Tran:       transfer.NewTransfer(),
+		errors:     make(chan error),
 		OnShare:    func(addr string) {},
 		OnPreTran:  func(meta *transfer.MetaFile) {},
 		OnPostTran: func(meta *transfer.MetaHash) {},
@@ -116,14 +118,21 @@ func (t *Fgg) RunWebRTC() {
 	return
 }
 
-func (t *Fgg) Run() {
-	ctx, cancel := context.WithCancel(context.Background())
-	t.cancel = cancel
-	<-ctx.Done()
+func (t *Fgg) Run() error {
+	return <-t.errors
+}
+
+func (t *Fgg) onPreTran(meta *transfer.MetaFile) {
+	t.OnPreTran(meta)
+}
+
+func (t *Fgg) onPostTran(meta *transfer.MetaHash) {
+	t.OnPostTran(meta)
 }
 
 func (t *Fgg) GetFile() {
-	t.reqdata()
+	data, _ := jsonrpc.NewNotify("getfile", nil).ToJSON()
+	t.send(data, TypeStr)
 }
 
 func (t *Fgg) send(data []byte, typ bool) error {
@@ -138,6 +147,8 @@ func (t *Fgg) recv(data []byte, typ bool) {
 			t.rtc.SignRecv(*rpc.Params)
 		case "reqlist":
 			t.reslist()
+		case "getfile":
+			t.sendData()
 		case "reqdata":
 			t.sendData()
 		case "reqsum":
@@ -152,8 +163,7 @@ func (t *Fgg) recv(data []byte, typ bool) {
 
 			t.Tran.SetMetaFile(meta)
 
-			// The hook maybe block
-			go t.OnPreTran(meta)
+			t.onPreTran(meta)
 		}
 	} else {
 		t.Tran.Write(data)
@@ -167,20 +177,20 @@ func (t *Fgg) recv(data []byte, typ bool) {
 
 func (t *Fgg) reqlist() {
 	data, _ := jsonrpc.NewNotify("reqlist", nil).ToJSON()
-	t.send(data, true)
+	t.send(data, TypeStr)
 }
 
 func (t *Fgg) reqdata() {
 	data, _ := jsonrpc.NewNotify("reqdata", nil).ToJSON()
-	t.send(data, true)
+	t.send(data, TypeStr)
 }
 
 func (t *Fgg) reslist() {
 	meta := t.Tran.GetMetaFile()
 	data, _ := jsonrpc.NewNotify("filelist", meta).ToJSON()
 
-	t.OnPreTran(meta)
-	t.send(data, true)
+	t.onPreTran(meta)
+	t.send(data, TypeStr)
 }
 
 func (t *Fgg) sendData() {
@@ -188,39 +198,36 @@ func (t *Fgg) sendData() {
 	if err != nil {
 		return
 	}
-	//t.Conn.Send(BinaryMessage, data)
-	t.send(data, false)
+	t.send(data, TypeBin)
 }
 
 func (t *Fgg) reqsum() {
 	data, _ := jsonrpc.NewNotify("reqsum", nil).ToJSON()
-	//t.Conn.Send(TextMessage, data)
-	t.send(data, true)
+	t.send(data, TypeStr)
 }
 
 func (t *Fgg) ressum() {
 	meta := t.Tran.GetMetaHash()
-	data, _ := jsonrpc.NewNotify("ressum", meta).ToJSON()
-	//t.Conn.Send(TextMessage, data)
-	t.send(data, true)
+	data, err := jsonrpc.NewNotify("ressum", meta).ToJSON()
+	t.send(data, TypeStr)
+	t.onPostTran(meta)
 
 	// Need Wait websocket send data
-	time.Sleep(time.Second)
-	t.Close()
+	time.Sleep(time.Millisecond)
+	t.Close(err)
 }
 
 func (t *Fgg) Verify(meta *transfer.MetaHash) {
-	log.Println()
 	if t.Tran.VerifyHash(meta) {
-		log.Println("md5 sum (ok): ", meta.Hash)
+		t.Close(nil)
 	} else {
-		log.Println("source file ms5: ", meta.Hash)
+		t.Close(errors.New("md5 VerifyHash failed"))
 	}
-	t.Close()
+	t.onPostTran(meta)
 }
 
-func (t *Fgg) Close() {
+func (t *Fgg) Close(err error) {
 	//t.ws.Close()
 	//t.rtc.Close()
-	t.cancel()
+	t.errors <- err
 }
