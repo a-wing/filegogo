@@ -71,12 +71,12 @@ func (c *Client) Send(ctx context.Context, files []string) {
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
-	fgg.IceServers = c.Config.IcsServers
 
-	fgg.Start(share.ShareToWebSocket(c.Config.Server))
+	fgg.UseWebsocket(share.ShareToWebSocket(c.Config.Server))
 	if err := fgg.Send(files); err != nil {
 		panic(err)
 	}
+	fgg.UseWebRTC(c.Config.IcsServers)
 	fgg.Run()
 }
 
@@ -84,12 +84,16 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	fgg := libfgg.NewFgg()
 	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
-	fgg.OnPreTran = c.OnPreTran
-	fgg.IceServers = c.Config.IcsServers
+	fgg.OnPreTran = func(t *transfer.MetaFile) {
+		fgg.RunWebRTC()
+		c.OnPreTran(t)
+		fgg.GetFile()
+	}
 
-	fgg.Start(share.ShareToWebSocket(c.Config.Server))
+	fgg.UseWebsocket(share.ShareToWebSocket(c.Config.Server))
 	if err := fgg.Recv(files); err != nil {
 		panic(err)
 	}
+	fgg.UseWebRTC(c.Config.IcsServers)
 	fgg.Run()
 }

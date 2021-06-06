@@ -3,7 +3,6 @@ package libfgg
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"time"
 
 	"filegogo/libfgg/transfer"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/SB-IM/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 type Fgg struct {
@@ -21,9 +21,6 @@ type Fgg struct {
 	ws  *websocket.Conn
 	rtc *webrtc.Conn
 
-	IceServers *pion.Configuration
-
-	sender bool
 	finish bool
 	cancel context.CancelFunc
 
@@ -46,7 +43,6 @@ func (t *Fgg) Send(files []string) error {
 	if err := t.Tran.Send(files); err != nil {
 		return err
 	}
-	t.sender = true
 	t.reslist()
 	return nil
 }
@@ -62,23 +58,24 @@ func (t *Fgg) Recv(files []string) error {
 	return nil
 }
 
-func (t *Fgg) Start(addr string) {
-	log.Println(addr)
+func (t *Fgg) UseWebsocket(addr string) error {
+	log.Debug("websocket connect: ", addr)
 	t.ws = websocket.NewConn(addr)
 	t.ws.OnMessage = t.recv
 	if err := t.ws.Connect(); err != nil {
-		log.Println(t.ws.Server())
-		log.Fatal(err)
+		log.Trace(t.ws.Server())
+		log.Warn(err)
+		return err
 	}
 	t.OnShare(t.ws.Server())
 	t.Conn = t.ws
 
 	go t.ws.Run()
+	return nil
 }
 
-func (t *Fgg) Run() {
-	// === WebRTC ===
-	t.rtc = webrtc.NewConn(t.IceServers)
+func (t *Fgg) UseWebRTC(IceServers *pion.Configuration) {
+	t.rtc = webrtc.NewConn(IceServers)
 	t.rtc.OnMessage = t.recv
 
 	t.rtc.OnSignSend = func(data []byte) {
@@ -97,16 +94,36 @@ func (t *Fgg) Run() {
 		// t.ws.OnMessage = func(b1 []byte, b2 bool) {}
 
 		t.Conn = t.rtc
-		if !t.sender {
-			t.reqdata()
-		}
-
 		go t.rtc.Run()
 	}
+}
 
+func (t *Fgg) RunWebRTC() {
+	ctx, cancel := context.WithCancel(context.Background())
+	onOpen := t.rtc.OnOpen
+	t.rtc.OnOpen = func() {
+		onOpen()
+		cancel()
+	}
+	t.rtc.Start()
+	ticker := time.NewTicker(3 * time.Second)
+	select {
+	case <-ticker.C:
+		log.Warn("WebRTC timeout")
+	case <-ctx.Done():
+	}
+
+	return
+}
+
+func (t *Fgg) Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel
 	<-ctx.Done()
+}
+
+func (t *Fgg) GetFile() {
+	t.reqdata()
 }
 
 func (t *Fgg) send(data []byte, typ bool) error {
@@ -130,13 +147,13 @@ func (t *Fgg) recv(data []byte, typ bool) {
 			json.Unmarshal(*rpc.Params, hash)
 			t.Verify(hash)
 		case "filelist":
-			t.rtc.Start()
-
 			meta := &transfer.MetaFile{}
 			json.Unmarshal(*rpc.Params, meta)
 
 			t.Tran.SetMetaFile(meta)
-			t.OnPreTran(meta)
+
+			// The hook maybe block
+			go t.OnPreTran(meta)
 		}
 	} else {
 		t.Tran.Write(data)
@@ -204,6 +221,6 @@ func (t *Fgg) Verify(meta *transfer.MetaHash) {
 
 func (t *Fgg) Close() {
 	//t.ws.Close()
-	t.rtc.Close()
+	//t.rtc.Close()
 	t.cancel()
 }
