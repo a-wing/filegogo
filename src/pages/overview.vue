@@ -88,7 +88,7 @@ export default {
     isComplete: false
   }),
   created() {
-    let wsUrl = 'ws://localhost:8033/topic/'
+    let wsUrl = 'ws://localhost:8033/share/'
     wretch('./config.json').get().json()
       .then(res => {
         this.iceServers = res.iceServers
@@ -168,9 +168,9 @@ export default {
           const msg = JSON.parse(event.data)
           if (msg.sdp || msg.ice) {
             this.webrtc.onMessage(event.data)
-          } else if (msg.topic != null && this.$route.params.id == null) {
+          } else if (msg.share != null && this.$route.params.id == null) {
             // Get topic name
-            this.onTopic(msg.topic)
+            this.onTopic(msg.share)
           } else if (msg.req != null) {
             // Server
             if (this.file.name) {
