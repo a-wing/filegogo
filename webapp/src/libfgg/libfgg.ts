@@ -1,11 +1,13 @@
 import log from 'loglevel'
 
 import WebSocket from './websocket'
+import WebRTC from './webrtc'
 import Transfer from './transfer'
 
 export default class LibFgg {
   //ws: WebSocket
   ws: any
+  rtc: any
   conn: any
 
   tran: any
@@ -39,7 +41,30 @@ export default class LibFgg {
         method: "reqlist",
       }))
     })
-}
+  }
+
+  useWebRTC(config: RTCConfiguration) {
+    this.rtc = new WebRTC(config)
+    this.rtc.onSignSend = (data: any) => {
+      this.send(JSON.stringify({
+        method: "webrtc",
+        params: data,
+      }))
+    }
+
+    this.rtc.pc.onmessage = (data: any) => {
+      this.recv(data)
+    }
+
+    this.rtc.dataChannel.onopen = () => {
+      this.conn = this.rtc
+
+      log.warn("data channel is open")
+
+      this.getfile()
+    }
+
+  }
 
 
   sendFile(file: File) {
@@ -83,7 +108,7 @@ export default class LibFgg {
       const rpc = JSON.parse(data)
       switch (rpc.method) {
         case "webrtc":
-          //t.rtc.SignRecv(*rpc.Params)
+          this.rtc.signRecv(rpc.params)
           break
         case "reqlist":
           this.reslist()
@@ -106,11 +131,10 @@ export default class LibFgg {
         case "filelist":
           log.warn(this)
           this.tran.setMetaFile(rpc.params)
-
           this.onPreTran(rpc.params)
-          this.send(JSON.stringify({
-            method: "getfile",
-          }))
+
+          this.getfile()
+
           break
         default:
           if (rpc.share && rpc.token) {
@@ -127,5 +151,11 @@ export default class LibFgg {
 
   send(data: string) {
     this.conn.send(data)
+  }
+
+  getfile() {
+    this.send(JSON.stringify({
+      method: "getfile",
+    }))
   }
 }

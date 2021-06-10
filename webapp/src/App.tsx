@@ -58,6 +58,16 @@ class App extends React.Component {
         this.setState(()=>{
           return "total"
         })
+
+        //if (!fgg.tran.file) {
+        fgg.useWebRTC({
+          iceServers: [
+            {
+              urls: "stun:stun.l.google.com:19302",
+            }
+          ]
+        })
+        //}
       }
 
       fgg.tran.onProgress = (c: number) => {
