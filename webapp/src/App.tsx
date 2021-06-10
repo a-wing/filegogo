@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from './logo.svg';
+//import logo from './logo.svg';
 import './App.css';
 
 import QRCode from 'qrcode'
@@ -86,27 +86,18 @@ class App extends React.Component {
       copy(this.address)
   }
 
+  // <img src={logo} className="App-logo" alt="logo" />
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <canvas ref={ this.qrcode }></canvas>
-          <button onClick={ () => { this.handleCopy() } } >COPY</button>
-          <p>{ this.address }</p>
+          <canvas className="qrcode" ref={ this.qrcode }></canvas>
+          <div className="App-address">
+            <p className="App-address-text" >{ this.address }</p>
+            <button className="App-address-button" onClick={ () => { this.handleCopy() } } >COPY</button>
+          </div>
           <progress max={ this.total } value={ this.progress } ></progress>
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <input type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
-          <a
-            className="App-link"
-            href="https://github.com/a-wing/filegogo/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            filegogo
-          </a>
+          <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
         </header>
       </div>
     )
