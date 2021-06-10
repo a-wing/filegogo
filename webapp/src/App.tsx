@@ -14,12 +14,16 @@ class App extends React.Component {
   fgg: any
   qrcode: any
   address: string
+  progress: number
+  total:    number
   constructor(props: any) {
     super(props)
 
     this.fgg = new LibFgg()
     this.qrcode = React.createRef()
     this.address = document.location.href
+    this.progress = 0
+    this.total = 10
   }
 
   componentDidMount() {
@@ -48,6 +52,21 @@ class App extends React.Component {
         console.log('Create QRCode:', address)
       })
 
+      fgg.onPreTran = (meta: any) => {
+        this.total += meta.size
+
+        this.setState(()=>{
+          return "total"
+        })
+      }
+
+      fgg.tran.onProgress = (c: number) => {
+        this.progress += c
+        this.setState(()=>{
+          return "progress"
+        })
+      }
+
     })
     fgg.useWebsocket('ws://localhost:8033/share/' + id)
 
@@ -74,6 +93,7 @@ class App extends React.Component {
           <canvas ref={ this.qrcode }></canvas>
           <button onClick={ () => { this.handleCopy() } } >COPY</button>
           <p>{ this.address }</p>
+          <progress max={ this.total } value={ this.progress } ></progress>
           <img src={logo} className="App-logo" alt="logo" />
           <p>
             Edit <code>src/App.tsx</code> and save to reload.

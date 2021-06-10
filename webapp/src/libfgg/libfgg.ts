@@ -10,9 +10,15 @@ export default class LibFgg {
 
   tran: any
   onShare: (addr: string) => void
+	onPreTran:  (meta: any) => void
+	onPostTran: (meta: any) => void
+	//OnPreTran:  (meta: Transfer.MetaFile) => void
+	//OnPostTran: (meta: Transfer.MetaHash) => void
 
   constructor() {
     this.onShare = () => {}
+    this.onPreTran = () => {}
+    this.onPostTran = () => {}
 
     this.tran = new Transfer()
   }
@@ -47,6 +53,8 @@ export default class LibFgg {
       method: "filelist",
       params: this.tran.getMetaFile()
     }))
+
+      this.onPreTran(this.tran.getMetaFile())
     }
   }
 
@@ -99,7 +107,7 @@ export default class LibFgg {
           log.warn(this)
           this.tran.setMetaFile(rpc.params)
 
-          //t.onPreTran(meta)
+          this.onPreTran(rpc.params)
           this.send(JSON.stringify({
             method: "getfile",
           }))
