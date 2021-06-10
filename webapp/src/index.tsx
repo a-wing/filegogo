@@ -4,9 +4,12 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import GithubCorner from 'react-github-corner';
+
 ReactDOM.render(
   <React.StrictMode>
     <App />
+    <GithubCorner href="https://github.com/a-wing/filegogo" bannerColor="#FFF" octoColor="" />
   </React.StrictMode>,
   document.getElementById('root')
 );
