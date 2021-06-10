@@ -24,6 +24,7 @@ type Fgg struct {
 
 	errors chan error
 	finish bool
+	sender bool
 
 	// Callbacks
 	OnShare    func(addr string)
@@ -45,6 +46,7 @@ func (t *Fgg) Send(files []string) error {
 	if err := t.Tran.Send(files); err != nil {
 		return err
 	}
+	t.sender = true
 	t.reslist()
 	return nil
 }
@@ -186,11 +188,13 @@ func (t *Fgg) reqdata() {
 }
 
 func (t *Fgg) reslist() {
-	meta := t.Tran.GetMetaFile()
-	data, _ := jsonrpc.NewNotify("filelist", meta).ToJSON()
+	if t.sender {
+		meta := t.Tran.GetMetaFile()
+		data, _ := jsonrpc.NewNotify("filelist", meta).ToJSON()
 
-	t.onPreTran(meta)
-	t.send(data, TypeStr)
+		t.onPreTran(meta)
+		t.send(data, TypeStr)
+	}
 }
 
 func (t *Fgg) sendData() {
