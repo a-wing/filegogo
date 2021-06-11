@@ -169,7 +169,7 @@ func (c *Conn) getPeerConnection() *webrtc.PeerConnection {
 
 	// Create a datachannel with label 'data'
 	negotiated := true
-	id := uint16(1234)
+	id := uint16(0)
 	dataChannel, err := peerConnection.CreateDataChannel("data", &webrtc.DataChannelInit{
 		Negotiated: &negotiated,
 		ID:         &id,
@@ -212,6 +212,7 @@ func (c *Conn) Run() {
 		if err != nil {
 			c.OnError(err)
 		} else {
+			log.Trace(string(data[:count]), isString)
 			c.OnMessage(data[:count], isString)
 		}
 	}

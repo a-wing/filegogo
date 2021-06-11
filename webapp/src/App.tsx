@@ -88,6 +88,9 @@ class App extends React.Component {
     //}
     //log.debug(ws.server)
   }
+  getfile() {
+    this.fgg.getfile()
+  }
   handleFile(files: FileList) {
     this.fgg.sendFile(files[0])
   }
@@ -106,6 +109,8 @@ class App extends React.Component {
             <p className="App-address-text" >{ this.address }</p>
             <button className="App-address-button" onClick={ () => { this.handleCopy() } } >COPY</button>
           </div>
+
+          <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
           <progress max={ this.total } value={ this.progress } ></progress>
           <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
         </header>

@@ -52,7 +52,8 @@ export default class LibFgg {
       }))
     }
 
-    this.rtc.pc.onmessage = (data: any) => {
+    this.rtc.dataChannel.onmessage = (data: any) => {
+      log.debug(data)
       this.recv(data)
     }
 
@@ -61,8 +62,10 @@ export default class LibFgg {
 
       log.warn("data channel is open")
 
-      this.getfile()
+      //this.getfile()
     }
+
+    this.rtc.start()
 
   }
 
@@ -133,7 +136,7 @@ export default class LibFgg {
           this.tran.setMetaFile(rpc.params)
           this.onPreTran(rpc.params)
 
-          this.getfile()
+          //this.getfile()
 
           break
         default:

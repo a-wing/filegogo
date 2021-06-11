@@ -1,15 +1,11 @@
 import log from 'loglevel'
 
 export default class Webrtc {
-	//conn datachannel.ReadWriteCloser
-
 	//OnOpen    func()
 	//OnClose   func()
 	//OnError   func(error)
 	//OnMessage func([]byte, bool)
 
-  //config: RTCConfiguration
-	//pc:     RTCPeerConnection | undefined
 	pc:     RTCPeerConnection
 	//onSignSend: (msg: string)=>void
 	onSignSend: (msg: any)=>void
@@ -17,16 +13,16 @@ export default class Webrtc {
   dataChannel: RTCDataChannel
 
   constructor(config: RTCConfiguration) {
-    //this.config = config
-    //this.pc = undefined
     this.pc = new RTCPeerConnection(config)
-    //this.dataChannel = undefined
-    //this.dataChannel = this.pc.createDataChannel("data")
     this.dataChannel = this.pc.createDataChannel("data", {
       negotiated: true,
-      id: 1234,
-    })
 
+      // Chrome needs id < 1024
+      // But: ID An 16-bit numeric ID for the channel; permitted values are 0-65534
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createDataChannel#rtcdatachannelinit_dictionary
+      //id: 1023
+      id: 0
+    })
 
     this.onSignSend = () => {}
     //this.onmessage = () => {}
@@ -41,7 +37,6 @@ export default class Webrtc {
     switch (p.type) {
       case "sdp":
         this.recvSdp(p.data)
-        //c.RecvSdp(data)
         break
       case "ice":
         this.pc!.addIceCandidate(p.data).then(r => {
@@ -88,13 +83,9 @@ export default class Webrtc {
       .then(offer => {
         this.pc!.setLocalDescription(offer)
         this.onSignSend({
-          type: 'offer',
+          type: 'sdp',
           data: offer,
         })
-        //this.onSignSend(JSON.stringify({
-        //  type: 'offer',
-        //  data: offer,
-        //}))
       })
       .catch(e => {
         log.error(e)
@@ -107,10 +98,10 @@ export default class Webrtc {
     this.pc!.createAnswer()
       .then(answer => {
         this.pc!.setLocalDescription(answer)
-        this.onSignSend(JSON.stringify({
-          type: 'answer',
+        this.onSignSend({
+          type: 'sdp',
           data: answer,
-        }))
+        })
       })
       .catch(e => {
         log.error(e)
@@ -121,41 +112,23 @@ export default class Webrtc {
   }
 
   getPeerConnection() {
-    //this.pc = new RTCPeerConnection(this.config)
-    //const pc = new RTCPeerConnection(this.config)
-    //this.pc = pc
-    //const pc = this.pc
-
     this.pc.addEventListener('iceconnectionstatechange', () => {
       console.log('iceconnectionstatechange', this.pc!.iceConnectionState)
     })
     this.pc.addEventListener('icecandidate', ev => {
       if (ev.candidate) {
-        //this.channel.send(JSON.stringify({ ice: ev.candidate }))
-        this.onSignSend(JSON.stringify({
+        this.onSignSend({
           type: "ice" ,
           data: ev.candidate,
-        }))
+        })
       }
     })
-
-    //const dataChannel = pc.createDataChannel("data", {
-    //  negotiated: true,
-    //  id: 1234,
-    //})
-    //this.dataChannel = dataChannel
-    const dataChannel = this.dataChannel
-
-    dataChannel.onopen = () => {
-      log.warn("DataChanne Open:", dataChannel.id, dataChannel.label)
-    }
-
   }
 
   //send(data: string | ArrayBuffer | Blob) {
   send(data: any) {
+    log.info(data)
     this.dataChannel!.send(data)
   }
 
 }
-

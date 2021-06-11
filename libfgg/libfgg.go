@@ -142,6 +142,7 @@ func (t *Fgg) send(data []byte, typ bool) error {
 }
 
 func (t *Fgg) recv(data []byte, typ bool) {
+	log.Trace("fgg recv: ", string(data))
 	if typ {
 		rpc := jsonrpc.ParseObject(data)
 		switch rpc.Method {
