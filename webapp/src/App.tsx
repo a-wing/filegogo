@@ -16,6 +16,10 @@ class App extends React.Component {
   address: string
   progress: number
   total:    number
+
+  sender: boolean
+  recver: boolean
+
   constructor(props: any) {
     super(props)
 
@@ -24,6 +28,9 @@ class App extends React.Component {
     this.address = document.location.href
     this.progress = 0
     this.total = 10
+
+    this.sender = false
+    this.recver = false
   }
 
   componentDidMount() {
@@ -59,15 +66,19 @@ class App extends React.Component {
           return "total"
         })
 
-        //if (!fgg.tran.file) {
-        fgg.useWebRTC({
-          iceServers: [
-            {
-              urls: "stun:stun.l.google.com:19302",
-            }
-          ]
-        })
-        //}
+        if (this.sender) {
+          fgg.useWebRTC({
+            iceServers: [
+              {
+                urls: "stun:stun.l.google.com:19302",
+              }
+            ]
+          })
+        }
+      }
+
+      fgg.onRecvFile = () => {
+        this.recver = true
       }
 
       fgg.tran.onProgress = (c: number) => {
@@ -92,6 +103,7 @@ class App extends React.Component {
     this.fgg.getfile()
   }
   handleFile(files: FileList) {
+    this.sender = true
     this.fgg.sendFile(files[0])
   }
 
@@ -110,9 +122,11 @@ class App extends React.Component {
             <button className="App-address-button" onClick={ () => { this.handleCopy() } } >COPY</button>
           </div>
 
-          <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
+          { this.recver
+          ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
+          : <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
+          }
           <progress max={ this.total } value={ this.progress } ></progress>
-          <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
         </header>
       </div>
     )
