@@ -8,18 +8,14 @@ export default class WebSocketConn {
   token: string
   onmessage: ((ev: MessageEvent) => void)
 
-  ws: any
+  ws: WebSocket
 
-  constructor(addr: string) {
+  constructor(addr: string, callback: (addr: string) => void) {
     this.server = addr
     this.token = ""
     this.onmessage = () => {}
-  }
 
-  // callback(addr string)
-  connect(callback: (addr: string) => void) {
     const ws = new WebSocket(this.authServer())
-
     this.ws = ws
 
     // TODO:
@@ -31,16 +27,15 @@ export default class WebSocketConn {
     ws.onopen = () => { log.debug("websocket connected") }
     ws.onclose = () => { log.debug("websocket disconnected") }
     ws.onerror = () => { log.debug("websocket error") }
-    //ws.onmessage = (ev) => {
-    //  this.onmessage(ev)
-    //}
     ws.onmessage = ({ data }) => {
       try {
         const msg = JSON.parse(data)
         if (msg.share && msg.token) {
           this.updateServer(msg.share)
           this.token = msg.token
-          ws.onmessage = this.onmessage
+          ws.onmessage = (ev: MessageEvent) => {
+            this.onmessage(ev)
+          }
           callback(this.server)
         }
       } catch (e) {

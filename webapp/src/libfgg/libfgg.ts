@@ -10,7 +10,8 @@ export default class LibFgg {
   rtc: any
   conn: any
 
-  tran: any
+  tran: Transfer
+
   onShare: (addr: string) => void
 	onPreTran:  (meta: any) => void
 	onPostTran: (meta: any) => void
@@ -30,13 +31,7 @@ export default class LibFgg {
 
   useWebsocket(addr: string) {
     log.debug("websocket connect: ", addr)
-    this.ws = new WebSocket(addr)
-
-    // @ts-ignore
-    this.ws.onmessage = (ev) => {
-      this.recv(ev)
-    }
-    this.ws.connect((addr: string) => {
+    this.ws = new WebSocket(addr, (addr: string) => {
       this.onShare(addr)
       this.conn = this.ws
 
@@ -44,6 +39,10 @@ export default class LibFgg {
         method: "reqlist",
       }))
     })
+
+    this.ws.onmessage = (ev: MessageEvent) => {
+      this.recv(ev)
+    }
   }
 
   useWebRTC(config: RTCConfiguration) {
@@ -62,16 +61,11 @@ export default class LibFgg {
 
     this.rtc.dataChannel.onopen = () => {
       this.conn = this.rtc
-
       log.warn("data channel is open")
-
-      //this.getfile()
     }
 
     this.rtc.start()
-
   }
-
 
   sendFile(file: File) {
     this.tran.send(file)
@@ -80,10 +74,10 @@ export default class LibFgg {
 
   reslist() {
     if (this.tran.file) {
-    this.send(JSON.stringify({
-      method: "filelist",
-      params: this.tran.getMetaFile()
-    }))
+      this.send(JSON.stringify({
+        method: "filelist",
+        params: this.tran.getMetaFile()
+      }))
 
       this.onPreTran(this.tran.getMetaFile())
     }

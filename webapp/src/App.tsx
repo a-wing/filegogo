@@ -79,6 +79,7 @@ class App extends React.Component {
 
       fgg.onRecvFile = () => {
         this.recver = true
+        this.setState(() => {return "recver"})
       }
 
       fgg.tran.onProgress = (c: number) => {
