@@ -60,21 +60,12 @@ class App extends React.Component {
       })
 
       fgg.onPreTran = (meta: any) => {
-        this.total += meta.size
+        this.total = meta.size
 
         this.setState(()=>{
           return "total"
         })
 
-        if (this.sender) {
-          fgg.useWebRTC({
-            iceServers: [
-              {
-                urls: "stun:stun.l.google.com:19302",
-              }
-            ]
-          })
-        }
       }
 
       fgg.onRecvFile = () => {
@@ -101,10 +92,33 @@ class App extends React.Component {
     //log.debug(ws.server)
   }
   getfile() {
-    this.fgg.getfile()
+    this.fgg.useWebRTC({
+      iceServers: [
+        {
+          urls: "stun:stun.l.google.com:19302",
+        }
+      ]
+    }, () => {
+
+      // TODO:
+      // Need Wait to 1s
+      setTimeout(() => {
+        this.fgg.getfile()
+      }, 1000)
+    })
+    this.fgg.runWebRTC()
   }
   handleFile(files: FileList) {
     this.sender = true
+
+    this.fgg.useWebRTC({
+      iceServers: [
+        {
+          urls: "stun:stun.l.google.com:19302",
+        }
+      ]
+    }, () => {})
+
     this.fgg.sendFile(files[0])
   }
 

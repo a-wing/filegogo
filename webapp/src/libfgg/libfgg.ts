@@ -45,7 +45,7 @@ export default class LibFgg {
     }
   }
 
-  useWebRTC(config: RTCConfiguration) {
+  useWebRTC(config: RTCConfiguration, callback: ()=>void) {
     this.rtc = new WebRTC(config)
     this.rtc.onSignSend = (data: any) => {
       this.send(JSON.stringify({
@@ -62,8 +62,12 @@ export default class LibFgg {
     this.rtc.dataChannel.onopen = () => {
       this.conn = this.rtc
       log.warn("data channel is open")
+      callback()
     }
 
+  }
+
+  runWebRTC() {
     this.rtc.start()
   }
 
@@ -78,8 +82,6 @@ export default class LibFgg {
         method: "filelist",
         params: this.tran.getMetaFile()
       }))
-
-      this.onPreTran(this.tran.getMetaFile())
     }
   }
 
@@ -114,6 +116,7 @@ export default class LibFgg {
           this.reslist()
           break
         case "getfile":
+          this.onPreTran(this.tran.getMetaFile())
           this.sendData()
           break
         case "reqdata":
