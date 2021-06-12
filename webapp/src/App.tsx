@@ -35,8 +35,11 @@ class App extends React.Component {
 
   componentDidMount() {
     log.setLevel("debug")
-    //const ws = new WebSocket('ws://localhost:8033/share/4553')
-    const id = document.location.pathname.split("/")[2]
+    let id = ""
+    const pathArr = document.location.pathname.split("/")
+    if (pathArr.length > 2) {
+      id = pathArr[2]
+    }
     //const fgg = new LibFgg()
     const fgg = this.fgg
     fgg.onShare = ((addr: any) => {
