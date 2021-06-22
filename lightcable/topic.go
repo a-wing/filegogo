@@ -1,9 +1,6 @@
 package lightcable
 
 import (
-	"log"
-	"sync"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -13,48 +10,66 @@ type Message struct {
 	data []byte
 }
 
-type Topic struct {
-	Name  string
-	mutex sync.Mutex
-	conns []*websocket.Conn
+type topic struct {
+	name   string
+	server *Server
+
+	// Registered clients.
+	clients map[*Client]bool
+
+	// Register requests from the clients.
+	register chan *Client
+
+	// Inbound messages from the clients.
+	broadcast chan message
+
+	// Unregister requests from clients.
+	unregister chan *Client
 }
 
-func NewTopic(name string, conn *websocket.Conn) *Topic {
-	return &Topic{
-		Name:  name,
-		conns: []*websocket.Conn{conn},
+func NewTopic(name string, server *Server) *topic {
+	return &topic{
+		name:   name,
+		server: server,
+
+		clients:    make(map[*Client]bool),
+		register:   make(chan *Client),
+		broadcast:  make(chan message),
+		unregister: make(chan *Client),
 	}
 }
 
-func (this *Topic) Register(conn *websocket.Conn) {
-	this.mutex.Lock()
-	this.conns = append(this.conns, conn)
-	this.mutex.Unlock()
-}
+func (t *topic) run() {
+	for {
+		select {
+		case client := <-t.register:
+			t.clients[client] = true
 
-func (this *Topic) Unregister(conn *websocket.Conn) {
-	this.mutex.Lock()
-	for index, link := range this.conns {
-		if link == conn {
+			go client.readPump()
+			go client.writePump()
 
-			// Order is not important
-			this.conns[index] = this.conns[len(this.conns)-1]
-			this.conns = this.conns[:len(this.conns)-1]
-		}
-	}
-	this.mutex.Unlock()
-}
-
-func (this *Topic) Broadcast(msg *Message) {
-	this.mutex.Lock()
-	for _, conn := range this.conns {
-		if msg.conn != conn {
-			if err := conn.WriteMessage(msg.code, msg.data); err != nil {
-				log.Println(err)
-				this.Unregister(conn)
+		case client := <-t.unregister:
+			if _, ok := t.clients[client]; ok {
+				delete(t.clients, client)
+				close(client.send)
 			}
-
+			if len(t.clients) == 0 {
+				t.server.mutex.Lock()
+				delete(t.server.topic, t.name)
+				t.server.mutex.Unlock()
+				return
+			}
+		case message := <-t.broadcast:
+			for client := range t.clients {
+				if message.conn != client.conn {
+					select {
+					case client.send <- message:
+					default:
+						close(client.send)
+						delete(t.clients, client)
+					}
+				}
+			}
 		}
 	}
-	this.mutex.Unlock()
 }

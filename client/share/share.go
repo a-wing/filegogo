@@ -55,7 +55,7 @@ func WebSocketToShare(addr string) string {
 		}
 
 		if arr := strings.Split(u.Path, "/"); len(arr) > 2 {
-			u.Path = "/" + lightcable.PrefixShort + "/" + arr[2]
+			u.Path = arr[2]
 		}
 		return u.String()
 	}

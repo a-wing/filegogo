@@ -17,15 +17,15 @@ import (
 var dist embed.FS
 
 func Run(address, configPath string) {
-	hub := lightcable.NewHub()
+	cable := lightcable.NewServer()
 	sr := mux.NewRouter()
 
 	sr.HandleFunc("/"+lightcable.PrefixShare+"/", func(w http.ResponseWriter, r *http.Request) {
-		lightcable.JoinTopic(hub, w, r)
+		cable.JoinTopic(w, r)
 	})
 
 	sr.HandleFunc("/"+lightcable.PrefixShare+"/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		lightcable.JoinTopic(hub, w, r)
+		cable.JoinTopic(w, r)
 	})
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {

@@ -7,30 +7,63 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
+	"github.com/hashicorp/golang-lru"
 )
 
 const (
 	PrefixShare = "share"
-	PrefixShort = "s"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
+type Server struct {
+	topic map[string]*topic
+	cache *lru.Cache
+	mutex sync.Mutex
+
+	// Register requests from the clients.
+	register chan *Client
+
+	// Inbound messages from the clients.
+	broadcast chan []byte
+
+	// Unregister requests from clients.
+	unregister chan *Client
 }
 
-func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func NewServer() *Server {
+	cache, err := lru.New(1024)
+	if err != nil {
+		panic(err)
+	}
+	return &Server{
+		topic: make(map[string]*topic),
+		cache: cache,
+
+		register:   make(chan *Client),
+		broadcast:  make(chan []byte),
+		unregister: make(chan *Client),
+	}
+}
+
+func (s *Server) JoinTopic(w http.ResponseWriter, r *http.Request) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	name := mux.Vars(r)["id"]
-	topic := hub.Topic[name]
+
+	//topic := hub.Topic[name]
+	topic, ok := s.topic[name]
+	if ok {
+	}
+
 	token := r.URL.Query().Get("token")
-	if _, ok := hub.Cache.Get(token); !ok && topic == nil && name != "" {
+	if _, ok := s.cache.Get(token); !ok && topic == nil && name != "" {
 		log.Printf("reject topic name: %v\n", name)
 		return
 	}
@@ -51,16 +84,17 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Default token
 	if token == "" {
 		token = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", &conn)))
-		hub.Cache.Add(token, &conn)
+		s.cache.Add(token, &conn)
 	}
 
 	// Topic Register websocket.conn
 	if topic == nil {
-		topic = NewTopic(name, conn)
-		hub.Add(name, topic)
-	} else {
-		topic.Register(conn)
+		topic = NewTopic(name, s)
+		go topic.run()
+		s.cache.Add(name, topic)
+		s.topic[name] = topic
 	}
+	topic.register <- &Client{topic: topic, conn: conn, send: make(chan message, 256)}
 
 	// websocket response
 	if err := conn.WriteJSON(&MessageHello{
@@ -69,8 +103,6 @@ func JoinTopic(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		log.Println(err)
 	}
-
-	go readPump(hub, topic, conn)
 }
 
 type MessageHello struct {
