@@ -43,6 +43,8 @@ func (c *Client) Topic() string {
 func (t *Client) OnShare(addr string) {
 	log.Println("=== WebSocket Connected ===")
 
+	addr = share.WebSocketToShare(addr)
+
 	// Show QRcode
 	if t.Config.ShowQRcode {
 		fmt.Println()

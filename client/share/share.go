@@ -11,8 +11,8 @@ func IsShareInit(addr string) bool {
 	if u, err := url.Parse(addr); err != nil {
 		return false
 	} else {
-		if arr := strings.Split(u.Path, "/"); len(arr) > 2 {
-			if arr[2] != "" {
+		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
+			if arr[1] != "" {
 				return true
 			}
 			return false
@@ -21,7 +21,7 @@ func IsShareInit(addr string) bool {
 	}
 }
 
-// http://localhost:8033/<PrefixShort>/1024"
+// http://localhost:8033/1024"
 // To:
 // ws://localhost:8033/<PrefixShare>/1024"
 func ShareToWebSocket(addr string) string {
@@ -34,8 +34,8 @@ func ShareToWebSocket(addr string) string {
 			u.Scheme = "ws"
 		}
 
-		if arr := strings.Split(u.Path, "/"); len(arr) > 2 {
-			u.Path = "/" + lightcable.PrefixShare + "/" + arr[2]
+		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
+			u.Path = "/" + lightcable.PrefixShare + "/" + arr[1]
 		}
 		return u.String()
 	}
@@ -43,7 +43,7 @@ func ShareToWebSocket(addr string) string {
 
 // ws://localhost:8033/<PrefixShare>/1024"
 // To:
-// http://localhost:8033/<PrefixShort>/1024"
+// http://localhost:8033/1024"
 func WebSocketToShare(addr string) string {
 	if u, err := url.Parse(addr); err != nil {
 		return addr
