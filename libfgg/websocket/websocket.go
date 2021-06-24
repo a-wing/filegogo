@@ -120,7 +120,9 @@ func (c *Conn) Close() error {
 func (c *Conn) Run() {
 	for {
 		typ, data, err := c.Conn.ReadMessage()
+		log.Tracef("WebSocket RECV %d: %s\n", typ, data)
 		if err != nil {
+			log.Warn(err)
 			c.OnError(err)
 		}
 		c.OnMessage(data, Type2Bool[typ])
@@ -128,5 +130,6 @@ func (c *Conn) Run() {
 }
 
 func (c *Conn) Send(data []byte, typ bool) error {
+	log.Tracef("WebSocket SEND %d: %s\n", Bool2Type[typ], data)
 	return c.Conn.WriteMessage(Bool2Type[typ], data)
 }
