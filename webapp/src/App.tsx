@@ -37,14 +37,14 @@ class App extends React.Component {
     log.setLevel("debug")
     let id = ""
     const pathArr = document.location.pathname.split("/")
-    if (pathArr.length > 2) {
-      id = pathArr[2]
+    if (pathArr.length > 1) {
+      id = pathArr[1]
     }
     //const fgg = new LibFgg()
     const fgg = this.fgg
     fgg.onShare = ((addr: any) => {
       const url = new URL(addr)
-      const path = '/s/' + url.pathname.split('/')[2]
+      const path = '/' + url.pathname.split('/')[2]
       history.push(path)
 
       const address = document.location.origin + path
