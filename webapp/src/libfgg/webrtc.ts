@@ -24,6 +24,12 @@ export default class Webrtc {
       id: 0
     })
 
+
+    // This browser default
+    // Firefox is Blob
+    // Chrome, Safari is ArrayBuffer
+    this.dataChannel.binaryType = "arraybuffer"
+
     this.onSignSend = () => {}
     //this.onmessage = () => {}
   }
