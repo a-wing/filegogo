@@ -71,24 +71,12 @@ func initConfig() {
 	}
 
 	//log.SetReportCaller(true)
-	log.SetLevel(log.Level(getLogLevel()))
+	if level, err := log.ParseLevel(viper.GetString("level")); err != nil {
+		fmt.Println(err)
+	} else {
+		log.SetLevel(level)
+	}
 	log.SetFormatter(&log.TextFormatter{
 		//FullTimestamp: true,
 	})
-}
-
-func getLogLevel() (ret int) {
-	switch viper.GetString("level") {
-	case "error":
-		ret = 2
-	case "warn":
-		ret = 3
-	case "info":
-		ret = 4
-	case "debug":
-		ret = 5
-	case "trace":
-		ret = 6
-	}
-	return
 }
