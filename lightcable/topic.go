@@ -1,15 +1,5 @@
 package lightcable
 
-import (
-	"github.com/gorilla/websocket"
-)
-
-type Message struct {
-	conn *websocket.Conn
-	code int
-	data []byte
-}
-
 type topic struct {
 	name   string
 	server *Server
