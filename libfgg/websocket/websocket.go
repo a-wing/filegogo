@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"filegogo/lightcable"
+	"filegogo/server"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -45,7 +45,7 @@ func fillAddr(addr string) string {
 			name = arr[2]
 		}
 		u.Path = ""
-		return u.String() + "/" + lightcable.PrefixShare + "/" + name
+		return u.String() + "/" + server.PrefixShare + "/" + name
 	}
 }
 
@@ -82,7 +82,7 @@ func (c *Conn) Connect() (err error) {
 		err = errors.New("Must is text message")
 	}
 
-	msg := &lightcable.MessageHello{}
+	msg := &server.MessageHello{}
 	if err = json.Unmarshal(data, msg); err != nil {
 		return
 	}
@@ -103,7 +103,7 @@ func (c *Conn) updateServer(share string) error {
 	if u, err := url.Parse(c.server); err != nil {
 		return err
 	} else {
-		u.Path = path.Join(lightcable.PrefixShare, share)
+		u.Path = path.Join(server.PrefixShare, share)
 		c.server = u.String()
 		return nil
 	}

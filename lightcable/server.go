@@ -1,31 +1,18 @@
 package lightcable
 
 import (
+	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
-	"log"
-	"math/rand"
+	"io"
 	"net/http"
-	"strconv"
-	"sync"
-	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/hashicorp/golang-lru"
+	"github.com/gorilla/websocket"
 )
-
-const (
-	PrefixShare = "share"
-)
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 type Server struct {
 	topic map[string]*topic
-	cache *lru.Cache
-	mutex sync.Mutex
 
 	// Register requests from the clients.
 	register chan *Client
@@ -35,16 +22,20 @@ type Server struct {
 
 	// Unregister requests from clients.
 	unregister chan *Client
+
+	// TODO:
+	// onConnClose(*Client, error)
+	// OnMessage(*message)
+	//onConnect func(*Client)
+	// hook onConnect
+	// hook disconnected
+	// hook ommessage
+	// func send message
 }
 
 func NewServer() *Server {
-	cache, err := lru.New(1024)
-	if err != nil {
-		panic(err)
-	}
 	return &Server{
 		topic: make(map[string]*topic),
-		cache: cache,
 
 		register:   make(chan *Client),
 		broadcast:  make(chan []byte),
@@ -52,60 +43,48 @@ func NewServer() *Server {
 	}
 }
 
-func (s *Server) JoinTopic(w http.ResponseWriter, r *http.Request) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	name := mux.Vars(r)["id"]
+func (s *Server) Run(ctx context.Context) {
+	for {
+		select {
+		// unregister must first
+		// close and open concurrency
+		case c := <-s.unregister:
+			delete(s.topic, c.cable)
+		case c := <-s.register:
+			c.topic = s.topic[c.cable]
+			if c.topic == nil {
+				c.topic = NewTopic(c.cable, s)
+				go c.topic.run(ctx)
+				s.topic[c.cable] = c.topic
+			}
+			c.topic.register <- c
 
-	//topic := hub.Topic[name]
-	topic, ok := s.topic[name]
-	if ok {
-	}
-
-	token := r.URL.Query().Get("token")
-	if _, ok := s.cache.Get(token); !ok && topic == nil && name != "" {
-		log.Printf("reject topic name: %v\n", name)
-		return
-	}
-
-	// === allow websocket connect ===
-	// Default topic name
-	if name == "" {
-		name = strconv.Itoa(rand.Intn(10000))
-	}
-
-	log.Printf("topic name: %v\n", name)
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	// Default token
-	if token == "" {
-		token = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", &conn)))
-		s.cache.Add(token, &conn)
-	}
-
-	// Topic Register websocket.conn
-	if topic == nil {
-		topic = NewTopic(name, s)
-		go topic.run()
-		s.cache.Add(name, topic)
-		s.topic[name] = topic
-	}
-	topic.register <- &Client{topic: topic, conn: conn, send: make(chan message, 256)}
-
-	// websocket response
-	if err := conn.WriteJSON(&MessageHello{
-		Share: name,
-		Token: token,
-	}); err != nil {
-		log.Println(err)
+		case <-ctx.Done():
+			// safe Close
+		}
 	}
 }
 
-type MessageHello struct {
-	Share string `json:"share"`
-	Token string `json:"token"`
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		io.WriteString(w, err.Error())
+	}
+	token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", &conn)))
+	s.JoinCable(r.URL.Path, token, conn)
+}
+
+func (s *Server) JoinCable(cable, label string, conn *websocket.Conn) error {
+	select {
+	case s.register <- &Client{
+		cable: cable,
+		label: label,
+		conn:  conn,
+		send:  make(chan message, 256),
+	}:
+		return nil
+	default:
+		return errors.New("join failure")
+	}
 }

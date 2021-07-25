@@ -1,5 +1,9 @@
 package lightcable
 
+import (
+	"context"
+)
+
 type topic struct {
 	name   string
 	server *Server
@@ -29,7 +33,7 @@ func NewTopic(name string, server *Server) *topic {
 	}
 }
 
-func (t *topic) run() {
+func (t *topic) run(ctx context.Context) {
 	for {
 		select {
 		case client := <-t.register:
@@ -44,9 +48,7 @@ func (t *topic) run() {
 				close(client.send)
 			}
 			if len(t.clients) == 0 {
-				t.server.mutex.Lock()
-				delete(t.server.topic, t.name)
-				t.server.mutex.Unlock()
+				t.server.unregister <- client
 				return
 			}
 		case message := <-t.broadcast:
@@ -60,6 +62,8 @@ func (t *topic) run() {
 					}
 				}
 			}
+		case <-ctx.Done():
+			// safe Close
 		}
 	}
 }

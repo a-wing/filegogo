@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	"filegogo/lightcable"
+	"filegogo/server"
 )
 
 func IsShareInit(addr string) bool {
@@ -35,7 +35,7 @@ func ShareToWebSocket(addr string) string {
 		}
 
 		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
-			u.Path = "/" + lightcable.PrefixShare + "/" + arr[1]
+			u.Path = "/" + server.PrefixShare + "/" + arr[1]
 		}
 		return u.String()
 	}

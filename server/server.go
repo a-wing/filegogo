@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"embed"
 	"io"
 	"io/fs"
@@ -17,16 +18,14 @@ import (
 var dist embed.FS
 
 func Run(address, configPath string) {
-	cable := lightcable.NewServer()
 	sr := mux.NewRouter()
 
-	sr.HandleFunc("/"+lightcable.PrefixShare+"/", func(w http.ResponseWriter, r *http.Request) {
-		cable.JoinTopic(w, r)
-	})
+	cable := lightcable.NewServer()
+	go cable.Run(context.Background())
+	httpServer := NewServer(cable)
 
-	sr.HandleFunc("/"+lightcable.PrefixShare+"/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		cable.JoinTopic(w, r)
-	})
+	sr.HandleFunc("/"+PrefixShare+"/", httpServer.ApplyCable)
+	sr.HandleFunc("/"+PrefixShare+"/{id:[0-9]+}", httpServer.JoinCable)
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Read config: %s", configPath)

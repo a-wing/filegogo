@@ -33,6 +33,8 @@ type message struct {
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
+	cable string
+	label string
 	topic *topic
 
 	// The websocket connection.
