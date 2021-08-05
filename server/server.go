@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"filegogo/lightcable"
-
+	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
 )
 
@@ -20,12 +19,12 @@ var dist embed.FS
 func Run(address, configPath string) {
 	sr := mux.NewRouter()
 
-	cable := lightcable.NewServer()
+	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
 	httpServer := NewServer(cable)
 
 	sr.HandleFunc("/"+PrefixShare+"/", httpServer.ApplyCable)
-	sr.HandleFunc("/"+PrefixShare+"/{id:[0-9]+}", httpServer.JoinCable)
+	sr.Handle("/"+PrefixShare+"/{room:[0-9]+}", cable)
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Read config: %s", configPath)

@@ -17,6 +17,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/SB-IM/jsonrpc-lite v0.1.2 h1:+mkOeCcTr/fYTrJMw0TtDlr+GOO03KvTmqgH9Nqu7DE=
 github.com/SB-IM/jsonrpc-lite v0.1.2/go.mod h1:R1dUT0jWixxEwMFE97Zo2dn2w5LFufVISWOC2UXUGnk=
+github.com/a-wing/lightcable v0.0.0-20210803144803-b3a4c0fefade h1:JCGdlrmodHkvV3gpdqiHasbAuK2NtLOVwFjSHzu47Gs=
+github.com/a-wing/lightcable v0.0.0-20210803144803-b3a4c0fefade/go.mod h1:CppWax0STPvrK+Jq9gB5KijLzBHm1FCy1RSwzdQdOCI=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=

@@ -6,12 +6,11 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
-	"filegogo/lightcable"
-
+	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	"github.com/hashicorp/golang-lru"
 )
 
@@ -23,23 +22,25 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-}
-
 type Server struct {
 	lcSrv *lightcable.Server
 	cache *lru.Cache
+	mutex *sync.Mutex
 }
 
 type MessageHello struct {
-	Share string `json:"share"`
-	Token string `json:"token"`
+	Room string `json:"room"`
+	Name string `json:"name"`
 }
 
 func NewServer(lcSrv *lightcable.Server) *Server {
+	lcSrv.OnConnected(func(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+		room := mux.Vars(r)["room"]
+		name := r.URL.Query().Get("name")
+		log.Printf("room name: %v\n", room)
+		return room, name, true
+	})
+
 	cache, err := lru.New(1024)
 	if err != nil {
 		panic(err)
@@ -47,13 +48,14 @@ func NewServer(lcSrv *lightcable.Server) *Server {
 	return &Server{
 		lcSrv: lcSrv,
 		cache: cache,
+		mutex: &sync.Mutex{},
 	}
 }
 
 func (s *Server) ApplyCable(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(MessageHello{
-		Share: s.uniqueID(""),
-		Token: "",
+		Room: s.newRoom(),
+		Name: "",
 	})
 	if err != nil {
 		log.Println(err)
@@ -63,23 +65,17 @@ func (s *Server) ApplyCable(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (s *Server) uniqueID(key string) string {
-	if _, ok := s.cache.Get(key); ok || key == "" {
-		return s.uniqueID(strconv.Itoa(rand.Intn(10000)))
+// Concurrent needs mutex lock
+func (s *Server) newRoom() string {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	room := ""
+	hasKey := func() bool {
+		_, ok := s.cache.Get(room)
+		return ok
 	}
-	return key
-}
-
-func (s *Server) JoinCable(w http.ResponseWriter, r *http.Request) {
-	name := mux.Vars(r)["id"]
-	token := r.URL.Query().Get("token")
-
-	log.Printf("topic name: %v\n", name)
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
+	for hasKey() || room == "" {
+		room = strconv.Itoa(rand.Intn(10000))
 	}
-	s.lcSrv.JoinCable(name, token, conn)
+	return room
 }

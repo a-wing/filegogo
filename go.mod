@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/SB-IM/jsonrpc-lite v0.1.2
+	github.com/a-wing/lightcable v0.0.0-20210803144803-b3a4c0fefade
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4

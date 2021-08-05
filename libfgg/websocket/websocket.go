@@ -86,8 +86,8 @@ func (c *Conn) Connect() (err error) {
 	if err = json.Unmarshal(data, msg); err != nil {
 		return
 	}
-	c.updateServer(msg.Share)
-	c.token = msg.Token
+	c.updateServer(msg.Room)
+	c.token = msg.Name
 	return
 }
 
