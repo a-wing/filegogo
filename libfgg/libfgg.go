@@ -10,7 +10,7 @@ import (
 	"filegogo/libfgg/webrtc"
 	"filegogo/libfgg/websocket"
 
-	"github.com/SB-IM/jsonrpc-lite"
+	"github.com/sb-im/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
 	log "github.com/sirupsen/logrus"
 )

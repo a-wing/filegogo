@@ -15,10 +15,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/SB-IM/jsonrpc-lite v0.1.2 h1:+mkOeCcTr/fYTrJMw0TtDlr+GOO03KvTmqgH9Nqu7DE=
-github.com/SB-IM/jsonrpc-lite v0.1.2/go.mod h1:R1dUT0jWixxEwMFE97Zo2dn2w5LFufVISWOC2UXUGnk=
-github.com/a-wing/lightcable v0.0.0-20210803144803-b3a4c0fefade h1:JCGdlrmodHkvV3gpdqiHasbAuK2NtLOVwFjSHzu47Gs=
-github.com/a-wing/lightcable v0.0.0-20210803144803-b3a4c0fefade/go.mod h1:CppWax0STPvrK+Jq9gB5KijLzBHm1FCy1RSwzdQdOCI=
+github.com/a-wing/lightcable v0.0.0-20210815082732-4f392d62dced h1:QtGwGJxkq8aJjQoaobUpd4mqI0ohpZbBZzAYqrcthpk=
+github.com/a-wing/lightcable v0.0.0-20210815082732-4f392d62dced/go.mod h1:CppWax0STPvrK+Jq9gB5KijLzBHm1FCy1RSwzdQdOCI=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
@@ -231,6 +229,8 @@ github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6So
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
+github.com/sb-im/jsonrpc-lite v0.2.0 h1:r45VX/mESjt6SYBX7V6yIDr3EUWi40EjQIXzz0B0lzo=
+github.com/sb-im/jsonrpc-lite v0.2.0/go.mod h1:dHV+dbbKl+2+/pDgAavKuAWdEfjGWGck0M7Au+Tkj8Q=
 github.com/schollz/progressbar/v3 v3.8.1 h1:maiA95sku3mMHbERvCwzn/Tj6258Fm5NQf0E4L/a+5o=
 github.com/schollz/progressbar/v3 v3.8.1/go.mod h1:rS3+CgxcNODZywN7C/z/7XH8gxCBLwuW5UmOUiNpOgs=
 github.com/sclevine/agouti v3.0.0+incompatible/go.mod h1:b4WX9W9L1sfQKXeJf1mUTLZKJ48R1S7H23Ji7oFO5Bw=
