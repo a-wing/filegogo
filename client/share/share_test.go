@@ -1,6 +1,9 @@
 package share
 
-import "testing"
+import (
+	"filegogo/server"
+	"testing"
+)
 
 func TestIsShareInit(t *testing.T) {
 	initAddr := "http://localhost:8080"
@@ -16,7 +19,7 @@ func TestIsShareInit(t *testing.T) {
 
 func TestShareToWebSocket(t *testing.T) {
 	req := "http://localhost:8033/1024"
-	res := "ws://localhost:8033/share/1024"
+	res := "ws://localhost:8033" + server.Prefix + "/1024"
 
 	if ShareToWebSocket(req) != res {
 		t.Error("Should equal")
@@ -24,7 +27,7 @@ func TestShareToWebSocket(t *testing.T) {
 }
 
 func TestWebSocketToShare(t *testing.T) {
-	req := "ws://localhost:8033/share/1024"
+	req := "ws://localhost:8033" + server.Prefix + "/1024"
 	res := "http://localhost:8033/1024"
 
 	if WebSocketToShare(req) != res {

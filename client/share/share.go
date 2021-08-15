@@ -35,7 +35,7 @@ func ShareToWebSocket(addr string) string {
 		}
 
 		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
-			u.Path = "/" + server.PrefixShare + "/" + arr[1]
+			u.Path = server.Prefix + "/" + arr[1]
 		}
 		return u.String()
 	}

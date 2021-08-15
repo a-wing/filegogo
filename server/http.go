@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/golang-lru"
 )
 
-const (
-	PrefixShare = "share"
-)
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

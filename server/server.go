@@ -16,6 +16,10 @@ import (
 //go:embed dist
 var dist embed.FS
 
+const (
+	Prefix = "/s"
+)
+
 func Run(address, configPath string) {
 	sr := mux.NewRouter()
 
@@ -23,8 +27,8 @@ func Run(address, configPath string) {
 	go cable.Run(context.Background())
 	httpServer := NewServer(cable)
 
-	sr.HandleFunc("/"+PrefixShare+"/", httpServer.ApplyCable)
-	sr.Handle("/"+PrefixShare+"/{room:[0-9]+}", cable)
+	sr.HandleFunc(Prefix+"/", httpServer.ApplyCable)
+	sr.Handle(Prefix+"/{room:[0-9]+}", cable)
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Read config: %s", configPath)

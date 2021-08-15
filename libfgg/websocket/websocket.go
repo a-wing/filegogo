@@ -45,7 +45,7 @@ func fillAddr(addr string) string {
 			name = arr[2]
 		}
 		u.Path = ""
-		return u.String() + "/" + server.PrefixShare + "/" + name
+		return u.String() + server.Prefix + "/" + name
 	}
 }
 
@@ -103,7 +103,7 @@ func (c *Conn) updateServer(share string) error {
 	if u, err := url.Parse(c.server); err != nil {
 		return err
 	} else {
-		u.Path = path.Join(server.PrefixShare, share)
+		u.Path = path.Join(server.Prefix, share)
 		c.server = u.String()
 		return nil
 	}
