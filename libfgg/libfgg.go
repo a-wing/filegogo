@@ -27,7 +27,6 @@ type Fgg struct {
 	sender bool
 
 	// Callbacks
-	OnShare    func(addr string)
 	OnPreTran  func(*transfer.MetaFile)
 	OnPostTran func(*transfer.MetaHash)
 }
@@ -36,7 +35,6 @@ func NewFgg() *Fgg {
 	return &Fgg{
 		Tran:       transfer.NewTransfer(),
 		errors:     make(chan error),
-		OnShare:    func(addr string) {},
 		OnPreTran:  func(meta *transfer.MetaFile) {},
 		OnPostTran: func(meta *transfer.MetaHash) {},
 	}
@@ -71,7 +69,6 @@ func (t *Fgg) UseWebsocket(addr string) error {
 		log.Warn(err)
 		return err
 	}
-	t.OnShare(t.ws.Server())
 	t.Conn = t.ws
 
 	go t.ws.Run()

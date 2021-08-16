@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"filegogo/client/api"
 	"filegogo/client/qrcode"
-	"filegogo/client/share"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
+	"filegogo/util"
 
 	"github.com/pion/webrtc/v3"
 
@@ -41,9 +42,7 @@ func (c *Client) Topic() string {
 }
 
 func (t *Client) OnShare(addr string) {
-	log.Println("=== WebSocket Connected ===")
-
-	addr = share.WebSocketToShare(addr)
+	log.Println("=== Please use this address ===")
 
 	// Show QRcode
 	if t.Config.ShowQRcode {
@@ -53,7 +52,7 @@ func (t *Client) OnShare(addr string) {
 	}
 
 	fmt.Println(addr)
-	log.Println("=== =================== ===")
+	log.Println("=== ======================= ===")
 }
 
 func (t *Client) OnPreTran(file *transfer.MetaFile) {
@@ -70,11 +69,16 @@ func (t *Client) OnProgress(c int64) {
 
 func (c *Client) Send(ctx context.Context, files []string) {
 	fgg := libfgg.NewFgg()
-	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
 
-	fgg.UseWebsocket(share.ShareToWebSocket(c.Config.Server))
+	room, err := api.GetRoom(c.Config.Server)
+	if err != nil {
+		panic(err)
+	}
+	c.OnShare(c.Config.Server+room)
+
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server)+room)
 	if err := fgg.Send(files); err != nil {
 		panic(err)
 	}
@@ -89,7 +93,6 @@ func (c *Client) Send(ctx context.Context, files []string) {
 
 func (c *Client) Recv(ctx context.Context, files []string) {
 	fgg := libfgg.NewFgg()
-	fgg.OnShare = c.OnShare
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = func(t *transfer.MetaFile) {
 		c.OnPreTran(t)
@@ -99,7 +102,12 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 		}()
 	}
 
-	fgg.UseWebsocket(share.ShareToWebSocket(c.Config.Server))
+	room, err := api.GetRoom(c.Config.Server)
+	if err != nil {
+		panic(err)
+	}
+
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server)+room)
 	if err := fgg.Recv(files); err != nil {
 		panic(err)
 	}
