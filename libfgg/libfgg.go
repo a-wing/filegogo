@@ -65,7 +65,6 @@ func (t *Fgg) UseWebsocket(addr string) error {
 	t.ws = websocket.NewConn(addr)
 	t.ws.OnMessage = t.recv
 	if err := t.ws.Connect(); err != nil {
-		log.Trace(t.ws.Server())
 		log.Warn(err)
 		return err
 	}
