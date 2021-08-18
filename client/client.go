@@ -6,6 +6,7 @@ import (
 
 	"filegogo/client/api"
 	"filegogo/client/qrcode"
+	"filegogo/client/share"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
 	"filegogo/util"
@@ -72,13 +73,16 @@ func (c *Client) Send(ctx context.Context, files []string) {
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
 
-	room, err := api.GetRoom(c.Config.Server)
-	if err != nil {
-		panic(err)
+	if !share.IsShareInit(c.Config.Server) {
+		room, err := api.GetRoom(c.Config.Server)
+		if err != nil {
+			panic(err)
+		}
+		c.Config.Server += room
+		c.OnShare(c.Config.Server)
 	}
-	c.OnShare(c.Config.Server+room)
 
-	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server)+room)
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
 	if err := fgg.Send(files); err != nil {
 		panic(err)
 	}
@@ -102,12 +106,16 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 		}()
 	}
 
-	room, err := api.GetRoom(c.Config.Server)
-	if err != nil {
-		panic(err)
+	if !share.IsShareInit(c.Config.Server) {
+		room, err := api.GetRoom(c.Config.Server)
+		if err != nil {
+			panic(err)
+		}
+		c.Config.Server += room
+		c.OnShare(c.Config.Server)
 	}
 
-	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server)+room)
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
 	if err := fgg.Recv(files); err != nil {
 		panic(err)
 	}

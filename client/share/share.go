@@ -2,6 +2,7 @@ package share
 
 import (
 	"net/url"
+	"regexp"
 	"strings"
 
 	"filegogo/server"
@@ -12,8 +13,8 @@ func IsShareInit(addr string) bool {
 	if u, err := url.Parse(addr); err != nil {
 		return false
 	} else {
-		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
-			if arr[1] != "" {
+		if arr := strings.Split(u.Path, "/"); len(arr) > 0 {
+			if ok, _ := regexp.MatchString(`\d`, arr[len(arr)-1]); ok {
 				return true
 			}
 			return false
