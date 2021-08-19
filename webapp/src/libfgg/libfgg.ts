@@ -1,6 +1,5 @@
 import log from 'loglevel'
 
-import WebSocket from './websocket'
 import WebRTC from './webrtc'
 import Transfer from './transfer'
 
@@ -31,14 +30,20 @@ export default class LibFgg {
 
   useWebsocket(addr: string) {
     log.debug("websocket connect: ", addr)
-    this.ws = new WebSocket(addr, (addr: string) => {
-      this.onShare(addr)
-      this.conn = this.ws
+    this.ws = new WebSocket(addr)
 
+    // This browser default
+    // Firefox is Blob
+    // Chrome, Safari is ArrayBuffer
+    this.ws.binaryType = "arraybuffer"
+    this.ws.onopen = () => {
+      this.conn = this.ws
       this.send(JSON.stringify({
         method: "reqlist",
       }))
-    })
+    }
+    this.ws.onclose = () => { log.debug("websocket disconnected") }
+    this.ws.onerror = () => { log.debug("websocket error") }
 
     this.ws.onmessage = (ev: MessageEvent) => {
       this.recv(ev)

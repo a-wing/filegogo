@@ -35,31 +35,36 @@ class App extends React.Component {
 
   componentDidMount() {
     log.setLevel("debug")
-    let id = ""
-    const pathArr = document.location.pathname.split("/")
-    if (pathArr.length > 1) {
-      id = pathArr[1]
-    }
-    //const fgg = new LibFgg()
+    fetch("/s/")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          const addr = document.location.origin + '/' + result.room
+          this.wsconn(result.room)
+          this.historyPush(result.room)
+          this.ShowQRcode(addr)
+        },
+        (error) => {
+          console.log(error)
+        }
+      )
+  }
+  historyPush(path: string) {
+    history.push(path)
+  }
+  ShowQRcode(addr: string) {
+    QRCode.toCanvas(this.qrcode.current, addr, {
+      width: 400
+    }, error => {
+      if (error) console.error(error)
+      console.log('Create QRCode:', addr)
+    })
+  }
+  wsconn(room: string) {
     const fgg = this.fgg
     fgg.onShare = ((addr: any) => {
-      const url = new URL(addr)
-      const path = '/' + url.pathname.split('/')[2]
-      history.push(path)
-
-      const address = document.location.origin + path
-      //this.address = "xxx"
-      this.address = address
-      //this.setState((state, props) => {
       this.setState(() => {
         return "address"
-      })
-      //this.setState(()=>{})
-      QRCode.toCanvas(this.qrcode.current, address, {
-        width: 400
-      }, error => {
-        if (error) console.error(error)
-        console.log('Create QRCode:', address)
       })
 
       fgg.onPreTran = (meta: any) => {
@@ -84,15 +89,7 @@ class App extends React.Component {
       }
 
     })
-    fgg.useWebsocket('ws://localhost:8033/share/' + id)
-
-    //this.fgg = fgg
-
-    //const ws = new WebSocket()
-    //ws.onmessage = ({data}) => {
-    //  log.warn(data)
-    //}
-    //log.debug(ws.server)
+    fgg.useWebsocket('ws://localhost:8033/s/' + room)
   }
   getfile() {
     this.fgg.useWebRTC({
