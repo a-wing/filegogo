@@ -4,8 +4,8 @@ import './App.css';
 
 import QRCode from 'qrcode'
 
-import { IsShareInit } from './lib/share'
 import { ProtoHttpToWs } from './lib/util'
+import { getServer, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
 import log from 'loglevel'
 import history from 'history/browser'
@@ -38,25 +38,15 @@ class App extends React.Component {
   componentDidMount() {
     log.setLevel("debug")
 
-    if (IsShareInit(document.location.href)) {
-      const addr = document.location.href
+    getRoom().then(room => {
+      const addr = getServer() + room
+      this.ShowQRcode(document.location.origin + '/' + room)
+      this.historyPush(room)
+      this.setState({
+        address: document.location.origin + '/' + room
+      })
       this.wsconn(ProtoHttpToWs(addr))
-      this.ShowQRcode(addr)
-    } else {
-      fetch("/s/")
-        .then(res => res.json())
-        .then(
-          (result) => {
-            const addr = document.location.origin + '/' + result.room
-            this.wsconn(ProtoHttpToWs(addr))
-            this.historyPush(result.room)
-            this.ShowQRcode(addr)
-          },
-          (error) => {
-            console.log(error)
-          }
-        )
-    }
+    })
   }
   historyPush(path: string) {
     history.push(path)

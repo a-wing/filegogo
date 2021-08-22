@@ -1,13 +1,13 @@
-
-function IsShareInit(addr: string): boolean {
+function getParams(addr: string): string {
   const arr = (new URL(addr)).pathname.split('/')
   if (arr.length > 0) {
-    return /\d/.test(arr[arr.length - 1])
+    const str = arr[arr.length - 1]
+    return /\d/.test(str) ? str : ''
   }
-  return false
+  return ''
 }
 
 export {
-  IsShareInit,
+  getParams,
 }
 
