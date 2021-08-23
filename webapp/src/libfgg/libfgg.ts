@@ -11,7 +11,6 @@ export default class LibFgg {
 
   tran: Transfer
 
-  onShare: (addr: string) => void
 	onPreTran:  (meta: any) => void
 	onPostTran: (meta: any) => void
 
@@ -20,7 +19,6 @@ export default class LibFgg {
 	//OnPostTran: (meta: Transfer.MetaHash) => void
 
   constructor() {
-    this.onShare = () => {}
     this.onPreTran = () => {}
     this.onPostTran = () => {}
     this.onRecvFile = () => {}

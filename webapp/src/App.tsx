@@ -42,8 +42,9 @@ class App extends React.Component {
       const addr = getServer() + room
       this.ShowQRcode(document.location.origin + '/' + room)
       this.historyPush(room)
-      this.setState({
-        address: document.location.origin + '/' + room
+      this.address = document.location.origin + '/' + room
+      this.setState(() => {
+        return "address"
       })
       this.wsconn(ProtoHttpToWs(addr))
     })
@@ -61,33 +62,26 @@ class App extends React.Component {
   }
   wsconn(addr: string) {
     const fgg = this.fgg
-    fgg.onShare = ((addr: any) => {
-      this.setState(() => {
-        return "address"
+    fgg.onPreTran = (meta: any) => {
+      this.total = meta.size
+      this.setState(()=>{
+        return "total"
       })
 
-      fgg.onPreTran = (meta: any) => {
-        this.total = meta.size
+    }
 
-        this.setState(()=>{
-          return "total"
-        })
+    fgg.onRecvFile = () => {
+      this.recver = true
+      this.setState(() => {return "recver"})
+    }
 
-      }
+    fgg.tran.onProgress = (c: number) => {
+      this.progress += c
+      this.setState(()=>{
+        return "progress"
+      })
+    }
 
-      fgg.onRecvFile = () => {
-        this.recver = true
-        this.setState(() => {return "recver"})
-      }
-
-      fgg.tran.onProgress = (c: number) => {
-        this.progress += c
-        this.setState(()=>{
-          return "progress"
-        })
-      }
-
-    })
     fgg.useWebsocket(addr)
   }
   getfile() {
