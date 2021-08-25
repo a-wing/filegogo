@@ -10,7 +10,7 @@ import LibFgg from './libfgg/libfgg'
 import log from 'loglevel'
 import history from 'history/browser'
 
-import copy from 'copy-to-clipboard'
+import Address from './address'
 
 class App extends React.Component {
   fgg: any
@@ -54,7 +54,7 @@ class App extends React.Component {
   }
   ShowQRcode(addr: string) {
     QRCode.toCanvas(this.qrcode.current, addr, {
-      width: 400
+      width: 300
     }, error => {
       if (error) console.error(error)
       console.log('Create QRCode:', addr)
@@ -114,21 +114,13 @@ class App extends React.Component {
 
     this.fgg.sendFile(files[0])
   }
-
-  handleCopy() {
-      copy(this.address)
-  }
-
   // <img src={logo} className="App-logo" alt="logo" />
   render() {
     return (
       <div className="App">
         <header className="App-header">
           <canvas className="qrcode" ref={ this.qrcode }></canvas>
-          <div className="App-address">
-            <p className="App-address-text" >{ this.address }</p>
-            <button className="App-address-button" onClick={ () => { this.handleCopy() } } >COPY</button>
-          </div>
+          <Address address={ this.address }></Address>
 
           { this.recver
           ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
