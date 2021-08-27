@@ -1,5 +1,5 @@
 import copy from 'copy-to-clipboard'
-import './address.css';
+import './Address.css'
 
 function Address(props: {address: string}) {
   return (

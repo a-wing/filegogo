@@ -2,7 +2,6 @@ import React from 'react';
 //import logo from './logo.svg';
 import './App.css';
 
-import QRCode from 'qrcode'
 
 import { ProtoHttpToWs } from './lib/util'
 import { getServer, getRoom } from './lib/api'
@@ -10,11 +9,11 @@ import LibFgg from './libfgg/libfgg'
 import log from 'loglevel'
 import history from 'history/browser'
 
-import Address from './address'
+import Address from './components/Address'
+import Qrcode from './components/QRCode'
 
 class App extends React.Component {
   fgg: any
-  qrcode: any
   address: string
   progress: number
   total:    number
@@ -26,7 +25,6 @@ class App extends React.Component {
     super(props)
 
     this.fgg = new LibFgg()
-    this.qrcode = React.createRef()
     this.address = document.location.href
     this.progress = 0
     this.total = 10
@@ -40,7 +38,6 @@ class App extends React.Component {
 
     getRoom().then(room => {
       const addr = getServer() + room
-      this.ShowQRcode(document.location.origin + '/' + room)
       this.historyPush(room)
       this.address = document.location.origin + '/' + room
       this.setState(() => {
@@ -51,14 +48,6 @@ class App extends React.Component {
   }
   historyPush(path: string) {
     history.push(path)
-  }
-  ShowQRcode(addr: string) {
-    QRCode.toCanvas(this.qrcode.current, addr, {
-      width: 300
-    }, error => {
-      if (error) console.error(error)
-      console.log('Create QRCode:', addr)
-    })
   }
   wsconn(addr: string) {
     const fgg = this.fgg
@@ -119,7 +108,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          <canvas className="qrcode" ref={ this.qrcode }></canvas>
+          <Qrcode address={ this.address }></Qrcode>
           <Address address={ this.address }></Address>
 
           { this.recver
