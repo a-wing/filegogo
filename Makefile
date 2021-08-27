@@ -31,12 +31,10 @@ install:
 all: linux-amd64 darwin-amd64 windows-amd64 # Most used
 
 frontend:
-	npm run build
+	pushd webapp && npm run build && popd
 
 data: frontend
-	cp -r dist server/
-
-test: data
+	cp -r webapp/build/ server/dist
 
 run:
 	go run -tags=dev main.go server
@@ -68,11 +66,8 @@ windows-amd64: data
 releases: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
 
 frontend-clean:
-	rm dist
+	rm -r server/dist
 
-generate-clean:
-	data/*_vfsdata.go
-
-clean: frontend-clean generate-clean
+clean: frontend-clean
 	rm $(BINDIR)/*
 
