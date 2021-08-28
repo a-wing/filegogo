@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 OS=
 ARCH=
 PROFIX=
