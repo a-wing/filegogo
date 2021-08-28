@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
-import './QRCode.css'
+
+import styles from './QRCode.module.scss'
 
 import { useRef } from 'react'
 
@@ -13,7 +14,7 @@ function AppQRCode(props: {address: string}) {
   })
 
   return (
-    <canvas className="qrcode" ref={ qrcode }></canvas>
+    <canvas className={ styles.qrcode } ref={ qrcode }></canvas>
   )
 }
 
