@@ -1,19 +1,22 @@
 .address {
   display: flex;
   flex-direction: row;
+  padding: 20px;
 
   .text {
+    font-size: 16px;
+    font-weight: 400;
     background-color: #f0c1ff;
     border-radius: 8px;
     color: #d800ff;
-    padding: 3px;
-    margin: 20px;
+    padding: 8px;
+    margin: 5px;
   }
 
-  .button {
+  .base {
     padding: 3px;
-    margin: 20px;
-    border-radius: 18px;
+    margin: 2px;
+    border-radius: 20px;
     border-width: 3px;
     border-color: red;
 
@@ -24,19 +27,16 @@
     transition-duration: 0.4s;
     cursor: pointer;
 
-    background-color: white;
+    border: 1px solid #f14668;
+  }
+
+  .button {
     color: red;
-    border: 2px solid #f44336;
+    background-color: white;
   }
 
   .button:hover {
-    background-color: #f44336;
     color: white;
-    padding: 3px;
-    margin: 20px;
-    border-radius: 18px;
-    border-width: 3px;
-    border-color: red;
-    border: 2px solid #f44336;
+    background-color: #f14668;
   }
 }

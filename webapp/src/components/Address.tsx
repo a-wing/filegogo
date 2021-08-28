@@ -5,7 +5,7 @@ function Address(props: {address: string}) {
   return (
     <div className={ styles.address }>
       <p className={ styles.text } >{ props.address }</p>
-      <button className={ styles.button } onClick={ () => { copy(props.address) } } >COPY</button>
+      <button className={ `${styles.base} ${styles.button}` } onClick={ () => { copy(props.address) } } >COPY</button>
     </div>
   )
 }
