@@ -9,6 +9,7 @@ import log from 'loglevel'
 import history from 'history/browser'
 
 import Address from './components/Address'
+import File from './components/File'
 import Progress from './components/Progress'
 import Qrcode from './components/QRCode'
 
@@ -114,8 +115,8 @@ class App extends React.Component {
           <Progress percent={ this.progress / this.total }></Progress>
 
           { this.recver
-          ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
-          : <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
+            ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
+            : <File handleFile={ (files: any) => { this.handleFile(files) } } ></File>
           }
         </div>
         </header>
