@@ -2,7 +2,6 @@ import React from 'react';
 //import logo from './logo.svg';
 import './App.css';
 
-
 import { ProtoHttpToWs } from './lib/util'
 import { getServer, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
@@ -109,6 +108,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
+        <div className="App-card">
           <Qrcode address={ this.address }></Qrcode>
           <Address address={ this.address }></Address>
           <Progress percent={ this.progress / this.total }></Progress>
@@ -117,6 +117,7 @@ class App extends React.Component {
           ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
           : <input className="App-address-button" type="file" onChange={ (ev: any) => { this.handleFile(ev.target.files) } } />
           }
+        </div>
         </header>
       </div>
     )
