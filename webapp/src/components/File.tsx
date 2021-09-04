@@ -17,7 +17,7 @@ function File(props: { handleFile: (files: FileList | null) => void }) {
 
   return (
     <>
-      <label className={ styles.label } onClick={ handleClick } >{ filename }</label>
+      <label className={ styles.button } onClick={ handleClick } >{ filename }</label>
       <input
         className={ styles.input }
         type="file"

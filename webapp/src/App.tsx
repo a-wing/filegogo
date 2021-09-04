@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 //import logo from './logo.svg';
 import './App.css';
 
+import stylesFile from './components/File.module.scss'
+
 import { ProtoHttpToWs } from './lib/util'
 import { getServer, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
@@ -86,7 +88,7 @@ function App() {
           <Progress percent={ percent }></Progress>
 
           { recver
-            ? <button className="App-address-button" onClick={ () => { getfile() } } >GetFile</button>
+            ? <label className={ stylesFile.button } onClick={ () => { getfile() } } >GetFile</label>
             : <File handleFile={ (files: any) => { handleFile(files) } } ></File>
           }
         </div>

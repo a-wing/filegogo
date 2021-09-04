@@ -1,17 +1,22 @@
 .input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  border: 0;
+  display: none;
 }
-.label {
+
+.button {
   width: 80%;
   border: 1px solid #ccc;
   display: inline-block;
   padding: 6px 12px;
   cursor: pointer;
 }
+
+.button:hover {
+  background-color: #3e8e41
+}
+
+.button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
