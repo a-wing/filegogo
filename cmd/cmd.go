@@ -1,82 +1,123 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"filegogo/client"
+	"filegogo/client/qrcode"
+	"filegogo/server"
+
+	"github.com/pion/webrtc/v3"
+	"github.com/urfave/cli/v2"
 )
 
-var (
-	// Used for flags.
-	cfgFile     string
-	userLicense string
+const serverAddr = "http://localhost:8033/s/"
 
-	rootCmd = &cobra.Command{
-		Use:   "filegogo",
-		Short: "a p2p file transfer tool",
-		Long:  `A p2p file transfer tool that can be used in the webrtc p2p`,
+func Execute() {
+	app := cli.NewApp()
+	app.EnableBashCompletion = true
+	app.UseShortOptionHandling = true
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "Load configuration from `FILE`",
+		},
+		&cli.BoolFlag{
+			Name:    "qrcode",
+			Aliases: []string{"q"},
+			Usage:   "Show QRcode",
+			Value:   false,
+		},
+		&cli.BoolFlag{
+			Name:    "progress",
+			Aliases: []string{"p"},
+			Usage:   "Show Progress Bar",
+			Value:   false,
+		},
 	}
-)
+	app.Commands = []*cli.Command{
+		{
+			Name:  "server",
+			Usage: "websocket broker server",
+			Action: func(c *cli.Context) error {
+				fmt.Println("listen: ", c.String("listen"))
+				server.Run(c.String("listen"), "TODO")
+				return nil
+			},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:    "listen",
+					Aliases: []string{"l"},
+					Value:   "0.0.0.0:8033",
+					Usage:   "set server listen address and port",
+				},
+			},
+		},
+		{
+			Name:  "send",
+			Usage: "Send File",
+			Action: func(c *cli.Context) error {
+				fmt.Println("send: ", c.Args().First())
+				fmt.Println("server: ", c.String("server"))
+				qrconfig := &qrcode.Config{}
+				iceservers := &webrtc.Configuration{}
 
-// Execute executes the root command.
-func Execute() error {
-	return rootCmd.Execute()
-}
+				config := &client.ClientConfig{
+					Server:       c.String("server"),
+					ShowQRcode:   c.Bool("qrcode"),
+					ShowProgress: c.Bool("progress"),
+					IcsServers:   iceservers,
+					QRcodeConfig: qrconfig,
+				}
+				cc, _ := client.NewClient(config)
+				cc.Send(context.Background(), c.Args().Slice())
+				return nil
+			},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:    "server",
+					Aliases: []string{"s"},
+					Value:   serverAddr,
+					Usage:   "Signal Server Address",
+				},
+			},
+		},
+		{
+			Name:  "recv",
+			Usage: "Recv File",
+			Action: func(c *cli.Context) error {
+				fmt.Println("recv: ", c.Args().First())
+				fmt.Println("server: ", c.String("server"))
+				qrconfig := &qrcode.Config{}
+				iceservers := &webrtc.Configuration{}
 
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/filegogo.toml)")
-	rootCmd.PersistentFlags().StringP("server", "s", "", "Signal Server Address (default is https://send.22333.fun)")
-	rootCmd.PersistentFlags().BoolP("show-qrcode", "q", false, "Show QRcode")
-	rootCmd.PersistentFlags().BoolP("show-progress", "p", true, "Show Progress Bar")
-
-	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
-	//viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
-	viper.BindPFlags(rootCmd.PersistentFlags())
-
-	viper.SetDefault("server", "http://localhost:8033")
-	viper.SetDefault("level", "info")
-
-	// server
-	viper.SetDefault("listen", "0.0.0.0:8033")
-	viper.SetDefault("browser", "./config.json")
-}
-
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		cobra.CheckErr(err)
-
-		viper.SetConfigName("filegogo")
-		viper.SetConfigType("toml")
-
-		viper.AddConfigPath(".")
-		viper.AddConfigPath(home)
-		viper.AddConfigPath(home + "/.config/")
-		viper.AddConfigPath("/etc/filegogo/")
+				config := &client.ClientConfig{
+					Server:       c.String("server"),
+					ShowQRcode:   c.Bool("qrcode"),
+					ShowProgress: c.Bool("progress"),
+					IcsServers:   iceservers,
+					QRcodeConfig: qrconfig,
+				}
+				cc, _ := client.NewClient(config)
+				cc.Recv(context.Background(), c.Args().Slice())
+				return nil
+			},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:    "server",
+					Aliases: []string{"s"},
+					Value:   serverAddr,
+					Usage:   "Signal Server Address",
+				},
+			},
+		},
 	}
-
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	//log.SetReportCaller(true)
-	if level, err := log.ParseLevel(viper.GetString("level")); err != nil {
-		fmt.Println(err)
-	} else {
-		log.SetLevel(level)
-	}
-	log.SetFormatter(&log.TextFormatter{
-		//FullTimestamp: true,
-	})
 }
