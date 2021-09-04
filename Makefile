@@ -8,7 +8,7 @@ VERSION=$(shell git describe --tags || git rev-parse --short HEAD || echo "unkno
 BUILD_TIME=$(shell date +%FT%T%z)
 LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.BuildTime=$(BUILD_TIME)"'
 GOBUILD=CGO_ENABLED=0 \
-				go build -ldflags $(LD_FLAGS)
+				go build -trimpath -ldflags $(LD_FLAGS)
 
 PLATFORM_LIST = \
 								darwin-amd64 \
@@ -21,22 +21,29 @@ PLATFORM_LIST = \
 WINDOWS_ARCH_LIST = \
 										windows-386 \
 										windows-amd64
+
+.PHONY: default
 default: data
 	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME)
 
+.PHONY: install
 install:
 	install -Dm755 ${NAME} -t ${PROFIX}/usr/bin/
 	install -Dm644 conf/config.json -t ${PROFIX}/etc/${NAME}/
 	install -Dm644 conf/${NAME}.service -t ${PROFIX}/lib/systemd/system/
 
+.PHONY: all
 all: linux-amd64 darwin-amd64 windows-amd64 # Most used
 
+.PHONY: frontend
 frontend:
 	pushd webapp && npm run build && popd
 
+.PHONY: data
 data: frontend
 	cp -r webapp/build/ server/dist
 
+.PHONY: run
 run:
 	go run -tags=dev main.go server
 
