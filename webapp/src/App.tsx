@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState } from 'react'
 //import logo from './logo.svg';
 import './App.css';
 
@@ -13,69 +13,30 @@ import File from './components/File'
 import Progress from './components/Progress'
 import Qrcode from './components/QRCode'
 
-class App extends React.Component {
-  fgg: any
-  address: string
-  progress: number
-  total:    number
+const fgg = new LibFgg()
 
-  sender: boolean
-  recver: boolean
+function App() {
+  const [address, setAddress] = useState<string>(document.location.href)
 
-  constructor(props: any) {
-    super(props)
+  let progress = 0
+  let total = 10
+  const [percent, setPercent] = useState<number>(0)
+  const [recver, setRecver] = useState<boolean>(false)
 
-    this.fgg = new LibFgg()
-    this.address = document.location.href
-    this.progress = 0
-    this.total = 10
-
-    this.sender = false
-    this.recver = false
+  fgg.onPreTran = (meta: any) => {
+    total = meta.size
   }
 
-  componentDidMount() {
-    log.setLevel("debug")
+  fgg.onRecvFile = () => setRecver(true)
 
-    getRoom().then(room => {
-      const addr = getServer() + room
-      this.historyPush(room)
-      this.address = document.location.origin + '/' + room
-      this.setState(() => {
-        return "address"
-      })
-      this.wsconn(ProtoHttpToWs(addr))
-    })
+  fgg.tran.onProgress = (c: number) => {
+    progress += c
+    log.debug(progress)
+    setPercent(progress / total)
   }
-  historyPush(path: string) {
-    history.push(path)
-  }
-  wsconn(addr: string) {
-    const fgg = this.fgg
-    fgg.onPreTran = (meta: any) => {
-      this.total = meta.size
-      this.setState(()=>{
-        return "total"
-      })
 
-    }
-
-    fgg.onRecvFile = () => {
-      this.recver = true
-      this.setState(() => {return "recver"})
-    }
-
-    fgg.tran.onProgress = (c: number) => {
-      this.progress += c
-      this.setState(()=>{
-        return "progress"
-      })
-    }
-
-    fgg.useWebsocket(addr)
-  }
-  getfile() {
-    this.fgg.useWebRTC({
+  const getfile = function() {
+    fgg.useWebRTC({
       iceServers: [
         {
           urls: "stun:stun.l.google.com:19302",
@@ -86,15 +47,13 @@ class App extends React.Component {
       // TODO:
       // Need Wait to 1s
       setTimeout(() => {
-        this.fgg.getfile()
+        fgg.getfile()
       }, 1000)
     })
-    this.fgg.runWebRTC()
+    fgg.runWebRTC()
   }
-  handleFile(files: FileList) {
-    this.sender = true
-
-    this.fgg.useWebRTC({
+  const handleFile = function(files: FileList) {
+    fgg.useWebRTC({
       iceServers: [
         {
           urls: "stun:stun.l.google.com:19302",
@@ -102,27 +61,38 @@ class App extends React.Component {
       ]
     }, () => {})
 
-    this.fgg.sendFile(files[0])
+    fgg.sendFile(files[0])
   }
+
+  useEffect(() => {
+    getRoom().then(room => {
+      console.log(room)
+      history.push(room)
+
+      setAddress(document.location.origin + '/' + room)
+      const addr = getServer() + room
+      fgg.useWebsocket(ProtoHttpToWs(addr))
+    })
+
+  }, [])
+
   // <img src={logo} className="App-logo" alt="logo" />
-  render() {
-    return (
+  return (
       <div className="App">
         <header className="App-header">
         <div className="App-card">
-          <Qrcode address={ this.address }></Qrcode>
-          <Address address={ this.address }></Address>
-          <Progress percent={ this.progress / this.total }></Progress>
+          <Qrcode address={ address }></Qrcode>
+          <Address address={ address }></Address>
+          <Progress percent={ percent }></Progress>
 
-          { this.recver
-            ? <button className="App-address-button" onClick={ () => { this.getfile() } } >GetFile</button>
-            : <File handleFile={ (files: any) => { this.handleFile(files) } } ></File>
+          { recver
+            ? <button className="App-address-button" onClick={ () => { getfile() } } >GetFile</button>
+            : <File handleFile={ (files: any) => { handleFile(files) } } ></File>
           }
         </div>
         </header>
       </div>
     )
-  }
 }
 
 export default App;
