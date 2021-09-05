@@ -7,10 +7,10 @@ import (
 	"filegogo/client/api"
 	"filegogo/client/qrcode"
 	"filegogo/client/share"
+	"filegogo/client/util"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
 	"filegogo/server"
-	"filegogo/util"
 
 	"github.com/pion/webrtc/v3"
 
