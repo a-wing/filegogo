@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"filegogo/server"
-	"filegogo/util"
 )
 
 func IsShareInit(addr string) bool {
@@ -25,24 +24,22 @@ func IsShareInit(addr string) bool {
 
 // http://localhost:8033/1024"
 // To:
-// ws://localhost:8033/<Prefix>/1024"
-func ShareToWebSocket(addr string) string {
-	addr = util.ProtoHttpToWs(addr)
+// http://localhost:8033/<Prefix>/1024"
+func ShareToLinks(addr string) string {
 	if u, err := url.Parse(addr); err != nil {
 		return addr
 	} else {
 		if arr := strings.Split(u.Path, "/"); len(arr) > 1 {
-			u.Path = server.Prefix + "/" + arr[1]
+			u.Path = server.Prefix + arr[1]
 		}
 		return u.String()
 	}
 }
 
-// ws://localhost:8033/<Prefix>/1024"
+// http://localhost:8033/<Prefix>/1024"
 // To:
 // http://localhost:8033/1024"
-func WebSocketToShare(addr string) string {
-	addr = util.ProtoWsToHttp(addr)
+func LinksToShare(addr string) string {
 	if u, err := url.Parse(addr); err != nil {
 		return addr
 	} else {

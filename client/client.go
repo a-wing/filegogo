@@ -9,6 +9,7 @@ import (
 	"filegogo/client/share"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
+	"filegogo/server"
 	"filegogo/util"
 
 	"github.com/pion/webrtc/v3"
@@ -38,10 +39,6 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Topic() string {
-	return c.Config.Server + "/topic/"
-}
-
 func (t *Client) OnShare(addr string) {
 	log.Println("=== Please use this address ===")
 
@@ -52,7 +49,7 @@ func (t *Client) OnShare(addr string) {
 		fmt.Println()
 	}
 
-	fmt.Println(addr)
+	fmt.Println(share.LinksToShare(addr))
 	log.Println("=== ======================= ===")
 }
 
@@ -68,19 +65,26 @@ func (t *Client) OnProgress(c int64) {
 	}
 }
 
+func (c *Client) overrideServer() {
+	if !share.IsShareInit(c.Config.Server) {
+		room, err := api.GetRoom(c.Config.Server + server.Prefix)
+		if err != nil {
+			log.Debug(c.Config.Server + server.Prefix)
+			panic(err)
+		}
+		c.Config.Server += server.Prefix + room
+		c.OnShare(c.Config.Server)
+	} else {
+		c.Config.Server = share.ShareToLinks(c.Config.Server)
+	}
+}
+
 func (c *Client) Send(ctx context.Context, files []string) {
 	fgg := libfgg.NewFgg()
 	fgg.Tran.OnProgress = c.OnProgress
 	fgg.OnPreTran = c.OnPreTran
 
-	if !share.IsShareInit(c.Config.Server) {
-		room, err := api.GetRoom(c.Config.Server)
-		if err != nil {
-			panic(err)
-		}
-		c.Config.Server += room
-		c.OnShare(c.Config.Server)
-	}
+	c.overrideServer()
 
 	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
 	if err := fgg.Send(files); err != nil {
@@ -106,14 +110,7 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 		}()
 	}
 
-	if !share.IsShareInit(c.Config.Server) {
-		room, err := api.GetRoom(c.Config.Server)
-		if err != nil {
-			panic(err)
-		}
-		c.Config.Server += room
-		c.OnShare(c.Config.Server)
-	}
+	c.overrideServer()
 
 	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
 	if err := fgg.Recv(files); err != nil {

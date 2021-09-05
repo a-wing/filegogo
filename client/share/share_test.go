@@ -17,20 +17,20 @@ func TestIsShareInit(t *testing.T) {
 	}
 }
 
-func TestShareToWebSocket(t *testing.T) {
+func TestShareToLinks(t *testing.T) {
 	req := "http://localhost:8033/1024"
-	res := "ws://localhost:8033" + server.Prefix + "/1024"
+	res := "http://localhost:8033" + server.Prefix + "1024"
 
-	if ShareToWebSocket(req) != res {
+	if ShareToLinks(req) != res {
 		t.Error("Should equal")
 	}
 }
 
-func TestWebSocketToShare(t *testing.T) {
-	req := "ws://localhost:8033" + server.Prefix + "/1024"
+func TestLinksToShare(t *testing.T) {
+	req := "http://localhost:8033" + server.Prefix + "1024"
 	res := "http://localhost:8033/1024"
 
-	if WebSocketToShare(req) != res {
+	if LinksToShare(req) != res {
 		t.Error("Should equal")
 	}
 }

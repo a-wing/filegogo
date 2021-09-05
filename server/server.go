@@ -16,7 +16,7 @@ import (
 var dist embed.FS
 
 const (
-	Prefix = "/s"
+	Prefix = "/s/"
 )
 
 func Run(cfg *Config) {
@@ -26,8 +26,8 @@ func Run(cfg *Config) {
 	go cable.Run(context.Background())
 	httpServer := NewServer(cable)
 
-	sr.HandleFunc(Prefix+"/", httpServer.ApplyCable)
-	sr.Handle(Prefix+"/{room:[0-9]+}", cable)
+	sr.HandleFunc(Prefix, httpServer.ApplyCable)
+	sr.Handle(Prefix+"{room:[0-9]+}", cable)
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
