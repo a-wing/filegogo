@@ -3,6 +3,7 @@ package cmd
 import (
 	"filegogo/server"
 
+	"github.com/pion/webrtc/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,6 +20,13 @@ var serverCmd = &cobra.Command{
 	Long:  `websocket broker server`,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		server.Run(viper.GetString("listen"), viper.GetString("browser"))
+		// IcsServers
+		iceservers := &webrtc.Configuration{}
+		viper.Unmarshal(iceservers)
+
+		server.Run(&server.Config{
+			Server:     viper.GetString("listen"),
+			IcsServers: iceservers,
+		})
 	},
 }

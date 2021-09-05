@@ -1,7 +1,5 @@
 filegogo
 filegogo.toml
-config.json
-data/*_vfsdata.go
 
 bin
 dist

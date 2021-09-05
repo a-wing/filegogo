@@ -3,11 +3,10 @@ package server
 import (
 	"context"
 	"embed"
-	"io"
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
@@ -20,7 +19,7 @@ const (
 	Prefix = "/s"
 )
 
-func Run(address, configPath string) {
+func Run(cfg *Config) {
 	sr := mux.NewRouter()
 
 	cable := lightcable.New(lightcable.DefaultConfig)
@@ -31,16 +30,9 @@ func Run(address, configPath string) {
 	sr.Handle(Prefix+"/{room:[0-9]+}", cable)
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Read config: %s", configPath)
-
 		w.Header().Add("Content-type", "application/json")
-		file, err := os.Open(configPath)
-		if err != nil {
-			return
-		}
-		_, err = io.Copy(w, file)
-		if err != nil {
-			return
+		if err := json.NewEncoder(w).Encode(cfg.IcsServers); err != nil {
+			log.Println(err)
 		}
 	})
 
@@ -50,7 +42,6 @@ func Run(address, configPath string) {
 	}
 	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
 
-	log.Println("===============")
-	log.Println("Listen Port", address)
-	log.Fatal(http.ListenAndServe(address, sr))
+	log.Printf("=== Listen Port: %s ===\n", cfg.Server)
+	log.Fatal(http.ListenAndServe(cfg.Server, sr))
 }
