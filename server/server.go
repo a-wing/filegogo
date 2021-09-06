@@ -7,17 +7,35 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
 )
 
-//go:embed dist
+//go:embed build
 var dist embed.FS
 
 const (
 	Prefix = "/s/"
 )
+
+// Fork From the: https://pkg.go.dev/net/http#StripPrefix
+func NoPrefix(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "" {
+			h.ServeHTTP(w, r)
+		} else {
+			r2 := new(http.Request)
+			*r2 = *r
+			r2.URL = new(url.URL)
+			*r2.URL = *r.URL
+			r2.URL.Path = ""
+			r2.URL.RawPath = ""
+			h.ServeHTTP(w, r2)
+		}
+	})
+}
 
 func Run(cfg *Config) {
 	sr := mux.NewRouter()
@@ -36,11 +54,13 @@ func Run(cfg *Config) {
 		}
 	})
 
-	fsys, err := fs.Sub(dist, "dist")
+	fsys, err := fs.Sub(dist, "build")
 	if err != nil {
 		log.Fatal(err)
 	}
-	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
+
+	sr.PathPrefix("/{id:[0-9]+}").Handler(NoPrefix(http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.FileServer(http.FS(fsys))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Server)
 	log.Fatal(http.ListenAndServe(cfg.Server, sr))

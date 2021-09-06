@@ -2,7 +2,7 @@ filegogo
 filegogo.toml
 
 bin
-dist
+build
 node_modules
 
 # Binaries for programs and plugins

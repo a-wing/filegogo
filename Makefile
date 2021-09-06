@@ -23,7 +23,10 @@ WINDOWS_ARCH_LIST = \
 										windows-amd64
 
 .PHONY: default
-default: data
+default: data build
+
+.PHONY: build
+build:
 	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME)
 
 .PHONY: install
@@ -41,7 +44,7 @@ frontend:
 
 .PHONY: data
 data: frontend
-	cp -r webapp/build/ server/dist
+	cp -r webapp/build/ server/build
 
 .PHONY: run
 run:
