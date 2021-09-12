@@ -50,7 +50,7 @@ func Run(cfg *Config) {
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
-		if err := json.NewEncoder(w).Encode(cfg.IcsServers); err != nil {
+		if err := json.NewEncoder(w).Encode(cfg.ICEServers); err != nil {
 			log.Println(err)
 		}
 	})

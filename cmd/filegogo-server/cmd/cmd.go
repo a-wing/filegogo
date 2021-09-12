@@ -5,7 +5,6 @@ import (
 
 	"filegogo/server"
 
-	"github.com/pion/webrtc/v3"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -23,14 +22,9 @@ var (
 		Long:  `websocket broker server`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			// IcsServers
-			iceservers := &webrtc.Configuration{}
-			viper.Unmarshal(iceservers)
-
-			server.Run(&server.Config{
-				Server:     viper.GetString("listen"),
-				IcsServers: iceservers,
-			})
+			config := &server.Config{}
+			viper.Unmarshal(config)
+			server.Run(config)
 		},
 	}
 )
@@ -47,10 +41,9 @@ func init() {
 	rootCmd.Flags().StringP("listen", "l", "0.0.0.0:8033", "set server listen address and port")
 
 	rootCmd.PersistentFlags().StringP("level", "", "info", "log level")
-	//viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
-	viper.SetDefault("server", "http://localhost:8033")
+	viper.SetDefault("server", "localhost:8033")
 	viper.SetDefault("level", "info")
 
 	// server
