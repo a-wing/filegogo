@@ -26,13 +26,20 @@ WINDOWS_ARCH_LIST = \
 default: data build
 
 .PHONY: build
-build:
-	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME)
+build: server client
+
+.PHONY: server
+server:
+	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) ./cmd/filegogo-server
+
+.PHONY: client
+client:
+	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) ./cmd/filegogo
 
 .PHONY: install
 install:
 	install -Dm755 ${NAME} -t ${PROFIX}/usr/bin/
-	install -Dm644 conf/config.json -t ${PROFIX}/etc/${NAME}/
+	install -Dm644 conf/${NAME}.toml -t ${PROFIX}/etc/
 	install -Dm644 conf/${NAME}.service -t ${PROFIX}/lib/systemd/system/
 
 .PHONY: all
@@ -48,7 +55,7 @@ data: frontend
 
 .PHONY: run
 run:
-	go run -tags=dev main.go server
+	go run -tags=dev ./cmd/filegogo-server/main.go
 
 darwin-amd64: data
 	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
