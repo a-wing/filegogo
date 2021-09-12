@@ -1,17 +1,18 @@
 package turnd
 
 import (
+	"log"
 	"net"
+	"strings"
 
 	"github.com/hashicorp/golang-lru"
 	"github.com/pion/turn/v2"
 )
 
 type Config struct {
-	Username string
-	Password string
-	Listen string
+	User string
 	Realm string
+	Listen string
 	PublicIP string
 	RelayMinPort int
 	RelayMaxPort int
@@ -34,7 +35,10 @@ func New(cfg *Config) *Server {
 }
 
 func (s *Server) NewUser(user string) {
-	s.usersMap.Add(user, turn.GenerateAuthKey(s.cfg.Username, s.cfg.Realm, s.cfg.Password))
+	username := strings.Split(user, ":")[0]
+	password := strings.Split(user, ":")[1]
+	log.Println("Add Turn Server User:", username, password)
+	s.usersMap.Add(username, turn.GenerateAuthKey(username, s.cfg.Realm, password))
 }
 
 func (s *Server) Run() (*turn.Server, error) {
@@ -43,8 +47,12 @@ func (s *Server) Run() (*turn.Server, error) {
 		return nil, err
 	}
 
+	if user := s.cfg.User; user != "" {
+		s.NewUser(user)
+	}
+
 	return turn.NewServer(turn.ServerConfig{
-		Realm:         s.cfg.Realm,
+		Realm:       s.cfg.Realm,
 		AuthHandler: func(username, realm string, srcAddr net.Addr) (key []byte, ok bool) {
 			if key, ok := s.usersMap.Get(username); ok {
 				return key.([]byte), true

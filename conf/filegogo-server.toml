@@ -1,0 +1,27 @@
+[http]
+
+# http web service
+listen = "0.0.0.0:8080"
+
+# max concurrent
+roomAlive = 1024
+
+# room id: [0 - 9999]
+roomCount = 10000
+
+[turn]
+user = "filegogo:filegogo"
+realm = "filegogo"
+listen = "0.0.0.0:3478"
+publicIP = "0.0.0.0"
+relayMinPort = 49160
+relayMaxPort = 49200
+
+[[iceservers]]
+urls = [ "stun:stun.22333.fun", "stun:stun.22333.fun" ]
+
+[[iceservers]]
+urls = [ "turn:turn.22333.fun", "turn:cn.22333.fun" ]
+username = "filegogo"
+credential = "filegogo"
+

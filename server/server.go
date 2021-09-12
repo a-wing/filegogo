@@ -23,21 +23,15 @@ const (
 )
 
 func Run(cfg *Config) {
-	turndServer := turnd.New(&turnd.Config{
-		Username:     "filegogo",
-		Password:     "filegogo",
-		Realm:        "filegogo",
-		Listen:       "0.0.0.0:3478",
-		PublicIP:     "0.0.0.0",
-		RelayMinPort: 49160,
-		RelayMaxPort: 49200,
-	})
-	turndServer.NewUser("filegogo")
-	turnSrv, err := turndServer.Run()
-	if err != nil {
-		panic(err)
+	if cfg.Turn != nil {
+		log.Println("Enabled Built-in Stun And Turn Server")
+		turndServer := turnd.New(cfg.Turn)
+		turnSrv, err := turndServer.Run()
+		if err != nil {
+			panic(err)
+		}
+		defer turnSrv.Close()
 	}
-	defer turnSrv.Close()
 
 	sr := mux.NewRouter()
 
