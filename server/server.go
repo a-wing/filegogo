@@ -7,8 +7,8 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"net/url"
 
+	"filegogo/server/httpd"
 	"filegogo/server/turnd"
 
 	"github.com/a-wing/lightcable"
@@ -21,23 +21,6 @@ var dist embed.FS
 const (
 	Prefix = "/s/"
 )
-
-// Fork From the: https://pkg.go.dev/net/http#StripPrefix
-func NoPrefix(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "" {
-			h.ServeHTTP(w, r)
-		} else {
-			r2 := new(http.Request)
-			*r2 = *r
-			r2.URL = new(url.URL)
-			*r2.URL = *r.URL
-			r2.URL.Path = ""
-			r2.URL.RawPath = ""
-			h.ServeHTTP(w, r2)
-		}
-	})
-}
 
 func Run(cfg *Config) {
 	turndServer := turnd.New(&turnd.Config{
@@ -60,7 +43,7 @@ func Run(cfg *Config) {
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
-	httpServer := NewServer(cable)
+	httpServer := httpd.NewServer(cable)
 
 	sr.HandleFunc(Prefix, httpServer.ApplyCable)
 	sr.Handle(Prefix+"{room:[0-9]+}", cable)
@@ -77,7 +60,7 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	sr.PathPrefix("/{id:[0-9]+}").Handler(NoPrefix(http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
+	sr.PathPrefix("/{id:[0-9]+}").Handler(httpd.NoPrefix(http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
 	sr.PathPrefix("/").Handler(http.FileServer(http.FS(fsys))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Server)
