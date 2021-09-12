@@ -18,10 +18,16 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+type Config struct {
+	RoomAlive int
+	RoomCount int
+}
+
 type Server struct {
 	lcSrv *lightcable.Server
 	cache *lru.Cache
 	mutex *sync.Mutex
+	cfg   *Config
 }
 
 type MessageHello struct {
@@ -29,7 +35,7 @@ type MessageHello struct {
 	Name string `json:"name"`
 }
 
-func NewServer(lcSrv *lightcable.Server) *Server {
+func NewServer(lcSrv *lightcable.Server, cfg *Config) *Server {
 	lcSrv.OnConnected(func(w http.ResponseWriter, r *http.Request) (string, string, bool) {
 		room := mux.Vars(r)["room"]
 		name := r.URL.Query().Get("name")
@@ -37,7 +43,7 @@ func NewServer(lcSrv *lightcable.Server) *Server {
 		return room, name, true
 	})
 
-	cache, err := lru.New(1024)
+	cache, err := lru.New(cfg.RoomAlive)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +77,7 @@ func (s *Server) newRoom() string {
 		return ok
 	}
 	for hasKey() || room == "" {
-		room = strconv.Itoa(rand.Intn(10000))
+		room = strconv.Itoa(rand.Intn(s.cfg.RoomCount))
 	}
 	return room
 }

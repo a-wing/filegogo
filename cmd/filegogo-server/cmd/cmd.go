@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"filegogo/server"
+	"filegogo/server/httpd"
 
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +23,12 @@ var (
 		Long:  `websocket broker server`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			config := &server.Config{}
+			config := &server.Config{
+				Http: &httpd.Config{
+					RoomAlive: 1024,
+					RoomCount: 10000,
+				},
+			}
 			viper.Unmarshal(config)
 			server.Run(config)
 		},

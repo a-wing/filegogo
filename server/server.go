@@ -43,7 +43,7 @@ func Run(cfg *Config) {
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
-	httpServer := httpd.NewServer(cable)
+	httpServer := httpd.NewServer(cable, cfg.Http)
 
 	sr.HandleFunc(Prefix, httpServer.ApplyCable)
 	sr.Handle(Prefix+"{room:[0-9]+}", cable)
