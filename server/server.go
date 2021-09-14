@@ -12,6 +12,7 @@ import (
 	"filegogo/server/turnd"
 
 	"github.com/a-wing/lightcable"
+	"github.com/pion/webrtc/v3"
 	"github.com/gorilla/mux"
 )
 
@@ -23,9 +24,10 @@ const (
 )
 
 func Run(cfg *Config) {
+	var turndServer *turnd.Server
 	if cfg.Turn != nil {
 		log.Println("Enabled Built-in Stun And Turn Server")
-		turndServer := turnd.New(cfg.Turn)
+		turndServer = turnd.New(cfg.Turn)
 		turnSrv, err := turndServer.Run()
 		if err != nil {
 			panic(err)
@@ -44,7 +46,21 @@ func Run(cfg *Config) {
 
 	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
-		if err := json.NewEncoder(w).Encode(cfg.ICEServers); err != nil {
+
+		uaername, password := turnd.RandomUser()
+		turndServer.NewUser(uaername + ":" + password)
+
+		configuration := &struct{
+			ICEServers []webrtc.ICEServer `json:"iceServers,omitempty"`
+		}{
+			ICEServers: append([]webrtc.ICEServer{{
+				URLs: []string{"turn:"+cfg.Turn.Listen},
+				Username: uaername,
+				Credential: password,
+			}}, cfg.ICEServers...),
+		}
+
+		if err := json.NewEncoder(w).Encode(configuration); err != nil {
 			log.Println(err)
 		}
 	})

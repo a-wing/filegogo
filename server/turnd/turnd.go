@@ -3,6 +3,8 @@ package turnd
 import (
 	"log"
 	"net"
+	"math/rand"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/golang-lru"
@@ -32,6 +34,10 @@ func New(cfg *Config) *Server {
 		cfg: cfg,
 		usersMap: usersMap,
 	}
+}
+
+func RandomUser() (string, string) {
+	return strconv.Itoa(rand.Intn(1000000)), strconv.Itoa(rand.Intn(1000000))
 }
 
 func (s *Server) NewUser(user string) {
