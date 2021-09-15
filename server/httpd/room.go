@@ -52,6 +52,7 @@ func NewServer(lcSrv *lightcable.Server, cfg *Config) *Server {
 		lcSrv: lcSrv,
 		cache: cache,
 		mutex: &sync.Mutex{},
+		cfg:   cfg,
 	}
 }
 
