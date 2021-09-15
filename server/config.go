@@ -10,6 +10,5 @@ import (
 type Config struct {
 	Http       *httpd.Config
 	Turn       *turnd.Config
-	Server     string
 	ICEServers []webrtc.ICEServer
 }

@@ -26,6 +26,6 @@ COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
 ENV TZ=Asia/Shanghai
 
-EXPOSE 8033/tcp
+EXPOSE 8080/tcp
 
 ENTRYPOINT ["/usr/bin/filegogo"]

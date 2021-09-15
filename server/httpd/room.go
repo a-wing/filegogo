@@ -19,6 +19,7 @@ func init() {
 }
 
 type Config struct {
+	Listen    string
 	RoomAlive int
 	RoomCount int
 }
