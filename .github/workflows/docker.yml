@@ -22,7 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/a-wing/filegogo
+          images: ghcr.io/a-wing/filegogo-server
       -
         name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
