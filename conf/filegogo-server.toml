@@ -9,10 +9,17 @@ roomAlive = 1024
 # room id: [0 - 9999]
 roomCount = 10000
 
+# Enable Built-in turn server
 [turn]
+
+# if no set, use random user
 user = "filegogo:filegogo"
+
 realm = "filegogo"
 listen = "0.0.0.0:3478"
+
+# Public ip
+# if aws, aliyun
 publicIP = "0.0.0.0"
 relayMinPort = 49160
 relayMaxPort = 49200

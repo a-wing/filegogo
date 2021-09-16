@@ -2,6 +2,7 @@
 
 A file transfer tool that can be used in the browser webrtc p2p
 
+[![Build Status](https://github.com/a-wing/filegogo/workflows/ci/badge.svg)](https://github.com/a-wing/filegogo/actions?query=workflow%3Aci)
 [![Go Report Card](https://goreportcard.com/badge/github.com/a-wing/filegogo)](https://goreportcard.com/report/github.com/a-wing/filegogo)
 [![GitHub release](https://img.shields.io/github/tag/a-wing/filegogo.svg?label=release)](https://github.com/a-wing/filegogo/releases)
 [![license](https://img.shields.io/github/license/a-wing/filegogo.svg?maxAge=2592000)](https://github.com/a-wing/filegogo/blob/master/LICENSE)
@@ -17,19 +18,19 @@ A file transfer tool that can be used in the browser webrtc p2p
 ## Build && Install
 
 ```sh
-npm install
 make
-sudo make install
-sudo systemctl start filegogo
 ```
 
 ## Run Development
 
 ```sh
 cp conf/filegogo.toml .
-# server
+cp conf/filegogo-server.toml .
+
+# run server
 make run
 
+# run webapp
 cd webapp
 
 npm install
@@ -42,11 +43,28 @@ npm run start
 
 [Reference iceServer config](https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer)
 
-iceServer Use Other
+### Built-in turn server
 
-For example [coturn](https://github.com/coturn/coturn) Or [gortcd](https://github.com/gortc/gortcd)
+```toml
+# Enable Built-in turn server
+[turn]
 
-### coturn
+# if no set, use random user
+user = "filegogo:filegogo"
+
+realm = "filegogo"
+listen = "0.0.0.0:3478"
+
+# Public ip
+# if aws, aliyun
+publicIP = "0.0.0.0"
+relayMinPort = 49160
+relayMaxPort = 49200
+```
+
+### iceServer Use Other
+
+For example: [coturn](https://github.com/coturn/coturn)
 
 ```sh
 apt install coturn
