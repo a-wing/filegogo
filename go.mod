@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pion/datachannel v1.4.21
+	github.com/pion/turn/v2 v2.0.5
 	github.com/pion/webrtc/v3 v3.0.29
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.8.1

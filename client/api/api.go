@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"filegogo/server"
+	"filegogo/server/httpd"
 )
 
 func GetRoom(addr string) (string, error) {
@@ -12,7 +12,7 @@ func GetRoom(addr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var msg server.MessageHello
+	var msg httpd.MessageHello
 	if err := json.NewDecoder(res.Body).Decode(&msg); err != nil {
 		return "", err
 	}

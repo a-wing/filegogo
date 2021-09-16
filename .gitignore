@@ -1,5 +1,7 @@
-filegogo
-filegogo.toml
+/filegogo
+/filegogo.toml
+/filegogo-server
+/filegogo-server.toml
 
 bin
 build

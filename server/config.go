@@ -1,10 +1,14 @@
 package server
 
 import (
+	"filegogo/server/httpd"
+	"filegogo/server/turnd"
+
 	"github.com/pion/webrtc/v3"
 )
 
 type Config struct {
-	Server     string
-	IcsServers *webrtc.Configuration
+	Http       *httpd.Config
+	Turn       *turnd.Config
+	ICEServers []webrtc.ICEServer
 }
