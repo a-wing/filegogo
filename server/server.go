@@ -12,8 +12,8 @@ import (
 	"filegogo/server/turnd"
 
 	"github.com/a-wing/lightcable"
-	"github.com/pion/webrtc/v3"
 	"github.com/gorilla/mux"
+	"github.com/pion/webrtc/v3"
 )
 
 //go:embed build
@@ -50,12 +50,12 @@ func Run(cfg *Config) {
 		uaername, password := turnd.RandomUser()
 		turndServer.NewUser(uaername + ":" + password)
 
-		configuration := &struct{
+		configuration := &struct {
 			ICEServers []webrtc.ICEServer `json:"iceServers,omitempty"`
 		}{
 			ICEServers: append([]webrtc.ICEServer{{
-				URLs: []string{"turn:"+cfg.Turn.Listen},
-				Username: uaername,
+				URLs:       []string{"turn:" + cfg.Turn.Listen},
+				Username:   uaername,
 				Credential: password,
 			}}, cfg.ICEServers...),
 		}

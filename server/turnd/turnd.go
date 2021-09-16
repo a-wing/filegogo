@@ -2,8 +2,8 @@ package turnd
 
 import (
 	"log"
-	"net"
 	"math/rand"
+	"net"
 	"strconv"
 	"strings"
 
@@ -12,16 +12,16 @@ import (
 )
 
 type Config struct {
-	User string
-	Realm string
-	Listen string
-	PublicIP string
+	User         string
+	Realm        string
+	Listen       string
+	PublicIP     string
 	RelayMinPort int
 	RelayMaxPort int
 }
 
 type Server struct {
-	cfg *Config
+	cfg      *Config
 	usersMap *lru.Cache
 }
 
@@ -31,7 +31,7 @@ func New(cfg *Config) *Server {
 		panic(err)
 	}
 	return &Server{
-		cfg: cfg,
+		cfg:      cfg,
 		usersMap: usersMap,
 	}
 }
@@ -58,7 +58,7 @@ func (s *Server) Run() (*turn.Server, error) {
 	}
 
 	return turn.NewServer(turn.ServerConfig{
-		Realm:       s.cfg.Realm,
+		Realm: s.cfg.Realm,
 		AuthHandler: func(username, realm string, srcAddr net.Addr) (key []byte, ok bool) {
 			if key, ok := s.usersMap.Get(username); ok {
 				return key.([]byte), true
@@ -70,7 +70,7 @@ func (s *Server) Run() (*turn.Server, error) {
 				PacketConn: udpListener,
 				RelayAddressGenerator: &turn.RelayAddressGeneratorPortRange{
 					RelayAddress: net.ParseIP(s.cfg.PublicIP), // Claim that we are listening on IP passed by user (This should be your Public IP)
-					Address:      "0.0.0.0",                 // But actually be listening on every interface
+					Address:      "0.0.0.0",                   // But actually be listening on every interface
 					MinPort:      uint16(s.cfg.RelayMinPort),
 					MaxPort:      uint16(s.cfg.RelayMaxPort),
 				},

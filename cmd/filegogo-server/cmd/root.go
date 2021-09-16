@@ -10,7 +10,7 @@ import (
 
 var (
 	// Used for flags.
-	cfgFile     string
+	cfgFile string
 
 	rootCmd = &cobra.Command{
 		Use:   "server",
@@ -20,7 +20,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			config := &server.Config{
 				Http: &httpd.Config{
-					Listen: "0.0.0.0:8080",
+					Listen:    "0.0.0.0:8080",
 					RoomAlive: 1024,
 					RoomCount: 10000,
 				},
