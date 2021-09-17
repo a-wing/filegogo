@@ -47,17 +47,26 @@ func Run(cfg *Config) {
 	sr.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
 
-		uaername, password := turnd.RandomUser()
-		turndServer.NewUser(uaername + ":" + password)
+		var builtInICEServer *webrtc.ICEServer
+		if cfg.Turn != nil {
+			uaername, password := turnd.RandomUser()
+			turndServer.NewUser(uaername + ":" + password)
+
+			builtInICEServer = &webrtc.ICEServer{
+				URLs:       []string{"turn:" + cfg.Turn.Listen},
+				Username:   uaername,
+				Credential: password,
+			}
+		}
 
 		configuration := &struct {
 			ICEServers []webrtc.ICEServer `json:"iceServers,omitempty"`
 		}{
-			ICEServers: append([]webrtc.ICEServer{{
-				URLs:       []string{"turn:" + cfg.Turn.Listen},
-				Username:   uaername,
-				Credential: password,
-			}}, cfg.ICEServers...),
+			ICEServers: cfg.ICEServers,
+		}
+
+		if builtInICEServer != nil {
+			configuration.ICEServers = append([]webrtc.ICEServer{*builtInICEServer}, cfg.ICEServers...)
 		}
 
 		if err := json.NewEncoder(w).Encode(configuration); err != nil {
