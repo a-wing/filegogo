@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 //import logo from './logo.svg';
 import './App.css';
 
 import stylesFile from './components/File.module.scss'
 
 import { ProtoHttpToWs } from './lib/util'
-import { getServer, getRoom } from './lib/api'
+import { getServer, getConfig, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
 import log from 'loglevel'
 import history from 'history/browser'
@@ -25,6 +25,8 @@ function App() {
   const [percent, setPercent] = useState<number>(0)
   const [recver, setRecver] = useState<boolean>(false)
 
+  const refIce = useRef<RTCIceServer[]>([])
+
   fgg.onPreTran = (meta: any) => {
     total = meta.size
   }
@@ -39,11 +41,7 @@ function App() {
 
   const getfile = function() {
     fgg.useWebRTC({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        }
-      ]
+      iceServers: refIce.current,
     }, () => {
 
       // TODO:
@@ -56,26 +54,25 @@ function App() {
   }
   const handleFile = function(files: FileList) {
     fgg.useWebRTC({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        }
-      ]
+      iceServers: refIce.current,
     }, () => {})
 
     fgg.sendFile(files[0])
   }
 
+  const init = async function() {
+    refIce.current = await getConfig()
+
+    const room = await getRoom()
+    console.log(room)
+    history.push(room)
+    setAddress(document.location.origin + '/' + room)
+    const addr = getServer() + room
+    fgg.useWebsocket(ProtoHttpToWs(addr))
+  }
+
   useEffect(() => {
-    getRoom().then(room => {
-      console.log(room)
-      history.push(room)
-
-      setAddress(document.location.origin + '/' + room)
-      const addr = getServer() + room
-      fgg.useWebsocket(ProtoHttpToWs(addr))
-    })
-
+    init()
   }, [])
 
   // <img src={logo} className="App-logo" alt="logo" />

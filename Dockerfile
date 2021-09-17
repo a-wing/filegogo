@@ -21,6 +21,8 @@ FROM scratch AS bin
 
 COPY --from=builder /src/filegogo-server /usr/bin/filegogo-server
 
+COPY conf/filegogo-server.toml /etc/filegogo/
+
 EXPOSE 8080/tcp
 
 ENTRYPOINT ["/usr/bin/filegogo-server"]

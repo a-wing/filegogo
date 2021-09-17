@@ -10,22 +10,22 @@ roomAlive = 1024
 roomCount = 10000
 
 # Enable Built-in turn server
-[turn]
+#[turn]
 
 # if no set, use random user
-user = "filegogo:filegogo"
+#user = "filegogo:filegogo"
 
-realm = "filegogo"
-listen = "0.0.0.0:3478"
+#realm = "filegogo"
+#listen = "0.0.0.0:3478"
 
 # Public ip
 # if aws, aliyun
-publicIP = "0.0.0.0"
-relayMinPort = 49160
-relayMaxPort = 49200
+#publicIP = "0.0.0.0"
+#relayMinPort = 49160
+#relayMaxPort = 49200
 
 [[iceservers]]
-urls = [ "stun:stun.22333.fun", "stun:stun.22333.fun" ]
+urls = [ "stun:stun.22333.fun", "stun:cn.22333.fun", "stun:stun.l.google.com:19302" ]
 
 [[iceservers]]
 urls = [ "turn:turn.22333.fun", "turn:cn.22333.fun" ]

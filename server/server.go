@@ -44,7 +44,7 @@ func Run(cfg *Config) {
 	sr.HandleFunc(Prefix, httpServer.ApplyCable)
 	sr.Handle(Prefix+"{room:[0-9]+}", cable)
 
-	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
 
 		uaername, password := turnd.RandomUser()
