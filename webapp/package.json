@@ -13,7 +13,7 @@
     "@types/node": "^16.9.2",
     "@types/qrcode": "^1.4.1",
     "@types/react": "^17.0.21",
-    "@types/react-dom": "^17.0.6",
+    "@types/react-dom": "^17.0.9",
     "@types/spark-md5": "^3.0.2",
     "@types/streamsaver": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
