@@ -3,8 +3,7 @@ package cmd
 import (
 	"filegogo/client"
 	"filegogo/client/qrcode"
-
-	"github.com/pion/webrtc/v3"
+	"filegogo/server"
 
 	"github.com/spf13/viper"
 )
@@ -17,13 +16,13 @@ func getClient() *client.Client {
 	}
 
 	// IcsServers
-	iceservers := &webrtc.Configuration{}
+	iceservers := &server.ApiConfig{}
 	viper.Unmarshal(iceservers)
 
 	config := &client.ClientConfig{
 		ShowQRcode:   viper.GetBool("show-qrcode"),
 		ShowProgress: viper.GetBool("show-progress"),
-		IcsServers:   iceservers,
+		ServerConfig: iceservers,
 		QRcodeConfig: qrconfig,
 	}
 	viper.Unmarshal(config)

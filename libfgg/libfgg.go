@@ -74,7 +74,7 @@ func (t *Fgg) UseWebsocket(addr string) error {
 	return nil
 }
 
-func (t *Fgg) UseWebRTC(IceServers *pion.Configuration) {
+func (t *Fgg) UseWebRTC(IceServers []pion.ICEServer) {
 	t.rtc = webrtc.NewConn(IceServers)
 	t.rtc.OnMessage = t.recv
 

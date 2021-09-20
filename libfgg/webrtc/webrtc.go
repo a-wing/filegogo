@@ -50,9 +50,11 @@ type Conn struct {
 	OnMessage func([]byte, bool)
 }
 
-func NewConn(config *webrtc.Configuration) *Conn {
+func NewConn(config []webrtc.ICEServer) *Conn {
 	return &Conn{
-		config:     config,
+		config: &webrtc.Configuration{
+			ICEServers: config,
+		},
 		OnSignSend: func([]byte) {},
 
 		OnOpen:    func() {},

@@ -6,13 +6,10 @@ import (
 
 	"filegogo/client/api"
 	"filegogo/client/qrcode"
-	"filegogo/client/share"
 	"filegogo/client/util"
 	"filegogo/libfgg"
 	"filegogo/libfgg/transfer"
 	"filegogo/server"
-
-	"github.com/pion/webrtc/v3"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
@@ -23,18 +20,20 @@ type ClientConfig struct {
 
 	ShowQRcode   bool
 	ShowProgress bool
-	IcsServers   *webrtc.Configuration
+	ServerConfig *server.ApiConfig
 	QRcodeConfig *qrcode.Config
 	Level        string
 }
 
 type Client struct {
 	Config *ClientConfig
+	api    *api.Api
 	bar    *bar.ProgressBar
 }
 
 func NewClient(config *ClientConfig) (*Client, error) {
 	return &Client{
+		api:    api.NewApi(config.Server),
 		Config: config,
 	}, nil
 }
@@ -49,7 +48,7 @@ func (t *Client) OnShare(addr string) {
 		fmt.Println()
 	}
 
-	fmt.Println(share.LinksToShare(addr))
+	fmt.Println(addr)
 	log.Println("=== ======================= ===")
 }
 
@@ -66,16 +65,20 @@ func (t *Client) OnProgress(c int64) {
 }
 
 func (c *Client) overrideServer() {
-	if !share.IsShareInit(c.Config.Server) {
-		room, err := api.GetRoom(c.Config.Server + server.Prefix)
+	if cfg, err := c.api.GetConfig(); err != nil {
+		panic(err)
+	} else {
+		// local iceServers merge remote iceServers
+		c.Config.ServerConfig.ICEServers = append(c.Config.ServerConfig.ICEServers, cfg.ICEServers...)
+	}
+
+	if !c.api.HasRoom() {
+		_, err := c.api.NewRoom()
 		if err != nil {
-			log.Debug(c.Config.Server + server.Prefix)
+			log.Debug(c.api.RoomAddress())
 			panic(err)
 		}
-		c.Config.Server += server.Prefix + room
-		c.OnShare(c.Config.Server)
-	} else {
-		c.Config.Server = share.ShareToLinks(c.Config.Server)
+		c.OnShare(c.api.ToShare())
 	}
 }
 
@@ -86,11 +89,11 @@ func (c *Client) Send(ctx context.Context, files []string) {
 
 	c.overrideServer()
 
-	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.api.RoomAddress()))
 	if err := fgg.Send(files); err != nil {
 		panic(err)
 	}
-	fgg.UseWebRTC(c.Config.IcsServers)
+	fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
 	if err := fgg.Run(); err != nil {
 		fmt.Println()
 		fmt.Println(err)
@@ -112,11 +115,11 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 
 	c.overrideServer()
 
-	fgg.UseWebsocket(util.ProtoHttpToWs(c.Config.Server))
+	fgg.UseWebsocket(util.ProtoHttpToWs(c.api.RoomAddress()))
 	if err := fgg.Recv(files); err != nil {
 		panic(err)
 	}
-	fgg.UseWebRTC(c.Config.IcsServers)
+	fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
 	if err := fgg.Run(); err != nil {
 		fmt.Println()
 		fmt.Println(err)
