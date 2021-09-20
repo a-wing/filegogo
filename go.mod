@@ -16,6 +16,6 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.1
+	github.com/spf13/viper v1.9.0
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )
