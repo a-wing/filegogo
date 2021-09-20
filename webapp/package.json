@@ -15,7 +15,7 @@
     "@types/react": "^17.0.9",
     "@types/react-dom": "^17.0.6",
     "@types/spark-md5": "^3.0.2",
-    "@types/streamsaver": "^2.0.0",
+    "@types/streamsaver": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
     "history": "^5.0.1",
     "loglevel": "^1.7.1",
