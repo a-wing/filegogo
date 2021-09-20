@@ -20,7 +20,8 @@ import (
 var dist embed.FS
 
 const (
-	Prefix = "/s/"
+	ApiPathConfig = "/config"
+	ApiPathSignal = "/s/"
 )
 
 func Run(cfg *Config) {
@@ -41,10 +42,10 @@ func Run(cfg *Config) {
 	go cable.Run(context.Background())
 	httpServer := httpd.NewServer(cable, cfg.Http)
 
-	sr.HandleFunc(Prefix, httpServer.ApplyCable)
-	sr.Handle(Prefix+"{room:[0-9]+}", cable)
+	sr.HandleFunc(ApiPathSignal, httpServer.ApplyCable)
+	sr.Handle(ApiPathSignal+"{room:[0-9]+}", cable)
 
-	sr.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc(ApiPathConfig, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
 
 		var builtInICEServer *webrtc.ICEServer
@@ -59,9 +60,7 @@ func Run(cfg *Config) {
 			}
 		}
 
-		configuration := &struct {
-			ICEServers []webrtc.ICEServer `json:"iceServers,omitempty"`
-		}{
+		configuration := &ApiConfig{
 			ICEServers: cfg.ICEServers,
 		}
 

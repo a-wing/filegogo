@@ -12,3 +12,7 @@ type Config struct {
 	Turn       *turnd.Config
 	ICEServers []webrtc.ICEServer
 }
+
+type ApiConfig struct {
+	ICEServers []webrtc.ICEServer `json:"iceServers,omitempty"`
+}
