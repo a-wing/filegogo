@@ -1,0 +1,24 @@
+titleOnly: true
+commitsOnly: false
+titleAndCommits: false
+
+types:
+  - feat
+  - fix
+  - revert
+  - docs
+  - style
+  - refactor
+  - test
+  - build
+  - security
+  - ci
+  - chore
+
+scopes:
+  - libfgg
+  - client
+  - server
+  - webapp
+  - others
+
