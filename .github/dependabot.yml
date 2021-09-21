@@ -10,8 +10,15 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-  - 
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+  -
     package-ecosystem: "npm"
     directory: "webapp"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
