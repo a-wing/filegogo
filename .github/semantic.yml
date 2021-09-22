@@ -21,4 +21,5 @@ scopes:
   - server
   - webapp
   - others
+  - deps
 
