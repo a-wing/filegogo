@@ -1,10 +1,11 @@
 .address {
   display: flex;
   flex-direction: row;
+  justify-content: center;
   padding: 20px;
+  font-size: 12px;
 
   .text {
-    font-size: 16px;
     font-weight: 400;
     background-color: #f0c1ff;
     border-radius: 8px;
@@ -14,16 +15,15 @@
   }
 
   .base {
-    padding: 3px;
-    margin: 2px;
-    border-radius: 20px;
+    padding: 1px 5px;
+    margin: 3px;
+    border-radius: 15px;
     border-width: 3px;
     border-color: red;
 
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
     transition-duration: 0.4s;
     cursor: pointer;
 
