@@ -29,7 +29,7 @@
     "streamsaver": "^2.0.5",
     "typescript": "^4.3.2",
     "web-streams-polyfill": "^3.0.3",
-    "web-vitals": "^1.1.2"
+    "web-vitals": "^2.1.0"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
