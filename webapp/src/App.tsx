@@ -20,23 +20,21 @@ const fgg = new LibFgg()
 function App() {
   const [address, setAddress] = useState<string>(document.location.href)
 
-  let progress = 0
-  let total = 10
-  const [percent, setPercent] = useState<number>(0)
+  const [progress, setProgress] = useState<number>(0)
+  const [total, setTotal] = useState<number>(10)
   const [recver, setRecver] = useState<boolean>(false)
 
   const refIce = useRef<RTCIceServer[]>([])
 
   fgg.onPreTran = (meta: any) => {
-    total = meta.size
+    setTotal(meta.size)
   }
 
   fgg.onRecvFile = () => setRecver(true)
 
   fgg.tran.onProgress = (c: number) => {
-    progress += c
+    setProgress(progress + c)
     log.debug(progress)
-    setPercent(progress / total)
   }
 
   const getfile = function() {
@@ -72,6 +70,7 @@ function App() {
   }
 
   useEffect(() => {
+    // log.setLevel('debug')
     init()
   }, [])
 
@@ -82,7 +81,7 @@ function App() {
         <div className="App-card">
           <Qrcode address={ address }></Qrcode>
           <Address address={ address }></Address>
-          <Progress percent={ percent }></Progress>
+          <Progress percent={ progress / total * 100 }></Progress>
 
           { recver
             ? <label className={ stylesFile.button } onClick={ () => { getfile() } } >GetFile</label>
