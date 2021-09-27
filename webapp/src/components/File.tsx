@@ -1,10 +1,17 @@
 import { useRef, useState, ChangeEvent } from 'react'
 import styles from './File.module.scss'
 
-function File(props: { handleFile: (files: FileList | null) => void }) {
+function File(props: {
+  recver: boolean,
+  percent: number,
+  handleFile: (files: FileList | null) => void,
+  getFile: () => void }) {
+
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const handleClick = () => {
-    hiddenFileInput.current?.click?.()
+    props.recver
+    ? props.getFile()
+    : hiddenFileInput.current?.click?.()
   }
 
   const [filename, setFilename] = useState('Select File')
@@ -17,7 +24,9 @@ function File(props: { handleFile: (files: FileList | null) => void }) {
 
   return (
     <>
-      <label className={ styles.button } onClick={ handleClick } >{ filename }</label>
+      <label className={ styles.button } style={{
+        background: 'linear-gradient(to right, rgb(120 255 161 / 50%)'+ props.percent +'%, rgb(238 238 238 / 50%) '+ props.percent +'%)'
+      }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'getFile' : filename ) : props.percent.toFixed(1) + '%' }</label>
       <input
         className={ styles.input }
         type="file"

@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 //import logo from './logo.svg';
 import './App.css';
 
-import stylesFile from './components/File.module.scss'
-
 import { ProtoHttpToWs } from './lib/util'
 import { getServer, getConfig, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
@@ -12,7 +10,6 @@ import history from 'history/browser'
 
 import Address from './components/Address'
 import File from './components/File'
-import Progress from './components/Progress'
 import Qrcode from './components/QRCode'
 
 const fgg = new LibFgg()
@@ -81,12 +78,12 @@ function App() {
         <div className="App-card">
           <Qrcode address={ address }></Qrcode>
           <Address address={ address }></Address>
-          <Progress percent={ progress / total * 100 }></Progress>
-
-          { recver
-            ? <label className={ stylesFile.button } onClick={ () => { getfile() } } >GetFile</label>
-            : <File handleFile={ (files: any) => { handleFile(files) } } ></File>
-          }
+          <File
+            recver={ recver }
+            percent={ progress / total * 100 }
+            handleFile={ (files: any) => { handleFile(files) } }
+            getFile={ getfile }
+          ></File>
         </div>
         </header>
       </div>
