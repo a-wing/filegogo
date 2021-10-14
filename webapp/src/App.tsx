@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-//import logo from './logo.svg';
-import './App.css';
+import styles from './App.module.scss'
+import { use100vh } from 'react-div-100vh'
 
 import { ProtoHttpToWs } from './lib/util'
 import { getServer, getConfig, getRoom } from './lib/api'
@@ -71,11 +71,9 @@ function App() {
     init()
   }, [])
 
-  // <img src={logo} className="App-logo" alt="logo" />
   return (
-      <div className="App">
-        <header className="App-header">
-        <div className="App-card">
+      <div className={ styles.app }>
+        <div className={ styles.card } style={{ height: use100vh() || '100vh' }}>
           <Qrcode address={ address }></Qrcode>
           <Address address={ address }></Address>
           <File
@@ -85,7 +83,6 @@ function App() {
             getFile={ getfile }
           ></File>
         </div>
-        </header>
       </div>
     )
 }
