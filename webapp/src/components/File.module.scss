@@ -8,6 +8,9 @@
   display: inline-block;
   padding: 6px 12px;
   cursor: pointer;
+  text-align: center;
+  color: white;
+  font-size: calc(10px + 2vmin);
 }
 
 .button:hover {
