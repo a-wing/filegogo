@@ -72,8 +72,8 @@ function App() {
   }, [])
 
   return (
-      <div className={ styles.app }>
-        <div className={ styles.card } style={{ height: use100vh() || '100vh' }}>
+      <div className={ styles.app } style={{ height: use100vh() || '100vh' }}>
+        <div className={ styles.card }>
           <Qrcode address={ address }></Qrcode>
           <Address address={ address }></Address>
           <File
