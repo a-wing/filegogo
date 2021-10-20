@@ -1,0 +1,17 @@
+.app {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 320px;
+  height: auto;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

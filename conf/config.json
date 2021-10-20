@@ -1,8 +1,0 @@
-{
-  "wsUrl": "ws://localhost:8033/share/",
-  "iceServers": [
-	  {
-		  "urls": "stun:stun.22333.fun"
-	  }
-  ]
-}

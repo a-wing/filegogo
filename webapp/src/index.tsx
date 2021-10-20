@@ -9,7 +9,7 @@ import GithubCorner from 'react-github-corner';
 ReactDOM.render(
   <React.StrictMode>
     <App />
-    <GithubCorner href="https://github.com/a-wing/filegogo" bannerColor="#FFF" octoColor="" />
+    <GithubCorner href="https://github.com/a-wing/filegogo" bannerColor="#64CEAA" octoColor="#FFF" />
   </React.StrictMode>,
   document.getElementById('root')
 );

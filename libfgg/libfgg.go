@@ -10,8 +10,8 @@ import (
 	"filegogo/libfgg/webrtc"
 	"filegogo/libfgg/websocket"
 
-	"github.com/sb-im/jsonrpc-lite"
 	pion "github.com/pion/webrtc/v3"
+	"github.com/sb-im/jsonrpc-lite"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -74,7 +74,7 @@ func (t *Fgg) UseWebsocket(addr string) error {
 	return nil
 }
 
-func (t *Fgg) UseWebRTC(IceServers *pion.Configuration) {
+func (t *Fgg) UseWebRTC(IceServers []pion.ICEServer) {
 	t.rtc = webrtc.NewConn(IceServers)
 	t.rtc.OnMessage = t.recv
 

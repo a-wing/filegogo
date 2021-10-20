@@ -1,18 +1,15 @@
-import { useEffect, useState } from 'react'
-//import logo from './logo.svg';
-import './App.css';
-
-import stylesFile from './components/File.module.scss'
+import { useEffect, useRef, useState } from 'react'
+import styles from './App.module.scss'
+import { use100vh } from 'react-div-100vh'
 
 import { ProtoHttpToWs } from './lib/util'
-import { getServer, getRoom } from './lib/api'
+import { getServer, getConfig, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
 import log from 'loglevel'
 import history from 'history/browser'
 
 import Address from './components/Address'
 import File from './components/File'
-import Progress from './components/Progress'
 import Qrcode from './components/QRCode'
 
 const fgg = new LibFgg()
@@ -20,30 +17,26 @@ const fgg = new LibFgg()
 function App() {
   const [address, setAddress] = useState<string>(document.location.href)
 
-  let progress = 0
-  let total = 10
-  const [percent, setPercent] = useState<number>(0)
+  const [progress, setProgress] = useState<number>(0)
+  const [total, setTotal] = useState<number>(10)
   const [recver, setRecver] = useState<boolean>(false)
 
+  const refIce = useRef<RTCIceServer[]>([])
+
   fgg.onPreTran = (meta: any) => {
-    total = meta.size
+    setTotal(meta.size)
   }
 
   fgg.onRecvFile = () => setRecver(true)
 
   fgg.tran.onProgress = (c: number) => {
-    progress += c
+    setProgress(progress + c)
     log.debug(progress)
-    setPercent(progress / total)
   }
 
   const getfile = function() {
     fgg.useWebRTC({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        }
-      ]
+      iceServers: refIce.current,
     }, () => {
 
       // TODO:
@@ -56,43 +49,40 @@ function App() {
   }
   const handleFile = function(files: FileList) {
     fgg.useWebRTC({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        }
-      ]
+      iceServers: refIce.current,
     }, () => {})
 
     fgg.sendFile(files[0])
   }
 
+  const init = async function() {
+    refIce.current = await getConfig()
+
+    const room = await getRoom()
+    console.log(room)
+    history.push(room)
+    setAddress(document.location.origin + '/' + room)
+    const addr = getServer() + room
+    fgg.useWebsocket(ProtoHttpToWs(addr))
+  }
+
   useEffect(() => {
-    getRoom().then(room => {
-      console.log(room)
-      history.push(room)
-
-      setAddress(document.location.origin + '/' + room)
-      const addr = getServer() + room
-      fgg.useWebsocket(ProtoHttpToWs(addr))
-    })
-
+    // log.setLevel('debug')
+    init()
   }, [])
 
-  // <img src={logo} className="App-logo" alt="logo" />
   return (
-      <div className="App">
-        <header className="App-header">
-        <div className="App-card">
+      <div className={ styles.app } style={{ height: use100vh() || '100vh' }}>
+        <div className={ styles.card }>
           <Qrcode address={ address }></Qrcode>
           <Address address={ address }></Address>
-          <Progress percent={ percent }></Progress>
-
-          { recver
-            ? <label className={ stylesFile.button } onClick={ () => { getfile() } } >GetFile</label>
-            : <File handleFile={ (files: any) => { handleFile(files) } } ></File>
-          }
+          <File
+            recver={ recver }
+            percent={ progress / total * 100 }
+            handleFile={ (files: any) => { handleFile(files) } }
+            getFile={ getfile }
+          ></File>
         </div>
-        </header>
       </div>
     )
 }

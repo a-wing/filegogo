@@ -3,54 +3,84 @@ package server
 import (
 	"context"
 	"embed"
-	"io"
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
+
+	"filegogo/server/httpd"
+	"filegogo/server/turnd"
 
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
+	"github.com/pion/webrtc/v3"
 )
 
-//go:embed dist
+//go:embed build
 var dist embed.FS
 
 const (
-	Prefix = "/s"
+	ApiPathConfig = "/config"
+	ApiPathSignal = "/s/"
 )
 
-func Run(address, configPath string) {
+func Run(cfg *Config) {
+	var turndServer *turnd.Server
+	if cfg.Turn != nil {
+		log.Println("Enabled Built-in Stun And Turn Server")
+		turndServer = turnd.New(cfg.Turn)
+		turnSrv, err := turndServer.Run()
+		if err != nil {
+			panic(err)
+		}
+		defer turnSrv.Close()
+	}
+
 	sr := mux.NewRouter()
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
-	httpServer := NewServer(cable)
+	httpServer := httpd.NewServer(cable, cfg.Http)
 
-	sr.HandleFunc(Prefix+"/", httpServer.ApplyCable)
-	sr.Handle(Prefix+"/{room:[0-9]+}", cable)
+	sr.HandleFunc(ApiPathSignal, httpServer.ApplyCable)
+	sr.Handle(ApiPathSignal+"{room:[0-9]+}", cable)
 
-	sr.HandleFunc("/config.json", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Read config: %s", configPath)
-
+	sr.HandleFunc(ApiPathConfig, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-type", "application/json")
-		file, err := os.Open(configPath)
-		if err != nil {
-			return
+
+		var builtInICEServer *webrtc.ICEServer
+		if cfg.Turn != nil {
+			uaername, password := turnd.RandomUser()
+			turndServer.NewUser(uaername + ":" + password)
+
+			builtInICEServer = &webrtc.ICEServer{
+				URLs:       []string{"turn:" + cfg.Turn.Listen},
+				Username:   uaername,
+				Credential: password,
+			}
 		}
-		_, err = io.Copy(w, file)
-		if err != nil {
-			return
+
+		configuration := &ApiConfig{
+			ICEServers: cfg.ICEServers,
+		}
+
+		if builtInICEServer != nil {
+			configuration.ICEServers = append([]webrtc.ICEServer{*builtInICEServer}, cfg.ICEServers...)
+		}
+
+		if err := json.NewEncoder(w).Encode(configuration); err != nil {
+			log.Println(err)
 		}
 	})
 
-	fsys, err := fs.Sub(dist, "dist")
+	fsys, err := fs.Sub(dist, "build")
 	if err != nil {
 		log.Fatal(err)
 	}
-	sr.PathPrefix("/").Handler(http.StripPrefix("", http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
 
-	log.Println("===============")
-	log.Println("Listen Port", address)
-	log.Fatal(http.ListenAndServe(address, sr))
+	sr.PathPrefix("/{id:[0-9]+}").Handler(httpd.NoPrefix(http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.FileServer(http.FS(fsys))).Methods(http.MethodGet)
+
+	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
+	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))
 }

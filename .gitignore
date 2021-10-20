@@ -1,10 +1,10 @@
-filegogo
-filegogo.toml
-config.json
-data/*_vfsdata.go
+/filegogo
+/filegogo.toml
+/filegogo-server
+/filegogo-server.toml
 
 bin
-dist
+build
 node_modules
 
 # Binaries for programs and plugins

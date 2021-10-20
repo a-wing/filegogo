@@ -3,20 +3,22 @@
 }
 
 .button {
-  width: 80%;
+  width: 100%;
   border: 1px solid #ccc;
   display: inline-block;
-  padding: 6px 12px;
+  padding: 10px 0px;
   cursor: pointer;
+  text-align: center;
+  border-radius: 5px;
+  color: white;
+  font-size: calc(10px + 2vmin);
 }
 
 .button:hover {
-  background-color: #3e8e41
+  border: 1px solid #0bffa5;
 }
 
 .button:active {
-  background-color: #3e8e41;
   box-shadow: 0 5px #666;
-  transform: translateY(4px);
+  transform: translateY(5px);
 }
-

@@ -50,9 +50,11 @@ type Conn struct {
 	OnMessage func([]byte, bool)
 }
 
-func NewConn(config *webrtc.Configuration) *Conn {
+func NewConn(config []webrtc.ICEServer) *Conn {
 	return &Conn{
-		config:     config,
+		config: &webrtc.Configuration{
+			ICEServers: config,
+		},
 		OnSignSend: func([]byte) {},
 
 		OnOpen:    func() {},
@@ -207,7 +209,7 @@ func (c *Conn) Send(data []byte, typ bool) error {
 
 func (c *Conn) Run() {
 	for {
-		data := make([]byte, 1024 * 64)
+		data := make([]byte, 1024*64)
 		count, isString, err := c.conn.ReadDataChannel(data)
 		if err != nil {
 			c.OnError(err)
