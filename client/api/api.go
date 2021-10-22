@@ -51,7 +51,7 @@ func (a *Api) RoomAddress() string {
 }
 
 func (a *Api) ToShare() string {
-	return a.server + a.room
+	return a.server + "/" + a.room
 }
 
 func (a *Api) GetConfig() (*server.ApiConfig, error) {

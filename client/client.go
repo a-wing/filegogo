@@ -15,6 +15,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	DefaultConfig = &ClientConfig{
+		ShowQRcode:   true,
+		ShowProgress: true,
+		ServerConfig: &server.ApiConfig{},
+		QRcodeConfig: &qrcode.Config{
+			Foreground: "black",
+			Background: "white",
+			Level:      "low",
+			Align:      "left",
+		},
+	}
+)
+
 type ClientConfig struct {
 	Server string
 

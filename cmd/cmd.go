@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/urfave/cli/v2"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
