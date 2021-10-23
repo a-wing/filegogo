@@ -12,7 +12,7 @@
     "@types/loglevel": "^1.6.3",
     "@types/node": "^16.11.1",
     "@types/qrcode": "^1.4.1",
-    "@types/react": "^17.0.30",
+    "@types/react": "^17.0.31",
     "@types/react-dom": "^17.0.9",
     "@types/spark-md5": "^3.0.2",
     "@types/streamsaver": "^2.0.1",
