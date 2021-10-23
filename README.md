@@ -39,21 +39,13 @@ make
 
 ## Run Development
 
-```bash
-cp conf/filegogo.toml .
-cp conf/filegogo-server.toml .
-```
-
 ### Server
 
 ```bash
-make run
-
-## or use
-go run ./cmd/filegogo-server/main.go
+go run ./main.go server
 ```
 
-### Frontend
+### Webapp
 
 ```bash
 cd webapp
@@ -69,7 +61,11 @@ npm run start
 > run cli client. For example:
 
 ```bash
-go run ./cmd/filegogo recv -s http://localhost:8080/6666 ccc.png
+# send command
+go run ./main.go send -s http://localhost:8080/6666 <file>
+
+# recv command
+go run ./main.go recv -s http://localhost:8080/6666 <file>
 ```
 
 ## Config
