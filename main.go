@@ -1,6 +1,6 @@
 package main
 
-import "filegogo/cmd/filegogo/cmd"
+import "filegogo/cmd"
 
 func main() {
 	cmd.Execute()
