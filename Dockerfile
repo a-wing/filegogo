@@ -14,15 +14,13 @@ COPY . .
 
 COPY --from=builder-node /app/build /src/server/build
 
-RUN make server
+RUN make build
 
 # Bin
 FROM scratch AS bin
 
-COPY --from=builder /src/filegogo-server /usr/bin/filegogo-server
-
-COPY conf/filegogo-server.toml /etc/filegogo/
+COPY --from=builder /src/filegogo /usr/bin/filegogo
 
 EXPOSE 8080/tcp
 
-ENTRYPOINT ["/usr/bin/filegogo-server"]
+ENTRYPOINT ["/usr/bin/filegogo"]
