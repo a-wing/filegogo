@@ -26,15 +26,8 @@ WINDOWS_ARCH_LIST = \
 default: data build
 
 .PHONY: build
-build: server client
-
-.PHONY: server
-server:
-	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) ./cmd/filegogo-server
-
-.PHONY: client
-client:
-	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) ./cmd/filegogo
+build:
+	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME) ./main.go
 
 .PHONY: install
 install:
@@ -42,20 +35,13 @@ install:
 	install -Dm644 conf/${NAME}.toml -t ${PROFIX}/etc/
 	install -Dm644 conf/${NAME}.service -t ${PROFIX}/lib/systemd/system/
 
-.PHONY: all
-all: linux-amd64 darwin-amd64 windows-amd64 # Most used
-
-.PHONY: frontend
-frontend:
+.PHONY: webapp
+webapp:
 	pushd webapp && npm run build && popd
 
 .PHONY: data
-data: frontend
+data: webapp
 	cp -r webapp/build/ server/build
-
-.PHONY: run
-run:
-	go run -tags=dev ./cmd/filegogo-server/main.go
 
 darwin-amd64: data
 	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
@@ -83,9 +69,13 @@ windows-amd64: data
 
 releases: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
 
-frontend-clean:
-	rm -r server/dist
+webapp-clean:
+	rm -r webapp/build
 
-clean: frontend-clean
+data-clean:
+	rm -r server/build
+
+clean: webapp-clean data-clean
 	rm $(BINDIR)/*
+	go clean -cache
 
