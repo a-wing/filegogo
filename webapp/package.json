@@ -6,11 +6,11 @@
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
     "@types/history": "^4.7.9",
     "@types/jest": "^27.0.2",
     "@types/loglevel": "^1.6.3",
-    "@types/node": "^16.11.0",
+    "@types/node": "^16.11.1",
     "@types/qrcode": "^1.4.1",
     "@types/react": "^17.0.30",
     "@types/react-dom": "^17.0.9",
