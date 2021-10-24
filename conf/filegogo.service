@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/filegogo server --config /etc/filegogo.toml
+ExecStart=/usr/bin/filegogo --config /etc/filegogo.toml server
 Restart=always
 
 [Install]

@@ -1,5 +1,3 @@
-level = "trace"
-
 [http]
 
 # http web service

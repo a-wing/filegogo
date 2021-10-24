@@ -14,6 +14,7 @@ var (
 			&cli.StringFlag{
 				Name:    "config",
 				Aliases: []string{"c"},
+				Value:   "filegogo.toml",
 				Usage:   "Load configuration from `FILE`",
 			},
 			&cli.BoolFlag{
@@ -27,7 +28,6 @@ var (
 				log.SetReportCaller(true)
 				log.SetLevel(log.DebugLevel)
 			}
-			log.Warnln(c.Path("config"))
 			log.Debugln(c.Path("config"))
 			return nil
 		},

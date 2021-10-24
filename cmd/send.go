@@ -5,16 +5,21 @@ import (
 
 	"filegogo/client"
 
+	"github.com/BurntSushi/toml"
 	"github.com/urfave/cli/v2"
 )
 
 func init() {
+	config := client.DefaultConfig
 	app.Commands = append(app.Commands, &cli.Command{
 		Name:  "send",
 		Usage: "send <file>",
-		Action: func(c *cli.Context) error {
-			config := client.DefaultConfig
+		Before: func(c *cli.Context) error {
+			toml.DecodeFile(c.Path("config"), config)
 			config.Server = c.String("share")
+			return nil
+		},
+		Action: func(c *cli.Context) error {
 			cli, err := client.NewClient(config)
 			if err != nil {
 				panic(err)

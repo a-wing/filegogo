@@ -6,6 +6,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/urfave/cli/v2"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -21,19 +23,12 @@ func init() {
 		Usage: "websocket broker server",
 		Before: func(c *cli.Context) error {
 			toml.DecodeFile(c.Path("config"), config)
+			log.Debugln(config)
 			return nil
 		},
 		Action: func(c *cli.Context) error {
 			server.Run(config)
 			return nil
-		},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "config",
-				Aliases: []string{"c"},
-				Value:   "filegogo-server.toml",
-				Usage:   "set config file",
-			},
 		},
 	})
 }
