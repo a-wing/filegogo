@@ -20,6 +20,11 @@ jobs:
         with:
           go-version: 1.16
       -
+        name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      -
         name: Get node dependencies
         run: |
           pushd webapp

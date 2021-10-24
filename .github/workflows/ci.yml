@@ -23,6 +23,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       -
+        name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      -
         name: Get dependencies and run test
         run: |
           pushd webapp
