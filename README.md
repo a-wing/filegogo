@@ -27,9 +27,11 @@
 
 [![Demo.gif](https://i.postimg.cc/wTyzyHMc/Peek-2020-10-24-11-29.gif)](https://postimg.cc/8jS992hj)
 
-## Depend
+## Deploy on your self server
 
-- golang >= 1.16
+```bash
+docker run -p 8080:8080 ghcr.io/a-wing/filegogo:latest server
+```
 
 ## Build && Install
 
