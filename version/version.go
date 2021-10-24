@@ -1,6 +1,7 @@
 package version
 
 var (
-	Version   = "unknown version"
-	BuildTime = "unknown time"
+	Version = "unknown_version"
+	Commit  = "unknown_commit"
+	Date    = "unknown_date"
 )

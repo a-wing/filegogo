@@ -6,7 +6,7 @@ NAME=filegogo
 BINDIR=bin
 VERSION=$(shell git describe --tags || git rev-parse --short HEAD || echo "unknown version")
 BUILD_TIME=$(shell date +%FT%T%z)
-LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.BuildTime=$(BUILD_TIME)"'
+LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.Date=$(BUILD_TIME)"'
 GOBUILD=CGO_ENABLED=0 \
 				go build -trimpath -ldflags $(LD_FLAGS)
 

@@ -14,6 +14,11 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - -s -w
+      - -X "filegogo/version.Version={{.Version}}"
+      - -X "filegogo/version.Commit={{.Commit}}"
+      - -X "filegogo/version.Date={{.Date}}"
 archives:
   - replacements:
       darwin: Darwin

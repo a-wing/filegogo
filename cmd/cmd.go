@@ -3,6 +3,8 @@ package cmd
 import (
 	"os"
 
+	"filegogo/version"
+
 	"github.com/urfave/cli/v2"
 
 	log "github.com/sirupsen/logrus"
@@ -10,6 +12,9 @@ import (
 
 var (
 	app = &cli.App{
+		Name: "filegogo",
+		Version: version.Version + " " + version.Commit + " " + version.Date,
+		Usage: "A file transfer tool that can be used in the browser webrtc p2p",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config",
