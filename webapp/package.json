@@ -10,7 +10,7 @@
     "@types/history": "^4.7.9",
     "@types/jest": "^27.0.2",
     "@types/loglevel": "^1.6.3",
-    "@types/node": "^16.11.4",
+    "@types/node": "^16.11.6",
     "@types/qrcode": "^1.4.1",
     "@types/react": "^17.0.31",
     "@types/react-dom": "^17.0.10",
