@@ -7,6 +7,7 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
     - make data
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -19,13 +20,7 @@ builds:
       - -X "filegogo/version.Version={{.Version}}"
       - -X "filegogo/version.Commit={{.Commit}}"
       - -X "filegogo/version.Date={{.Date}}"
-archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -34,5 +29,10 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - '^Merge'
+      - '^build'
+      - '^chore'
+      - '^docs'
+      - '^test'
+      - '^ci'
+
