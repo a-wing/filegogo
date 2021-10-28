@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/pion/datachannel v1.4.21
+	github.com/pion/datachannel v1.5.0
 	github.com/pion/turn/v2 v2.0.5
 	github.com/pion/webrtc/v3 v3.1.5
 	github.com/sb-im/jsonrpc-lite v0.2.0
