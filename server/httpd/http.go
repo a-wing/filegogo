@@ -2,22 +2,24 @@ package httpd
 
 import (
 	"net/http"
-	"net/url"
 )
 
-// Fork From the: https://pkg.go.dev/net/http#StripPrefix
-func NoPrefix(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "" {
-			h.ServeHTTP(w, r)
-		} else {
-			r2 := new(http.Request)
-			*r2 = *r
-			r2.URL = new(url.URL)
-			*r2.URL = *r.URL
-			r2.URL.Path = ""
-			r2.URL.RawPath = ""
-			h.ServeHTTP(w, r2)
-		}
-	})
+func NewSPA(path string, fs http.FileSystem) *SPA {
+	return &SPA{
+		path: path,
+		fs:   fs,
+	}
+}
+
+type SPA struct {
+	path string
+	fs   http.FileSystem
+}
+
+func (s *SPA) Open(name string) (http.File, error) {
+	if file, err := s.fs.Open(name); err != nil {
+		return s.fs.Open(s.path)
+	} else {
+		return file, err
+	}
 }
