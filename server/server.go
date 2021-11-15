@@ -78,8 +78,7 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	sr.PathPrefix("/{id:[0-9]+}").Handler(httpd.NoPrefix(http.FileServer(http.FS(fsys)))).Methods(http.MethodGet)
-	sr.PathPrefix("/").Handler(http.FileServer(http.FS(fsys))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
 	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))
