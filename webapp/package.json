@@ -28,7 +28,7 @@
     "sass": "^1.43.4",
     "spark-md5": "^3.0.1",
     "streamsaver": "^2.0.5",
-    "typescript": "^4.4.4",
+    "typescript": "^4.5.2",
     "web-streams-polyfill": "^3.2.0",
     "web-vitals": "^2.1.2"
   },
