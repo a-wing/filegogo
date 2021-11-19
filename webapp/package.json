@@ -18,7 +18,7 @@
     "@types/streamsaver": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
     "history": "^5.1.0",
-    "loglevel": "^1.7.1",
+    "loglevel": "^1.8.0",
     "qrcode": "^1.4.4",
     "react": "^17.0.2",
     "react-div-100vh": "^0.7.0",
