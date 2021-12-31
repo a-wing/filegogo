@@ -8,7 +8,7 @@
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
     "@types/history": "^4.7.9",
-    "@types/jest": "^27.0.2",
+    "@types/jest": "^27.4.0",
     "@types/loglevel": "^1.6.3",
     "@types/node": "^16.11.7",
     "@types/qrcode": "^1.4.1",
