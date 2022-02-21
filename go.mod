@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/pion/datachannel v1.5.2
-	github.com/pion/turn/v2 v2.0.5
+	github.com/pion/turn/v2 v2.0.8
 	github.com/pion/webrtc/v3 v3.1.8
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.8.3
