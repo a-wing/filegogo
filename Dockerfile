@@ -17,7 +17,7 @@ COPY --from=builder-node /app/build /src/server/build
 RUN make build
 
 # Bin
-FROM scratch AS bin
+FROM alpine AS bin
 
 COPY --from=builder /src/filegogo /usr/bin/filegogo
 
