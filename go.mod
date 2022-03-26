@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/a-wing/lightcable v0.1.0
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/pion/datachannel v1.5.2
 	github.com/pion/turn/v2 v2.0.5
