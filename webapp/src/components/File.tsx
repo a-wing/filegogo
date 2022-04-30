@@ -29,6 +29,8 @@ function File(props: {
       }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'getFile' : filename ) : props.percent.toFixed(1) + '%' }</label>
       <input
         className={ styles.input }
+        // This id e2e test need
+        id="upload"
         type="file"
         ref={ hiddenFileInput }
         onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files) } }

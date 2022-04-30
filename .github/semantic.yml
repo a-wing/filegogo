@@ -22,4 +22,5 @@ scopes:
   - webapp
   - others
   - deps
+  - e2e
 
