@@ -1,9 +1,8 @@
 {
   "name": "webapp",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.4.3",
   "proxy": "http://localhost:8080",
-  "dependencies": {
+  "devDependencies": {
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
