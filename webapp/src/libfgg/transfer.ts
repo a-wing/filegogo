@@ -162,7 +162,6 @@ export default class Transfer {
       this.hash.append(buffer)
       const c = buffer.byteLength
     this.onProgress(c)
-    this.count += c
     if (this.count >= this.metaFile.size) {
       this.onComplete()
       this.complete = true
@@ -172,5 +171,6 @@ export default class Transfer {
     } else {
       this.file.write(new Uint8Array(buffer)).then(callback())
     }
+    this.count += c
   }
 }
