@@ -115,13 +115,13 @@ export default class Transfer {
         this.hash.append(buffer)
         const c = buffer.byteLength
         this.onProgress(c)
-        this.count += c
         if (this.count >= this.metaFile.size) {
           this.onComplete()
           this.complete = true
           //this.file.close()
           complete()
         }
+        this.count += c
 
         callback(buffer)
       })
