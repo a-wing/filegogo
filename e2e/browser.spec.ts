@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-import fs from 'fs';
-import md5 from 'md5';
+import { getRoom, checkSum } from './helper';
 
-const share = 'http://localhost:8080/1111';
-//const share = 'https://send.22333.fun/1111';
+const address = 'http://localhost:8080';
+//const address = 'https://send.22333.fun';
 const file = 'playwright.config.ts';
 
 test('browser to browser', async ({ page, context }) => {
+  const share = `${address}/${await getRoom('http://localhost:8080')}`;
   await page.goto(share);
   expect(await page.title()).toBe('Filegogo');
 
@@ -24,8 +24,5 @@ test('browser to browser', async ({ page, context }) => {
   // wait for download to complete
   const path = await download.path();
 
-  const srcMd5 = md5(await fs.promises.readFile(file));
-  const dstMd5 = md5(await fs.promises.readFile(path));
-  expect(srcMd5).toBe(dstMd5);
+  expect(await checkSum(file)).toBe(await checkSum(path));
 });
-
