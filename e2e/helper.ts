@@ -25,7 +25,12 @@ async function checkSum(path: string): Promise<string> {
   })
 }
 
+function genRandomId(): string {
+  return Math.random().toString(36).slice(-6)
+}
+
 export {
   getRoom,
   checkSum,
+  genRandomId,
 }

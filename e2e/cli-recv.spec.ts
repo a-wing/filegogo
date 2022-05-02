@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 
 import fs from 'fs';
 
-import { getRoom, checkSum } from './helper';
+import { getRoom, checkSum, genRandomId } from './helper';
 
 import { address, file } from './config';
 
@@ -14,11 +14,15 @@ test('browser to cli', async ({ page }) => {
 
   await page.setInputFiles('input#upload', file);
 
-  const path = '/tmp/filegogo-e2e-tmp';
+  const path = '/tmp/filegogo-e2e-tmp-' + genRandomId();
 
   const ls = spawn('../filegogo', ['recv', '-s', share, path]);
 
   ls.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+
+  ls.stderr.on('data', (data) => {
     console.log(`stdout: ${data}`);
   });
 
