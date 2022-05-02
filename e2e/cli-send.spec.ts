@@ -3,12 +3,10 @@ import { spawn } from 'child_process';
 
 import { getRoom, checkSum } from './helper';
 
-const address = 'http://localhost:8080';
-//const address = 'https://send.22333.fun';
-const file = 'playwright.config.ts';
+import { address, file } from './config';
 
 test('cli to browser', async ({ page }) => {
-  const share = `${address}/${await getRoom('http://localhost:8080')}`;
+  const share = `${address}/${await getRoom(address)}`;
 
   const ls = spawn('../filegogo', ['send', '-s', share, file]);
 
