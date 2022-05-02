@@ -23,7 +23,7 @@ func shareGetRoom(addr string) string {
 }
 
 func shareGetServer(addr string) string {
-	return strings.TrimRight(addr, "/"+shareGetRoom(addr))
+	return strings.TrimSuffix(addr, "/"+shareGetRoom(addr))
 }
 
 type Api struct {

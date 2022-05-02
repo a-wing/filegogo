@@ -29,7 +29,7 @@ func TestShareGetRoom(t *testing.T) {
 func TestShareGetServer(t *testing.T) {
 	url1, r1 := "http://localhost:8080", "http://localhost:8080"
 	url2, r2 := "http://localhost:8080/api", "http://localhost:8080/api"
-	url3, r3 := "http://localhost:8080/1234", "http://localhost:8080"
+	url3, r3 := "http://localhost:8080/1204", "http://localhost:8080"
 	url4, r4 := "http://localhost:8080/qwq/1234", "http://localhost:8080/qwq"
 	if shareGetServer(url1) != r1 {
 		t.Error("Should equal")
