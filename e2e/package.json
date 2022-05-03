@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test": "playwright test"
+  },
   "devDependencies": {
     "@playwright/test": "^1.21.1",
     "@types/md5": "^2.3.2",

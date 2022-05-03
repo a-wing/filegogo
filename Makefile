@@ -10,18 +10,6 @@ LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.Date=$(B
 GOBUILD=CGO_ENABLED=0 \
 				go build -trimpath -ldflags $(LD_FLAGS)
 
-PLATFORM_LIST = \
-								darwin-amd64 \
-								linux-386 \
-								linux-amd64 \
-								linux-armv7 \
-								linux-armv8 \
-								freebsd-amd64
-
-WINDOWS_ARCH_LIST = \
-										windows-386 \
-										windows-amd64
-
 .PHONY: default
 default: data build
 
@@ -43,31 +31,8 @@ webapp:
 data: webapp
 	cp -r webapp/build/ server/build
 
-darwin-amd64: data
-	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-linux-386: data
-	GOARCH=386 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-linux-amd64: data
-	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-linux-armv7: data
-	GOARCH=arm GOOS=linux GOARM=7 $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-linux-armv8: data
-	GOARCH=arm64 GOOS=linux $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-freebsd-amd64: data
-	GOARCH=amd64 GOOS=freebsd $(GOBUILD) -o $(BINDIR)/$(NAME)-$@
-
-windows-386: data
-	GOARCH=386 GOOS=windows $(GOBUILD) -o $(BINDIR)/$(NAME)-$@.exe
-
-windows-amd64: data
-	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(BINDIR)/$(NAME)-$@.exe
-
-releases: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
+test-e2e: default
+	pushd e2e && npm run test && popd
 
 webapp-clean:
 	rm -r webapp/build
