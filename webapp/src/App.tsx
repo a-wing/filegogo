@@ -3,9 +3,9 @@ import styles from './App.module.scss'
 import { use100vh } from 'react-div-100vh'
 
 import { ProtoHttpToWs } from './lib/util'
-import { getServer, getConfig, getRoom } from './lib/api'
+import { getLogLevel, getServer, getConfig, getRoom } from './lib/api'
 import LibFgg from './libfgg/libfgg'
-import log from 'loglevel'
+import log, { LogLevelDesc } from 'loglevel'
 import history from 'history/browser'
 
 import Address from './components/Address'
@@ -67,7 +67,7 @@ function App() {
   }
 
   useEffect(() => {
-    // log.setLevel('debug')
+    log.setLevel(getLogLevel() as LogLevelDesc)
     init()
   }, [])
 

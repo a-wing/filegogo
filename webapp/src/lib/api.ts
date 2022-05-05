@@ -6,6 +6,11 @@ function getServer(): string {
   return `${process.env.REACT_APP_SERVER || window.location.origin}${prefix}`
 }
 
+function getLogLevel(): string {
+  const loglevel = process.env.REACT_APP_LOG_LEVEL
+  return loglevel ? loglevel : 'info'
+}
+
 async function getConfig(): Promise<RTCIceServer[]> {
   const response = await fetch("/config")
   const result = await response.json()
@@ -25,4 +30,5 @@ export {
   getServer,
   getConfig,
   getRoom,
+  getLogLevel,
 }

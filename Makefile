@@ -3,7 +3,6 @@ OS=
 ARCH=
 PROFIX=
 NAME=filegogo
-BINDIR=bin
 VERSION=$(shell git describe --tags || git rev-parse --short HEAD || echo "unknown version")
 BUILD_TIME=$(shell date +%FT%T%z)
 LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.Date=$(BUILD_TIME)"'
@@ -41,6 +40,5 @@ data-clean:
 	rm -r server/build
 
 clean: webapp-clean data-clean
-	rm $(BINDIR)/*
 	go clean -cache
 
