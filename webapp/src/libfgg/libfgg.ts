@@ -96,18 +96,19 @@ export default class LibFgg {
     })
   }
 
-  recv(ev: MessageEvent) {
+  async recv(ev: MessageEvent) {
     const data = ev.data
     if (data instanceof ArrayBuffer) {
-      this.tran.write(data, () => {
-        this.send(JSON.stringify({
-          method: "reqdata",
-        }))
-      }, () => {
+      await this.tran.write(data)
+      if (this.tran.complete) {
         this.send(JSON.stringify({
           method: "reqsum",
         }))
-      })
+      } else {
+        this.send(JSON.stringify({
+          method: "reqdata",
+        }))
+      }
     } else {
       log.trace(data)
       const rpc = JSON.parse(data)
@@ -132,7 +133,11 @@ export default class LibFgg {
           }))
           break
         case "ressum":
-          this.tran.verifyHash(rpc.params)
+          if (this.tran.verifyHash(rpc.params)) {
+            log.info("md5 verify success")
+          } else {
+            log.error("md5 verify failure")
+          }
           break
         case "filelist":
           log.warn(this)

@@ -130,47 +130,22 @@ export default class Transfer {
     }
   }
 
-  // @ts-ignore
-  write(buffer: any, callback: ()=>void, complete: ()=>void) {
+  async write(buffer: ArrayBuffer) {
     if (this.complete) {
-      complete()
-    } else {
-
-    if (buffer instanceof Blob) {
-      // Firefox is Blob
-      // Need to ArrayBuffer
-      buffer.arrayBuffer().then(buffer => {
-        this.onArrayBuffer(buffer, callback, complete)
-      })
-    } else {
-      // Chrome, Safari is ArrayBuffer
-      this.onArrayBuffer(buffer, callback, complete)
+      this.onComplete()
+      return
     }
-    }
-  }
 
-  // @ts-ignore
-  onArrayBuffer(buffer, callback, complete) {
-    //if (this.complete) {
-    //  if (this.verify(JSON.parse(buffer).checksum)) {
-    //    console.log('checksum success')
-    //  }
-
-    //  this.file.close()
-    //} else {
-      // Md5
-      this.hash.append(buffer)
-      const c = buffer.byteLength
+    // Md5
+    this.hash.append(buffer)
+    await this.file.write(new Uint8Array(buffer))
+    const c = buffer.byteLength
     this.onProgress(c)
+    this.count += c
     if (this.count >= this.metaFile.size) {
       this.onComplete()
       this.complete = true
       this.file.close()
-
-      complete()
-    } else {
-      this.file.write(new Uint8Array(buffer)).then(callback())
     }
-    this.count += c
   }
 }
