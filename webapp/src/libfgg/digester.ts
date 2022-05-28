@@ -27,6 +27,15 @@ class FileDigester {
     if (this.bytesReceived < this.size) return
     // we are done
     let blob = new Blob(this.buffer, { type: this.mime })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = this.name
+    document.documentElement.appendChild(a)
+    a.click()
+    document.documentElement.removeChild(a)
+
     this.callback({
       name: this.name,
       mime: this.mime,
