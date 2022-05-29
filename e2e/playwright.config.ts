@@ -21,4 +21,12 @@ const config: PlaywrightTestConfig = {
     },
   ],
 };
+
+if (process.platform === "darwin") {
+  config.projects.push({
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  })
+}
+
 export default config;
