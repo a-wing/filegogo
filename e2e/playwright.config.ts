@@ -1,8 +1,6 @@
 import { PlaywrightTestConfig, devices } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
   webServer: {
     command: '../filegogo server',
     port: 8080,
@@ -17,10 +15,18 @@ const config: PlaywrightTestConfig = {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    //{
-    //  name: 'firefox',
-    //  use: { ...devices['Desktop Firefox'] },
-    //},
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
   ],
 };
+
+if (process.platform === "darwin") {
+  config.projects.push({
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  })
+}
+
 export default config;

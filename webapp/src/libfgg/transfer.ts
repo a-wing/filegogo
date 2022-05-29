@@ -9,6 +9,7 @@ import streamSaver from 'streamsaver'
 import SparkMD5 from 'spark-md5'
 
 import log from 'loglevel'
+import FileDigester from './digester'
 
 interface metaFile {
   file: string
@@ -68,10 +69,19 @@ export default class Transfer {
     if (meta.file.split("/").length > 0) {
       filename = String(meta.file.split("/").pop())
     }
-    this.file = streamSaver.createWriteStream(filename, {
-      size: meta.size,
-      //mitm: meta.type
-    }).getWriter()
+
+    if (meta.size < 1024 * 1024 * 1024) {
+      this.file = new FileDigester({
+        name: meta.file,
+        size: meta.size,
+        mime: meta.type,
+      }, ()=>{})
+    } else {
+      this.file = streamSaver.createWriteStream(filename, {
+        size: meta.size,
+        //mitm: meta.type
+      }).getWriter()
+    }
 
     this.metaFile = meta
   }
