@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import styles from './App.module.scss'
+import styles from './app.module.scss'
 import { use100vh } from 'react-div-100vh'
 
 import { ProtoHttpToWs } from './lib/util'
@@ -69,6 +69,10 @@ function App() {
   useEffect(() => {
     log.setLevel(getLogLevel() as LogLevelDesc)
     init()
+
+    return () => {
+      fgg.close()
+    }
   }, [])
 
   return (

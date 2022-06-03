@@ -3,12 +3,14 @@ import { getParams } from './share'
 const prefix = '/s/'
 
 function getServer(): string {
-  return `${process.env.REACT_APP_SERVER || window.location.origin}${prefix}`
+  //return `${process.env.REACT_APP_SERVER || window.location.origin}${prefix}`
+  return `${window.location.origin}${prefix}`
 }
 
 function getLogLevel(): string {
-  const loglevel = process.env.REACT_APP_LOG_LEVEL
-  return loglevel ? loglevel : 'info'
+  //const loglevel = process.env.REACT_APP_LOG_LEVEL
+  //return loglevel ? loglevel : 'info'
+  return 'info'
 }
 
 async function getConfig(): Promise<RTCIceServer[]> {

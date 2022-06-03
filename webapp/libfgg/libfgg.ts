@@ -35,10 +35,7 @@ export default class LibFgg {
     // Chrome, Safari is ArrayBuffer
     this.ws.binaryType = "arraybuffer"
     this.ws.onopen = () => {
-      this.conn = this.ws
-      this.send(JSON.stringify({
-        method: "reqlist",
-      }))
+      this.setWs()
     }
     this.ws.onclose = () => { log.debug("websocket disconnected") }
     this.ws.onerror = () => { log.debug("websocket error") }
@@ -46,6 +43,18 @@ export default class LibFgg {
     this.ws.onmessage = (ev: MessageEvent) => {
       this.recv(ev)
     }
+  }
+
+  setWs() {
+    this.conn = this.ws
+    this.send(JSON.stringify({
+      method: "reqlist",
+    }))
+  }
+
+  close() {
+    this.conn?.close()
+    this.conn = undefined
   }
 
   useWebRTC(config: RTCConfiguration, callback: ()=>void) {
@@ -161,7 +170,9 @@ export default class LibFgg {
   }
 
   send(data: string) {
-    this.conn.send(data)
+    if (this.conn.readyState === 1) {
+      this.conn.send(data)
+    }
   }
 
   getfile() {
