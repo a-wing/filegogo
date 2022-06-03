@@ -4,10 +4,11 @@ import WebRTC from './webrtc'
 import Transfer from './transfer'
 
 export default class LibFgg {
-  //ws: WebSocket
-  ws: any
-  rtc: any
-  conn: any
+  ws: WebSocket | null
+  rtc: WebRTC | null
+  conn: WebSocket | WebRTC | null
+
+  sender: boolean = false
 
   tran: Transfer
 
@@ -24,66 +25,68 @@ export default class LibFgg {
     this.onRecvFile = () => {}
 
     this.tran = new Transfer()
+    this.ws = null
+    this.rtc = null
+    this.conn = null
   }
 
   useWebsocket(addr: string) {
     log.debug("websocket connect: ", addr)
-    this.ws = new WebSocket(addr)
+    const ws = new WebSocket(addr)
 
     // This browser default
     // Firefox is Blob
     // Chrome, Safari is ArrayBuffer
-    this.ws.binaryType = "arraybuffer"
-    this.ws.onopen = () => {
-      this.setWs()
-    }
-    this.ws.onclose = () => { log.debug("websocket disconnected") }
-    this.ws.onerror = () => { log.debug("websocket error") }
+    ws.binaryType = "arraybuffer"
+    ws.onclose = () => { log.debug("websocket disconnected") }
+    ws.onerror = () => { log.debug("websocket error") }
 
-    this.ws.onmessage = (ev: MessageEvent) => {
+    ws.onmessage = (ev: MessageEvent) => {
       this.recv(ev)
     }
-  }
-
-  setWs() {
-    this.conn = this.ws
-    this.send(JSON.stringify({
-      method: "reqlist",
-    }))
+    ws.onopen = () => {
+      this.ws = ws
+      this.conn = ws
+      this.send(JSON.stringify({
+        method: "reqlist",
+      }))
+    }
   }
 
   close() {
     this.conn?.close()
-    this.conn = undefined
+    this.conn = null
   }
 
   useWebRTC(config: RTCConfiguration, callback: ()=>void) {
-    this.rtc = new WebRTC(config)
-    this.rtc.onSignSend = (data: any) => {
+    log.warn("using WebRTC")
+    const rtc = new WebRTC(config)
+    rtc.onSignSend = (data: any) => {
       this.send(JSON.stringify({
         method: "webrtc",
         params: data,
       }))
     }
 
-    this.rtc.dataChannel.onmessage = (data: any) => {
+    rtc.dataChannel.onmessage = (data: any) => {
       log.debug(data)
       this.recv(data)
     }
 
-    this.rtc.dataChannel.onopen = () => {
-      this.conn = this.rtc
+    rtc.dataChannel.onopen = () => {
+      this.conn = rtc
       log.warn("data channel is open")
       callback()
     }
-
+    this.rtc = rtc
   }
 
   runWebRTC() {
-    this.rtc.start()
+    this.rtc?.start()
   }
 
   sendFile(file: File) {
+    this.sender = true
     this.tran.send(file)
     this.reslist()
   }
@@ -123,10 +126,11 @@ export default class LibFgg {
       const rpc = JSON.parse(data)
       switch (rpc.method) {
         case "webrtc":
-          this.rtc.signRecv(rpc.params)
+          log.warn("method 'webrtc'")
+          this.rtc?.signRecv(rpc.params)
           break
         case "reqlist":
-          this.reslist()
+          this.sender && this.reslist()
           break
         case "getfile":
           this.onPreTran(this.tran.getMetaFile())
@@ -157,25 +161,18 @@ export default class LibFgg {
 
           break
         default:
-          if (rpc.share && rpc.token) {
-            log.warn(this)
-            this.ws.updateServer(rpc.share)
-            this.ws.token = rpc.token
-            //ws.onmessage = this.onmessage
-            //callback(this.server)
-          }
+          log.warn(rpc)
           break
       }
     }
   }
 
   send(data: string) {
-    if (this.conn.readyState === 1) {
-      this.conn.send(data)
-    }
+    this.conn?.send(data)
   }
 
   getfile() {
+    log.warn("getfile")
     this.send(JSON.stringify({
       method: "getfile",
     }))

@@ -137,4 +137,8 @@ export default class Webrtc {
     this.dataChannel!.send(data)
   }
 
+  close() {
+    //TODO:
+  }
+
 }
