@@ -13,6 +13,7 @@ export default defineConfig({
       },
     },
   },
+  publicDir: "webapp/public",
   build: {
     outDir: "server/build"
   },
