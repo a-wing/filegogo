@@ -52,20 +52,22 @@ function Index(props: { address: string }) {
     fgg.sendFile(files[0])
   }
 
-  const init = async function() {
-    refIce.current = await getConfig()
-
-    const addr = getServer() + shareGetRoom(address)
-    fgg.useWebsocket(ProtoHttpToWs(addr))
-  }
-
   useEffect(() => {
-    init()
+    const init = async function() {
+      refIce.current = await getConfig()
+    }
 
+    init()
     return () => {
       fgg.close()
     }
   }, [])
+
+  useEffect(() => {
+
+    const addr = getServer() + shareGetRoom(address)
+    fgg.useWebsocket(ProtoHttpToWs(addr))
+  }, [props.address])
 
   return (
     <>

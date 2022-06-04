@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import styles from './app.module.scss'
 import { use100vh } from 'react-div-100vh'
 
-import { getLogLevel, getRoom } from './lib/api'
+import { getLogLevel, getRoom, shareGetRoom } from './lib/api'
 import log, { LogLevelDesc } from 'loglevel'
 import history from 'history/browser'
 
@@ -14,15 +14,19 @@ function App() {
   useEffect(() => {
     log.setLevel(getLogLevel() as LogLevelDesc)
 
-    const init = async function() {
-      const room = await getRoom()
-      if (room) {
-        history.push(room)
-        setAddress(document.location.origin + '/' + room)
+    if (shareGetRoom(window.location.href)) {
+      setAddress(window.location.href)
+    } else {
+      const init = async function() {
+        const room = await getRoom()
+        if (room) {
+          history.push(room)
+          setAddress(document.location.origin + '/' + room)
+        }
       }
-    }
 
-    init()
+      init()
+    }
   }, [])
 
   return (

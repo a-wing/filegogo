@@ -30,7 +30,8 @@ function shareGetRoom(addr: string): string {
   const u = new URL(addr)
   const arr = u.pathname.split("/")
   if (arr.length > 0) {
-    return arr[arr.length - 1]
+    const a2 = arr[arr.length - 1]
+    return a2.match(/\d/) ? a2 : ""
   }
 	return ""
 }
