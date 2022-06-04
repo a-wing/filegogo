@@ -1,4 +1,4 @@
-import { getParams } from './share'
+import { shareGetRoom } from './share'
 
 const prefix = '/s/'
 
@@ -18,22 +18,12 @@ async function getConfig(): Promise<RTCIceServer[]> {
 }
 
 async function getRoom(): Promise<string> {
-  const str = getParams(window.location.href)
+  const str = shareGetRoom(window.location.href)
   if (str !== '') return str
 
   const response = await fetch("/s/")
   const result = await response.json()
   return result.room || ''
-}
-
-function shareGetRoom(addr: string): string {
-  const u = new URL(addr)
-  const arr = u.pathname.split("/")
-  if (arr.length > 0) {
-    const a2 = arr[arr.length - 1]
-    return a2.match(/\d/) ? a2 : ""
-  }
-	return ""
 }
 
 export {
