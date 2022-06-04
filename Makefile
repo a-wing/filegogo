@@ -24,11 +24,11 @@ install:
 
 .PHONY: webapp
 webapp:
-	pushd webapp && npm run build && popd
+	npm run build
 
 .PHONY: data
 data: webapp
-	cp -r webapp/build/ server/build
+	cp -r dist server/build
 
 test-e2e: default
 	pushd e2e && npm run test && popd
