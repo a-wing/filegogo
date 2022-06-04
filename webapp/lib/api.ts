@@ -26,9 +26,19 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
+function shareGetRoom(addr: string): string {
+  const u = new URL(addr)
+  const arr = u.pathname.split("/")
+  if (arr.length > 0) {
+    return arr[arr.length - 1]
+  }
+	return ""
+}
+
 export {
   getServer,
   getConfig,
   getRoom,
   getLogLevel,
+  shareGetRoom,
 }
