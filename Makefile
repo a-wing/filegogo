@@ -10,7 +10,7 @@ GOBUILD=CGO_ENABLED=0 \
 				go build -trimpath -ldflags $(LD_FLAGS)
 
 .PHONY: default
-default: data build
+default: webapp build
 
 .PHONY: build
 build:
@@ -26,19 +26,12 @@ install:
 webapp:
 	npm run build
 
-.PHONY: data
-data: webapp
-	cp -r dist server/build
-
 test-e2e: default
 	pushd e2e && npm run test && popd
 
 webapp-clean:
-	rm -r webapp/build
-
-data-clean:
 	rm -r server/build
 
-clean: webapp-clean data-clean
+clean: webapp-clean webapp-clean
 	go clean -cache
 
