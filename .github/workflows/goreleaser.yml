@@ -26,10 +26,7 @@ jobs:
           node-version: 16
       -
         name: Get node dependencies
-        run: |
-          pushd webapp
-          npm install
-          popd
+        run: npm install
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
