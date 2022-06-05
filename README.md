@@ -44,18 +44,20 @@ make
 ### Server
 
 ```bash
+
+# Default Listen port: 8080
 go run ./main.go server
 ```
 
 ### Webapp
 
 ```bash
-cd webapp
-
 npm install
 
 # frontend
-npm run start
+# Default Listen port: 3000
+# Auto Proxy port: 8080
+npm run dev
 ```
 
 ### Client

@@ -16,7 +16,7 @@ test('browser to cli', async ({ page }) => {
 
   const path = '/tmp/filegogo-e2e-tmp-' + genRandomId();
 
-  const ls = spawn('../filegogo', ['recv', '-s', share, path]);
+  const ls = spawn('./filegogo', ['recv', '-s', share, path]);
 
   ls.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);

@@ -28,12 +28,7 @@ jobs:
       -
         name: Build and run tests
         run: |
-          pushd webapp
-          npm install
-          popd
-          pushd e2e
           npm install
           npx playwright install --with-deps
-          popd
           make test-e2e
 

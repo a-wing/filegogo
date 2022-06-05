@@ -2,9 +2,13 @@ FROM node:lts-alpine as builder-node
 
 WORKDIR /app
 
-COPY webapp .
+COPY package.json package-lock.json ./
 
-RUN npm install && npm run build
+RUN npm install
+
+COPY . .
+
+RUN npm run build
 
 FROM golang:1.16-buster AS builder
 
@@ -12,7 +16,7 @@ WORKDIR /src
 
 COPY . .
 
-COPY --from=builder-node /app/build /src/server/build
+COPY --from=builder-node /app/server/build /src/server/build
 
 RUN make build
 

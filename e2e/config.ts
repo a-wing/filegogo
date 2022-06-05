@@ -1,7 +1,6 @@
 
-const address = 'http://localhost:8080';
-//const address = 'https://send.22333.fun';
-const file = 'playwright.config.ts';
+const address = 'http://localhost:8080'
+const file = 'package-lock.json'
 
 export {
   address,

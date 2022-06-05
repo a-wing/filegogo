@@ -30,8 +30,6 @@ jobs:
       -
         name: Get dependencies and run test
         run: |
-          pushd webapp
           npm install
-          popd
           make
 

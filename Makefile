@@ -4,13 +4,19 @@ ARCH=
 PROFIX=
 NAME=filegogo
 VERSION=$(shell git describe --tags || git rev-parse --short HEAD || echo "unknown version")
+COMMIT=$(shell git rev-parse HEAD || echo "unknown commit")
 BUILD_TIME=$(shell date +%FT%T%z)
-LD_FLAGS='-X "filegogo/version.Version=$(VERSION)" -X "filegogo/version.Date=$(BUILD_TIME)"'
+LD_FLAGS='\
+				 -X "filegogo/version.Version=$(VERSION)" \
+				 -X "filegogo/version.Commit=$(COMMIT)" \
+				 -X "filegogo/version.Date=$(BUILD_TIME)" \
+'
+
 GOBUILD=CGO_ENABLED=0 \
 				go build -trimpath -ldflags $(LD_FLAGS)
 
 .PHONY: default
-default: data build
+default: webapp build
 
 .PHONY: build
 build:
@@ -24,21 +30,14 @@ install:
 
 .PHONY: webapp
 webapp:
-	pushd webapp && npm run build && popd
-
-.PHONY: data
-data: webapp
-	cp -r webapp/build/ server/build
+	npm run build
 
 test-e2e: default
-	pushd e2e && npm run test && popd
+	npm run test
 
 webapp-clean:
-	rm -r webapp/build
-
-data-clean:
 	rm -r server/build
 
-clean: webapp-clean data-clean
+clean: webapp-clean
 	go clean -cache
 

@@ -1,13 +1,13 @@
-import { getParams } from './share'
+import { shareGetRoom } from './share'
 
 const prefix = '/s/'
 
 function getServer(): string {
-  return `${process.env.REACT_APP_SERVER || window.location.origin}${prefix}`
+  return `${import.meta.env.VITE_APP_SERVER || window.location.origin}${prefix}`
 }
 
 function getLogLevel(): string {
-  const loglevel = process.env.REACT_APP_LOG_LEVEL
+  const loglevel = import.meta.env.VITE_APP_LOG_LEVEL
   return loglevel ? loglevel : 'info'
 }
 
@@ -18,7 +18,7 @@ async function getConfig(): Promise<RTCIceServer[]> {
 }
 
 async function getRoom(): Promise<string> {
-  const str = getParams(window.location.href)
+  const str = shareGetRoom(window.location.href)
   if (str !== '') return str
 
   const response = await fetch("/s/")
@@ -31,4 +31,5 @@ export {
   getConfig,
   getRoom,
   getLogLevel,
+  shareGetRoom,
 }
