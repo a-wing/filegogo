@@ -8,7 +8,7 @@ import { address, file } from './config';
 test('cli to browser', async ({ page }) => {
   const share = `${address}/${await getRoom(address)}`;
 
-  const ls = spawn('../filegogo', ['send', '-s', share, file]);
+  const ls = spawn('./filegogo', ['send', '-s', share, file]);
 
   ls.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
