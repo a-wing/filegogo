@@ -10,7 +10,7 @@ import (
 func TestSocket(t *testing.T) {
 	client, server := net.Pipe()
 
-	head, body := []byte("hello world"), []byte("world world !!")
+	head, body := []byte("hello"), []byte("world world !!")
 
 	cc := New(client)
 

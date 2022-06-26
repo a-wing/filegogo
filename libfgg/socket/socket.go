@@ -9,20 +9,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	l1Length = 2
+	l2Length = 2
+)
+
 type Conn struct {
 	conn      net.Conn
-	OnMessage func([]byte, []byte)
+	onMessage func([]byte, []byte)
 }
 
 func New(conn net.Conn) *Conn {
 	return &Conn{
 		conn:      conn,
-		OnMessage: func([]byte, []byte) {},
+		onMessage: func([]byte, []byte) {},
 	}
 }
 
 func (c *Conn) Run(ctx context.Context) {
-	l1l2 := make([]byte, 4)
+	l1l2 := make([]byte, l1Length+l2Length)
 	for {
 		select {
 		case <-ctx.Done():
@@ -33,7 +38,7 @@ func (c *Conn) Run(ctx context.Context) {
 				return
 			}
 
-			l1, l2 := binary.BigEndian.Uint16(l1l2[:2]), binary.BigEndian.Uint16(l1l2[2:4])
+			l1, l2 := binary.BigEndian.Uint16(l1l2[:l1Length]), binary.BigEndian.Uint16(l1l2[l1Length:l1Length+l2Length])
 
 			log.Debug(l1l2, l1, l2)
 
@@ -48,7 +53,7 @@ func (c *Conn) Run(ctx context.Context) {
 				log.Error(err)
 				return
 			}
-			c.OnMessage(head, body)
+			c.onMessage(head, body)
 		}
 	}
 }
@@ -56,8 +61,8 @@ func (c *Conn) Run(ctx context.Context) {
 func (c *Conn) Send(head, body []byte) error {
 	l1, l2 := len(head), len(body)
 
-	l1b := make([]byte, 2)
-	l2b := make([]byte, 2)
+	l1b := make([]byte, l1Length)
+	l2b := make([]byte, l2Length)
 	binary.BigEndian.PutUint16(l1b, uint16(l1))
 	binary.BigEndian.PutUint16(l2b, uint16(l2))
 	l1l2 := append(l1b, l2b...)
@@ -76,5 +81,5 @@ func (c *Conn) Send(head, body []byte) error {
 }
 
 func (c *Conn) SetOnRecv(fn func(head, body []byte)) {
-	c.OnMessage = fn
+	c.onMessage = fn
 }
