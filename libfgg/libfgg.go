@@ -97,6 +97,9 @@ func (t *Fgg) SetRecv(file string) error {
 }
 
 func (t *Fgg) Run(ctx context.Context) error {
+	if _, err := t.rpc[methodWebrtcUp](nil); err != nil {
+		logrus.Error(err)
+	}
 	ticker := time.NewTicker(loopWait)
 	for {
 		select {

@@ -31,6 +31,13 @@ func (t *Fgg) recv(head []byte, body []byte) {
 				params = nil
 			}
 			res, err := fn(params)
+			if rpc.Type == jsonrpc.TypeNotify {
+				if err != nil {
+					log.Error(err)
+				}
+				return
+			}
+
 			if err != nil {
 				resHead, _ = jsonrpc.NewError(rpc.ID, 404, err.Error(), nil).ToJSON()
 			} else {
@@ -125,7 +132,7 @@ func (t *Fgg) doCall(method string, params []byte, sync bool) (*call, error) {
 }
 
 func (t *Fgg) notify(method string, params []byte) error {
-	data, err := jsonrpc.NewNotify(method, params).ToJSON()
+	data, err := jsonrpc.NewNotify(method, json.RawMessage(params)).ToJSON()
 	if err != nil {
 		return err
 	}

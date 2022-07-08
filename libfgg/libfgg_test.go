@@ -43,6 +43,9 @@ func TestLibFgg(t *testing.T) {
 	sendFgg.SetSend(sendPath)
 	recvFgg.SetRecv(recvPath)
 
+	sendFgg.UseWebRTC(nil)
+	recvFgg.UseWebRTC(nil)
+
 	recvFgg.OnPreTran = func(c *pool.Meta) {
 		fmt.Printf("%+v\n", c)
 	}
