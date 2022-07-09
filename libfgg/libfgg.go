@@ -12,7 +12,7 @@ import (
 	"filegogo/libfgg/transport"
 
 	"github.com/sb-im/jsonrpc-lite"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var uniqueID uint64
@@ -42,7 +42,7 @@ type call struct {
 
 type Fgg struct {
 	pool *pool.Pool
-	Conn transport.Conn
+	Conn []transport.Conn
 
 	rpc map[string]func([]byte) (interface{}, error)
 
@@ -78,8 +78,20 @@ func NewFgg() *Fgg {
 }
 
 func (t *Fgg) AddConn(conn transport.Conn) {
-	t.Conn = conn
-	t.Conn.SetOnRecv(t.recv)
+	conn.SetOnRecv(t.recv)
+	t.Conn = append(t.Conn, conn)
+}
+
+func (t *Fgg) DelConn(conn transport.Conn) {
+	remove := func(slice []transport.Conn, s int) []transport.Conn {
+		return append(slice[:s], slice[s+1:]...)
+	}
+	for i, c := range t.Conn {
+		if c == conn {
+			t.Conn = remove(t.Conn, i)
+			return
+		}
+	}
 }
 
 func (t *Fgg) SetSend(file string) error {
@@ -98,7 +110,7 @@ func (t *Fgg) SetRecv(file string) error {
 
 func (t *Fgg) Run(ctx context.Context) error {
 	if _, err := t.rpc[methodWebrtcUp](nil); err != nil {
-		logrus.Error(err)
+		log.Error(err)
 	}
 	ticker := time.NewTicker(loopWait)
 	for {
@@ -112,9 +124,9 @@ func (t *Fgg) Run(ctx context.Context) error {
 
 			if t.finish {
 				if err := t.clientHash(); err != nil {
-					logrus.Error(err)
+					log.Error(err)
 				}
-				logrus.Warn("run finish")
+				log.Warn("run finish")
 			}
 		}
 	}
@@ -132,7 +144,7 @@ func (t *Fgg) getData() {
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		logrus.Error(err)
+		log.Error(err)
 	}
 
 	t.asyncCall(methodData, data)

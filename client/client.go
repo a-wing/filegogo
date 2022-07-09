@@ -116,10 +116,10 @@ func (c *Client) Send(ctx context.Context, files []string) {
 		panic(err)
 	}
 
-	//if !c.Config.NoIceServer {
-	//	fmt.Println("use webrtc")
-	//	fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
-	//}
+	if !c.Config.NoIceServer {
+		log.Println("use webrtc")
+		fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
+	}
 
 	select {
 	case <-ctx.Done():
@@ -141,17 +141,17 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	if err := fgg.SetRecv(files[0]); err != nil {
 		panic(err)
 	}
-	//if !c.Config.NoIceServer {
-	//	fmt.Println("use webrtc")
-	//	fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
-	//}
+	if !c.Config.NoIceServer {
+		log.Println("use webrtc")
+		fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
+	}
 
 	fgg.GetMeta()
 	if err := fgg.Run(ctx); err != nil {
-		fmt.Println()
-		fmt.Println(err)
+		log.Println()
+		log.Println(err)
 	} else {
-		fmt.Println()
-		fmt.Println("md5 VerifyHash successful")
+		log.Println()
+		log.Println("md5 VerifyHash successful")
 	}
 }

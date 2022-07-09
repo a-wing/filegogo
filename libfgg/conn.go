@@ -132,10 +132,6 @@ func (t *Fgg) UseWebRTC(iceServers []webrtc.ICEServer) error {
 			}
 		}
 	})
-
-	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-		log.Printf("ICE Connection State has changed: %s\n", connectionState.String())
-	})
 	// === ICECandidate ===
 
 	// === DataChannel ===
@@ -149,16 +145,44 @@ func (t *Fgg) UseWebRTC(iceServers []webrtc.ICEServer) error {
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var conn *dcConn.Conn
 	dataChannel.OnOpen(func() {
-		log.Printf("Data channel '%s'-'%d' open.\n", dataChannel.Label(), dataChannel.ID())
+		log.Printf("Data channel '%s'-'%d' opened.\n", dataChannel.Label(), dataChannel.ID())
 
 		// Detach the data channel
 		dc, err := dataChannel.Detach()
 		if err != nil {
 			log.Error(err)
 		} else {
-			t.AddConn(dcConn.New(dc))
+			conn = dcConn.New(dc)
+			go conn.Run(ctx)
+			t.AddConn(conn)
 		}
+	})
+
+	// TODO:
+	// This State 'disconnected' no call onClose
+	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
+		log.Printf("ICE Connection State has changed: %s\n", connectionState.String())
+		if connectionState == webrtc.ICEConnectionStateDisconnected {
+			cancel()
+			if conn != nil {
+				t.DelConn(conn)
+			}
+		}
+	})
+
+	dataChannel.OnClose(func() {
+		log.Printf("Data channel '%s'-'%d' closed.\n", dataChannel.Label(), dataChannel.ID())
+		cancel()
+		if conn != nil {
+			t.DelConn(conn)
+		}
+	})
+	dataChannel.OnError(func(err error) {
+		log.Error(err)
 	})
 	// === DataChannel ===
 

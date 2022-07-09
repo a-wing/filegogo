@@ -11,7 +11,10 @@ import (
 
 func (t *Fgg) send(head []byte, body []byte) error {
 	log.Trace(string(head), len(body))
-	return t.Conn.Send(head, body)
+	if n := len(t.Conn); n > 0 {
+		return t.Conn[n-1].Send(head, body)
+	}
+	return errors.New("Not found conn")
 }
 
 func (t *Fgg) recv(head []byte, body []byte) {

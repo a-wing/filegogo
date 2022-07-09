@@ -12,9 +12,9 @@ import (
 
 var (
 	app = &cli.App{
-		Name: "filegogo",
+		Name:    "filegogo",
 		Version: version.Version + " " + version.Commit + " " + version.Date,
-		Usage: "A file transfer tool that can be used in the browser webrtc p2p",
+		Usage:   "A file transfer tool that can be used in the browser webrtc p2p",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config",

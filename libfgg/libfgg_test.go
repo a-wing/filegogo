@@ -2,7 +2,6 @@ package libfgg
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"path"
@@ -47,16 +46,15 @@ func TestLibFgg(t *testing.T) {
 	recvFgg.UseWebRTC(nil)
 
 	recvFgg.OnPreTran = func(c *pool.Meta) {
-		fmt.Printf("%+v\n", c)
+		t.Logf("%+v\n", c)
 	}
 
 	recvFgg.OnPostTran = func(c *pool.Hash) {
-		fmt.Printf("%+v\n", c)
+		t.Logf("%+v\n", c)
 		cancel()
 	}
 	recvFgg.GetMeta()
 	recvFgg.Run(ctx)
-	fmt.Println("GGGGGGGGGGGGG")
 
 	//sendFgg.Run()
 	//recvFgg.Run()
