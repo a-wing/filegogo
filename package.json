@@ -5,6 +5,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "ci": "vitest run webapp",
     "test": "playwright test --config=e2e/playwright.config.ts"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "streamsaver": "^2.0.6",
     "typescript": "^4.6.3",
     "vite": "^2.9.9",
+    "vitest": "^0.18.0",
     "web-streams-polyfill": "^3.2.1"
   }
 }
