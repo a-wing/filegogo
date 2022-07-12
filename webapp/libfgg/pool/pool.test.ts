@@ -42,13 +42,11 @@ function helpCreateTmpFile(name: string, size: number): File {
 
 describe('file pool test', async () => {
   const name = "filename"
-  const size = 100*1024*1024
+  const size = 1024*1024
   const file = helpCreateTmpFile(name, size)
 
   const sender = new Pool
   sender.setSend(file)
-  //const recver = new Pool
-  //recver.setSend(file)
 
   const meta = sender.sendMeta()
 
@@ -60,4 +58,46 @@ describe('file pool test', async () => {
     assert.equal(size, meta.size)
   })
 
+  const recver = new Pool
+
+  // TODO: need a empty file
+  recver.setRecv(file)
+  recver.recvMeta(meta)
+
+  const c = recver.next()
+
+  it('recv next data chunk', () => {
+    assert.notEqual(c, null)
+  })
+
+  if (c) {
+    const data = await sender.sendData(c)
+    await recver.recvData(c, data)
+  }
+
+  const run = async (): Promise<void> => {
+    return new Promise((resolve) => {
+      const timer = setInterval(async() => {
+        const c = recver.next()
+        if (c) {
+          const data = await sender.sendData(c)
+          await recver.recvData(c, data)
+        }
+      }, 100)
+
+      recver.OnFinish = () => {
+        clearInterval(timer)
+        resolve()
+      }
+    })
+  }
+
+  await run()
+
+  const hash = sender.sendHash()
+  const ok = recver.recvHash(hash)
+
+  it('check sum', () => {
+    assert.equal(ok, true)
+  })
 })

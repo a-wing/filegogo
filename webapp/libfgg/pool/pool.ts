@@ -32,19 +32,19 @@ export default class Pool {
   OnFinish: () => void = () => {}
   OnProgress: (c :number) => void = (_) => {}
 
-  chunkSize: number = 0
+  // [safari] max-message-size: 64 * 1024
+  // [chrome, firefox] max-message-size: 256 * 1024
+  chunkSize: number = 32 * 1024
 
   currentSize: number = 0
   pendingSize: number = 0
-  //constructor() {
-  //  // safari default
-  //  //this.step = 1024 * 64
-  //  // chrome, firefox max-message-size
-  //  // step: 1024 * 256
-  //}
 
   setSend(file: File) {
     this.sender = file
+  }
+
+  setRecv(file: File) {
+    this.recver = file
   }
 
   recvMeta(meta: Meta) {
@@ -109,7 +109,7 @@ export default class Pool {
   }
 
   async recvData(c: DataChunk, data: ArrayBuffer): Promise<void> {
-    if (!this.sender) {
+    if (!this.recver) {
       throw "Not found recver file"
     }
 
@@ -121,5 +121,35 @@ export default class Pool {
     // Need implement "WriteAt"
     //_, err := p.recver.WriteAt(data, c.Offset)
     // this.recver.W
+  }
+
+  next(): DataChunk | null {
+    if (!this.meta) {
+      throw "Not found recver file"
+    }
+
+    if (this.currentSize >= this.meta.size) {
+      this.OnFinish()
+      return null
+    }
+
+    if (this.pendingSize >= this.meta.size) {
+      return null
+    }
+
+    let length = this.chunkSize
+    const next = this.currentSize + this.chunkSize
+    if (next > this.meta.size) {
+      const n = next - this.meta.size
+      length = this.chunkSize - n
+    }
+
+    const offset = this.pendingSize
+
+    this.pendingSize += this.chunkSize
+    return {
+      offset: offset,
+      length: length,
+    }
   }
 }
