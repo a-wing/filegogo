@@ -1,25 +1,14 @@
 import FileHash from "./hash"
-import FileDigester from "../digester"
-import streamSaver from 'streamsaver'
-import { DataChunk } from "./data"
-
-interface Meta {
-  file: string
-  type: string
-  size: number
-}
-
-interface Hash {
-  file: string
-  hash: string
-}
+import { DataChunk, Meta, Hash, IFile } from "./data"
 
 export default class Pool {
   // htmlDOMfile
-  sender: File | null = null
+  //sender: File | null = null
+  sender: IFile | null = null
 
   // https://developer.mozilla.org/en-US/docs/Web/API/WritableStream/getWriter
-  recver: File | FileDigester | WritableStreamDefaultWriter | null = null
+  //recver: File | FileDigester | WritableStreamDefaultWriter | null = null
+  recver: IFile | null = null
 
   fileHash: FileHash = new FileHash()
 
@@ -39,46 +28,27 @@ export default class Pool {
   currentSize: number = 0
   pendingSize: number = 0
 
-  setSend(file: File) {
+  setSend(file: IFile) {
     this.sender = file
   }
 
-  setRecv(file: File) {
+  setRecv(file: IFile) {
     this.recver = file
   }
 
-  recvMeta(meta: Meta) {
-    let filename = meta.file
-    if (meta.file.split("/").length > 0) {
-      filename = String(meta.file.split("/").pop())
-    }
-
-    if (meta.size < 1024 * 1024 * 1024) {
-      this.recver = new FileDigester({
-        name: meta.file,
-        size: meta.size,
-        mime: meta.type,
-      }, ()=>{})
-    } else {
-      this.recver = streamSaver.createWriteStream(filename, {
-        size: meta.size,
-        //mitm: meta.type
-      }).getWriter()
-    }
-
+  async recvMeta(meta: Meta): Promise<void> {
     this.meta = meta
+    await this.recver?.setMeta(meta)
   }
 
-  sendMeta(): Meta {
+  async sendMeta(): Promise<Meta> {
     if (!this.sender) {
       throw "Not found sender file"
     }
 
-    return {
-      file: this.sender.name,
-      type: this.sender.type,
-      size: this.sender.size,
-    }
+    const meta = await this.sender.getMeta()
+    this.meta = meta
+    return meta
   }
 
   sendHash(): Hash {
@@ -87,7 +57,7 @@ export default class Pool {
     }
 
     return {
-      file: this.sender.name,
+      file: this.meta?.file || "",
       hash: this.fileHash.sum(),
     }
   }
@@ -101,7 +71,7 @@ export default class Pool {
       throw "Not found sender file"
     }
 
-    const data = await this.sender.slice(c.offset, c.length).arrayBuffer()
+    const data = await this.sender.read(c.offset, c.length)
 
     this.fileHash.onData(c, data)
     this.OnProgress(this.fileHash.offset)
@@ -117,10 +87,7 @@ export default class Pool {
     this.fileHash.onData(c, data)
     this.OnProgress(this.fileHash.offset)
 
-    // TODO:
-    // Need implement "WriteAt"
-    //_, err := p.recver.WriteAt(data, c.Offset)
-    // this.recver.W
+    return this.recver.write(c.offset, c.length, data)
   }
 
   next(): DataChunk | null {
