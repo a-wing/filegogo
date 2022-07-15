@@ -1,5 +1,6 @@
 import FileHash from "./hash"
-import { DataChunk, Meta, Hash, IFile } from "./data"
+import { DataChunk, Meta, Hash } from "./data"
+import { IFile } from "./file/file"
 
 export default class Pool {
   // htmlDOMfile
