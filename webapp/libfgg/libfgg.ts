@@ -77,13 +77,13 @@ export default class Fgg {
 
   // RPC: Send
   send(head: string, body: ArrayBuffer): void {
-    log.trace(head, body.byteLength)
-    this.conn.length > 0 || this.conn[this.conn.length - 1].send((new TextEncoder()).encode(head).buffer, body)
+    log.debug("SEND", head, body.byteLength)
+    this.conn.length > 0 && this.conn[this.conn.length - 1].send((new TextEncoder()).encode(head).buffer, body)
   }
 
   // RPC: Recv
-  recv(head: string, body: ArrayBuffer): void {
-    log.trace(head, body.byteLength)
+  async recv(head: string, body: ArrayBuffer): Promise<void> {
+    log.debug("RECV", head, body.byteLength)
     const rpc = JSON.parse(head)
 
     if ("method" in rpc) {
@@ -91,7 +91,7 @@ export default class Fgg {
       let err = null
       if (rpc.method in this.rpc) {
         try {
-          res = this.rpc[rpc.method](rpc.params)
+          res = await this.rpc[rpc.method](rpc.params)
         } catch (error) {
           err = error
         }
@@ -120,9 +120,15 @@ export default class Fgg {
       }
 
     } else if ("result" in rpc || "error" in rpc) {
-
+      if (rpc.result) {
+        this.pending[rpc.id](rpc.result)
+      } else {
+        // TODO: error
+        this.pending[rpc.id](rpc.error)
+        log.error(rpc.error)
+      }
     } else {
-      //TODO
+      log.warn("Unknown message:", rpc)
     }
   }
 
