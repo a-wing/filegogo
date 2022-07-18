@@ -20,7 +20,11 @@ const methodData = "data"
 const methodHash = "hash"
 
 type Rpc = {
-  [_: string]: (_: string) => string
+  [_: string]: (_: any) => Promise<any>
+}
+
+type Pending = {
+  [_: string]: (_: any) => void
 }
 
 export default class Fgg {
@@ -28,10 +32,20 @@ export default class Fgg {
   private conn: IConn[] = []
 
   private rpc: Rpc = {
-    [methodMeta]: (data: any): any => { return data },
+    [methodMeta]: async (_: any): Promise<any> => {
+      const meta = await this.pool.sendMeta()
+      this.onPreTran(meta)
+      return meta
+    },
     [methodData]: (data: any): any => { return data },
-    [methodHash]: (data: any): any => { return data },
+    [methodHash]: async (_: any): Promise<any> => {
+      const hash = this.pool.sendHash()
+      this.onPostTran(hash)
+      return hash
+    },
   }
+
+  private pending: Pending = {}
 
   private pendingCoun: number = 0
 
@@ -39,9 +53,8 @@ export default class Fgg {
   onPostTran: (_: Hash) => void = (_: Hash) => {}
 
   addConn(conn: IConn): void {
-    conn.setOnRecv((head: ArrayBuffer, body: ArrayBuffer) => void {
-      //log.debug(head, body)
-      //TODO
+    conn.setOnRecv((head: ArrayBuffer, body: ArrayBuffer): void => {
+      this.recv((new TextDecoder("utf-8").decode(head)), body)
     })
     this.conn.push(conn)
   }
@@ -63,15 +76,15 @@ export default class Fgg {
   }
 
   // RPC: Send
-  send(head: ArrayBuffer, body: ArrayBuffer): void {
-    log.trace((new TextDecoder("utf-8").decode(head)), body.byteLength)
-    this.conn.length > 0 || this.conn[this.conn.length - 1].send(head, body)
+  send(head: string, body: ArrayBuffer): void {
+    log.trace(head, body.byteLength)
+    this.conn.length > 0 || this.conn[this.conn.length - 1].send((new TextEncoder()).encode(head).buffer, body)
   }
 
   // RPC: Recv
-  recv(head: ArrayBuffer, body: ArrayBuffer): void {
-    log.trace((new TextDecoder("utf-8").decode(head)), body.byteLength)
-    const rpc = JSON.parse((new TextDecoder("utf-8").decode(head)))
+  recv(head: string, body: ArrayBuffer): void {
+    log.trace(head, body.byteLength)
+    const rpc = JSON.parse(head)
 
     if ("method" in rpc) {
       let res = null
@@ -91,7 +104,7 @@ export default class Fgg {
 
       // request
       if ("id" in rpc) {
-        this.send((new TextEncoder()).encode(JSON.stringify(res
+        this.send(JSON.stringify(res
           ? {
             jsonrpc: "2.0",
             result: res,
@@ -101,7 +114,7 @@ export default class Fgg {
             jsonrpc: "2.0",
             error: err,
             id: rpc.id,
-          })).buffer, new ArrayBuffer(0))
+          }), new ArrayBuffer(0))
       } else {
         // notification
       }
@@ -112,4 +125,31 @@ export default class Fgg {
       //TODO
     }
   }
+
+  async clientMeta(): Promise<void> {
+    const meta = await this.call(methodMeta, null)
+    this.onMeta(meta)
+  }
+
+  private onMeta(meta: Meta): void {
+    this.pool.recvMeta(meta)
+    this.onPreTran(meta)
+  }
+
+  private call(method: string, params: any): Promise<any> {
+    const rpc = {
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
+      id: getUniqueID(),
+    }
+
+    const head = JSON.stringify(rpc)
+    this.send(head, new ArrayBuffer(0))
+
+    return new Promise(resolve => {
+      this.pending[rpc.id] = resolve
+    })
+  }
+
 }

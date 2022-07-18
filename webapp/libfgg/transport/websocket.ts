@@ -12,7 +12,7 @@ export default class Conn implements IConn {
     this.conn.send(encode(head, body))
     return new Promise<void>((fn) => fn())
   }
-  setOnRecv(fn: (_: ArrayBuffer, __: ArrayBuffer) => void): void {
+  setOnRecv(fn: (head: ArrayBuffer, body: ArrayBuffer) => void): void {
     this.conn.onmessage = (ev: MessageEvent<ArrayBuffer>) => {
       const [head, body] = decode(ev.data)
       fn(head, body)
