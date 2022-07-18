@@ -1,170 +1,115 @@
 import log from 'loglevel'
 
-import WebRTC from './webrtc'
-import WebSocketConn from './websocket'
-import Transfer from './transfer'
+import Pool from './pool/pool'
+import { IConn } from './transport/conn'
+import { IFile } from "./pool/file/file"
+import { DataChunk, Meta, Hash } from "./pool/data"
 
-export default class LibFgg {
-  ws: WebSocketConn = new WebSocketConn()
-  rtc: WebRTC | null
-  conn: WebSocketConn | WebRTC | null
+let uniqueID: number = 0
 
-  sender: boolean = false
+function getUniqueID(): string {
+  uniqueID =+ 1
+  return uniqueID.toString()
+}
 
-  tran: Transfer
+const loopWait        = 10
+const maxPendingCount = 100
 
-	onPreTran:  (meta: any) => void
-	onPostTran: (meta: any) => void
+const methodMeta = "meta"
+const methodData = "data"
+const methodHash = "hash"
 
-  onRecvFile: () => void
-	//OnPreTran:  (meta: Transfer.MetaFile) => void
-	//OnPostTran: (meta: Transfer.MetaHash) => void
+type Rpc = {
+  [_: string]: (_: string) => string
+}
 
-  constructor() {
-    this.onPreTran = () => {}
-    this.onPostTran = () => {}
-    this.onRecvFile = () => {}
+export default class Fgg {
+  private pool: Pool = new Pool()
+  private conn: IConn[] = []
 
-    this.tran = new Transfer()
-    this.rtc = null
-    this.conn = null
-
-    this.ws.onmessage = (ev: MessageEvent) => {
-      this.recv(ev)
-    }
+  private rpc: Rpc = {
+    [methodMeta]: (data: any): any => { return data },
+    [methodData]: (data: any): any => { return data },
+    [methodHash]: (data: any): any => { return data },
   }
 
-  async useWebsocket(addr: string): Promise<void> {
-    log.debug("websocket connect: ", addr)
-    await this.ws.useWebsocket(addr)
-    this.conn = this.ws
-    this.send(JSON.stringify({
-      method: "reqlist",
-    }))
-  }
+  private pendingCoun: number = 0
 
-  close() {
-    this.conn?.close()
-    this.conn = null
-  }
+  onPreTran: (_: Meta) => void = (_: Meta) => {}
+  onPostTran: (_: Hash) => void = (_: Hash) => {}
 
-  useWebRTC(config: RTCConfiguration, callback: ()=>void) {
-    log.warn("using WebRTC")
-    const rtc = new WebRTC(config)
-    rtc.onSignSend = (data: any) => {
-      this.send(JSON.stringify({
-        method: "webrtc",
-        params: data,
-      }))
-    }
-
-    rtc.dataChannel.onmessage = (data: any) => {
-      log.debug(data)
-      this.recv(data)
-    }
-
-    rtc.dataChannel.onopen = () => {
-      this.conn = rtc
-      log.warn("data channel is open")
-      callback()
-    }
-    this.rtc = rtc
-  }
-
-  runWebRTC() {
-    this.rtc?.start()
-  }
-
-  sendFile(file: File) {
-    this.sender = true
-    this.tran.send(file)
-    this.reslist()
-  }
-
-  reslist() {
-    if (this.tran.file) {
-      this.send(JSON.stringify({
-        method: "filelist",
-        params: this.tran.getMetaFile()
-      }))
-    }
-  }
-
-  sendData() {
-    this.tran.read((buffer: any) => {
-      this.send(buffer)
-    }, () => {
-      log.warn("transfer complete")
+  addConn(conn: IConn): void {
+    conn.setOnRecv((head: ArrayBuffer, body: ArrayBuffer) => void {
+      //log.debug(head, body)
+      //TODO
     })
+    this.conn.push(conn)
   }
 
-  async recv(ev: MessageEvent) {
-    const data = ev.data
-    if (data instanceof ArrayBuffer) {
-      await this.tran.write(data)
-      if (this.tran.complete) {
-        this.send(JSON.stringify({
-          method: "reqsum",
-        }))
-      } else {
-        this.send(JSON.stringify({
-          method: "reqdata",
-        }))
-      }
-    } else {
-      log.trace(data)
-      const rpc = JSON.parse(data)
-      switch (rpc.method) {
-        case "webrtc":
-          log.warn("method 'webrtc'")
-          this.rtc?.signRecv(rpc.params)
-          break
-        case "reqlist":
-          this.sender && this.reslist()
-          break
-        case "getfile":
-          this.onPreTran(this.tran.getMetaFile())
-          this.sendData()
-          break
-        case "reqdata":
-          this.sendData()
-          break
-        case "reqsum":
-          this.send(JSON.stringify({
-            method: "ressum",
-            params: this.tran.getMetaHash(),
-          }))
-          break
-        case "ressum":
-          if (this.tran.verifyHash(rpc.params)) {
-            log.info("md5 verify success")
-          } else {
-            log.error("md5 verify failure")
-          }
-          break
-        case "filelist":
-          log.warn(this)
-          this.tran.setMetaFile(rpc.params)
-          this.onPreTran(rpc.params)
+  delConn(conn: IConn): void {
+    this.conn = this.conn.filter(c => c !== conn)
+  }
 
-          this.onRecvFile()
+  setSend(file: IFile): void {
+    this.pool.setSend(file)
+  }
 
-          break
-        default:
-          log.warn(rpc)
-          break
-      }
+  setRecv(file: IFile): void {
+    this.pool.setRecv(file)
+
+    this.pool.OnFinish = () => {
+      // TODO: OnFinish
     }
   }
 
-  send(data: string) {
-    this.conn?.send(data)
+  // RPC: Send
+  send(head: ArrayBuffer, body: ArrayBuffer): void {
+    log.trace((new TextDecoder("utf-8").decode(head)), body.byteLength)
+    this.conn.length > 0 || this.conn[this.conn.length - 1].send(head, body)
   }
 
-  getfile() {
-    log.warn("getfile")
-    this.send(JSON.stringify({
-      method: "getfile",
-    }))
+  // RPC: Recv
+  recv(head: ArrayBuffer, body: ArrayBuffer): void {
+    log.trace((new TextDecoder("utf-8").decode(head)), body.byteLength)
+    const rpc = JSON.parse((new TextDecoder("utf-8").decode(head)))
+
+    if ("method" in rpc) {
+      let res = null
+      let err = null
+      if (rpc.method in this.rpc) {
+        try {
+          res = this.rpc[rpc.method](rpc.params)
+        } catch (error) {
+          err = error
+        }
+      } else {
+        err = {
+          code: -32601,
+          message: "Method not found"
+        }
+      }
+
+      // request
+      if ("id" in rpc) {
+        this.send((new TextEncoder()).encode(JSON.stringify(res
+          ? {
+            jsonrpc: "2.0",
+            result: res,
+            id: rpc.id,
+          }
+          : {
+            jsonrpc: "2.0",
+            error: err,
+            id: rpc.id,
+          })).buffer, new ArrayBuffer(0))
+      } else {
+        // notification
+      }
+
+    } else if ("result" in rpc || "error" in rpc) {
+
+    } else {
+      //TODO
+    }
   }
 }
