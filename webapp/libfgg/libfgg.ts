@@ -5,6 +5,8 @@ import { IConn } from './transport/conn'
 import { IFile } from "./pool/file/file"
 import { Meta, Hash } from "./pool/data"
 
+import WebSocketConn from './transport/websocket'
+
 let uniqueID: number = 0
 
 function getUniqueID(): string {
@@ -49,6 +51,9 @@ export default class Fgg {
   private pending: Pending = {}
 
   private pendingCount: number = 0
+
+  // TODO: need improve
+  onRecvFile: () => void = () => {}
 
   onPreTran: (_: Meta) => void = (_: Meta) => {}
   onPostTran: (_: Hash) => void = (_: Hash) => {}
@@ -167,7 +172,10 @@ export default class Fgg {
 
   async clientMeta(): Promise<void> {
     const meta = await this.call(methodMeta, null)
-    this.onMeta(meta)
+    if (meta) {
+      this.onMeta(meta)
+      this.onRecvFile()
+    }
   }
 
   private onMeta(meta: Meta): void {
@@ -214,5 +222,14 @@ export default class Fgg {
     const hash = await this.call(methodHash, null)
     this.onPostTran(hash)
     return this.pool.recvHash(hash)
+  }
+
+  async useWebsocket(addr: string): Promise<void> {
+    log.debug("websocket connect: ", addr)
+    this.addConn(new WebSocketConn(new WebSocket(addr)))
+  }
+
+  setOnProgress(fn: (c: number) => void) {
+    this.pool.OnProgress = fn
   }
 }

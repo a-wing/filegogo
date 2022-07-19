@@ -9,6 +9,8 @@ import Address from './Address'
 import File from './File'
 import Qrcode from './QRCode'
 
+import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
+
 const fgg = new LibFgg()
 
 function Index(props: { address: string }) {
@@ -24,32 +26,37 @@ function Index(props: { address: string }) {
     setTotal(meta.size)
   }
 
-  fgg.onRecvFile = () => setRecver(true)
-
-  fgg.tran.onProgress = (c: number) => {
-    setProgress(progress + c)
-    log.debug(progress)
+  fgg.onRecvFile = () => {
+    fgg.setRecv(new DomRecvFile())
+    setRecver(true)
   }
 
-  const getfile = function() {
-    fgg.useWebRTC({
-      iceServers: refIce.current,
-    }, () => {
+  fgg.setOnProgress((c: number): void => {
+    setProgress(c)
+    log.debug(progress)
+  })
 
-      // TODO:
-      // Need Wait to 1s
-      setTimeout(() => {
-        fgg.getfile()
-      }, 1000)
-    })
-    fgg.runWebRTC()
+  const getfile = async () => {
+
+    await fgg.run()
+
+    //fgg.useWebRTC({
+    //  iceServers: refIce.current,
+    //}, () => {
+
+    //  // TODO:
+    //  // Need Wait to 1s
+    //  setTimeout(() => {
+    //    fgg.getfile()
+    //  }, 1000)
+    //})
+    //fgg.runWebRTC()
   }
   const handleFile = function(files: FileList) {
-    fgg.useWebRTC({
-      iceServers: refIce.current,
-    }, () => {})
-
-    fgg.sendFile(files[0])
+    //fgg.useWebRTC({
+    //  iceServers: refIce.current,
+    //}, () => {})
+    fgg.setSend(new DomSendFile(files[0]))
   }
 
   useEffect(() => {
@@ -59,7 +66,7 @@ function Index(props: { address: string }) {
 
     init()
     return () => {
-      fgg.close()
+      //fgg.close()
     }
   }, [])
 
@@ -67,6 +74,8 @@ function Index(props: { address: string }) {
 
     const addr = getServer() + shareGetRoom(address)
     fgg.useWebsocket(ProtoHttpToWs(addr))
+
+    setTimeout(() => fgg.clientMeta(), 1000)
   }, [props.address])
 
   return (
