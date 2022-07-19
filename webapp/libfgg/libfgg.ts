@@ -3,16 +3,15 @@ import log from 'loglevel'
 import Pool from './pool/pool'
 import { IConn } from './transport/conn'
 import { IFile } from "./pool/file/file"
-import { DataChunk, Meta, Hash } from "./pool/data"
+import { Meta, Hash } from "./pool/data"
 
 let uniqueID: number = 0
 
 function getUniqueID(): string {
-  uniqueID =+ 1
-  return uniqueID.toString()
+  return (uniqueID++).toString()
 }
 
-const loopWait        = 10
+const loopWait        = 100
 const maxPendingCount = 100
 
 const methodMeta = "meta"
@@ -31,6 +30,8 @@ export default class Fgg {
   private pool: Pool = new Pool()
   private conn: IConn[] = []
 
+  private finish: boolean = false
+
   private rpc: Rpc = {
     [methodMeta]: async (_: any): Promise<any> => {
       const meta = await this.pool.sendMeta()
@@ -47,7 +48,7 @@ export default class Fgg {
 
   private pending: Pending = {}
 
-  private pendingCoun: number = 0
+  private pendingCount: number = 0
 
   onPreTran: (_: Meta) => void = (_: Meta) => {}
   onPostTran: (_: Hash) => void = (_: Hash) => {}
@@ -71,8 +72,30 @@ export default class Fgg {
     this.pool.setRecv(file)
 
     this.pool.OnFinish = () => {
-      // TODO: OnFinish
+      this.finish = true
     }
+  }
+
+  run(): Promise<void> {
+    return new Promise((resolve) => {
+      const timer = setInterval(async () => {
+        if (maxPendingCount > this.pendingCount) {
+          this.getData()
+        }
+
+        if (this.finish) {
+          const ok = await this.clientHash()
+          if (!ok) {
+            log.error("checkSum error")
+          }
+          log.warn("run finish")
+
+          clearInterval(timer)
+          resolve()
+        }
+
+      }, loopWait)
+    })
   }
 
   // RPC: Send
@@ -89,8 +112,12 @@ export default class Fgg {
     if ("method" in rpc) {
       let res = null
       let err = null
+      let body = new ArrayBuffer(0)
       if (rpc.method in this.rpc) {
         try {
+          if (rpc.method === methodData) {
+            body = await this.pool.sendData(rpc.params)
+          }
           res = await this.rpc[rpc.method](rpc.params)
         } catch (error) {
           err = error
@@ -114,14 +141,20 @@ export default class Fgg {
             jsonrpc: "2.0",
             error: err,
             id: rpc.id,
-          }), new ArrayBuffer(0))
+          }), body)
       } else {
         // notification
       }
 
     } else if ("result" in rpc || "error" in rpc) {
       if (rpc.result) {
-        this.pending[rpc.id](rpc.result)
+        if (body.byteLength != 0) {
+          this.pendingCount--
+          // TODO:
+          this.pool.recvData(rpc.result, body)
+        } else {
+          this.pending[rpc.id](rpc.result)
+        }
       } else {
         // TODO: error
         this.pending[rpc.id](rpc.error)
@@ -158,4 +191,28 @@ export default class Fgg {
     })
   }
 
+  private asyncCall(method: string, params: any): void {
+    const rpc = {
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
+      id: getUniqueID(),
+    }
+
+    const head = JSON.stringify(rpc)
+    this.send(head, new ArrayBuffer(0))
+  }
+
+  private getData() {
+    this.pendingCount++
+    const c = this.pool.next()
+    if (!c) return
+    this.asyncCall(methodData, c)
+  }
+
+  private async clientHash(): Promise<boolean> {
+    const hash = await this.call(methodHash, null)
+    this.onPostTran(hash)
+    return this.pool.recvHash(hash)
+  }
 }

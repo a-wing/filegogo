@@ -1,11 +1,9 @@
-import log from 'loglevel'
-
 import { assert, describe, it } from 'vitest'
 
 import VirtualFile from './pool/file/virtual'
 
 import IOVirtual from './transport/virtual'
-import { DataChunk, Meta, Hash } from "./pool/data"
+import { Meta, Hash } from "./pool/data"
 
 import Fgg from './libfgg'
 import { IConn } from "./transport/conn"
@@ -46,16 +44,26 @@ describe('io virtual test', async () => {
   sender.addConn(new Conn(a))
   recver.addConn(new Conn(b))
 
-  log.setLevel(log.levels.TRACE)
-
-  recver.onPreTran = (meta: Meta): void => {
-    console.log(meta)
+  let meta: Meta | null = null
+  recver.onPreTran = (m: Meta): void => {
+    meta = m
   }
 
   await recver.clientMeta()
 
-  it('a data', () => {
-    assert.equal(true, true)
+  it('mate test', () => {
+    assert.equal(meta?.file, nameSend)
+    assert.equal(meta?.size, size)
   })
 
+  let hash: Hash | null = null
+  recver.onPostTran = (h: Hash): void => {
+    hash = h
+  }
+
+  await recver.run()
+
+  it('hash test', () => {
+    assert.equal(hash?.file, nameSend)
+  })
 })
