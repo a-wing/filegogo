@@ -15,7 +15,9 @@ class DomSendFile implements IFile {
   }
   async setMeta(_: Meta): Promise<void> {}
   async read(offset: number, length: number): Promise<ArrayBuffer> {
-    return this.file.slice(offset, length).arrayBuffer()
+    // https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice#parameters
+    // slice(start?: number, end?: number, contentType?: string)
+    return this.file.slice(offset, offset + length).arrayBuffer()
   }
   async write(_: number, __: number, ___: ArrayBuffer): Promise<void> {}
 }

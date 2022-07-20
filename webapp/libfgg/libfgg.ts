@@ -13,8 +13,8 @@ function getUniqueID(): string {
   return (uniqueID++).toString()
 }
 
-const loopWait        = 100
-const maxPendingCount = 100
+const loopWait        = 10
+const maxPendingCount = 1000
 
 const methodMeta = "meta"
 const methodData = "data"
@@ -25,7 +25,10 @@ type Rpc = {
 }
 
 type Pending = {
-  [_: string]: (_: any) => void
+  [_: string]: {
+    resolve: (_: any) => void,
+    reject: (_: any) => void,
+  }
 }
 
 export default class Fgg {
@@ -158,12 +161,11 @@ export default class Fgg {
           // TODO:
           this.pool.recvData(rpc.result, body)
         } else {
-          this.pending[rpc.id](rpc.result)
+          this.pending[rpc.id]?.resolve(rpc.result)
         }
       } else {
-        // TODO: error
-        this.pending[rpc.id](rpc.error)
-        log.error(rpc.error)
+        this.pending[rpc.id]?.reject(new Error(rpc.error))
+        log.debug(rpc.error)
       }
     } else {
       log.warn("Unknown message:", rpc)
@@ -171,10 +173,15 @@ export default class Fgg {
   }
 
   async clientMeta(): Promise<void> {
-    const meta = await this.call(methodMeta, null)
-    if (meta) {
-      this.onMeta(meta)
-      this.onRecvFile()
+    try {
+      const meta = await this.call(methodMeta, null)
+      if (meta) {
+        this.onRecvFile()
+        this.onMeta(meta)
+      }
+    } catch (e) {
+      // Ignore this error
+      log.debug(e)
     }
   }
 
@@ -194,8 +201,11 @@ export default class Fgg {
     const head = JSON.stringify(rpc)
     this.send(head, new ArrayBuffer(0))
 
-    return new Promise(resolve => {
-      this.pending[rpc.id] = resolve
+    return new Promise((resolve, reject) => {
+      this.pending[rpc.id] = {
+        resolve: resolve,
+        reject: reject,
+      }
     })
   }
 
@@ -219,9 +229,14 @@ export default class Fgg {
   }
 
   private async clientHash(): Promise<boolean> {
-    const hash = await this.call(methodHash, null)
-    this.onPostTran(hash)
-    return this.pool.recvHash(hash)
+    try {
+      const hash = await this.call(methodHash, null)
+      this.onPostTran(hash)
+      return this.pool.recvHash(hash)
+    } catch (err) {
+      console.log(err)
+    }
+    return false
   }
 
   async useWebsocket(addr: string): Promise<void> {
