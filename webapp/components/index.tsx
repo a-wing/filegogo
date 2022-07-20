@@ -12,6 +12,7 @@ import Qrcode from './QRCode'
 import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
 
 const fgg = new LibFgg()
+let enabled = true
 
 function Index(props: { address: string }) {
   const address = props.address
@@ -71,11 +72,13 @@ function Index(props: { address: string }) {
   }, [])
 
   useEffect(() => {
+    if (enabled) {
+      const addr = getServer() + shareGetRoom(address)
+      fgg.useWebsocket(ProtoHttpToWs(addr))
 
-    const addr = getServer() + shareGetRoom(address)
-    fgg.useWebsocket(ProtoHttpToWs(addr))
-
-    setTimeout(() => fgg.clientMeta(), 1000)
+      setTimeout(() => fgg.clientMeta(), 1000)
+      enabled = false
+    }
   }, [props.address])
 
   return (
