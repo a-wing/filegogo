@@ -38,9 +38,13 @@ export default class Fgg {
   private finish: boolean = false
 
   private rpc: Rpc = {
-    [methodMeta]: async (_: any): Promise<any> => {
-      const meta = await this.pool.sendMeta()
-      this.onPreTran(meta)
+    [methodMeta]: async (meta: any): Promise<any> => {
+      if (meta) {
+        this.onMeta(meta)
+      } else {
+        meta = await this.pool.sendMeta()
+        this.onPreTran(meta)
+      }
       return meta
     },
     [methodData]: (data: any): any => { return data },
@@ -74,6 +78,11 @@ export default class Fgg {
 
   setSend(file: IFile): void {
     this.pool.setSend(file)
+    const fn = async () => {
+      const meta = await this.pool.sendMeta()
+      this.notify(methodMeta, meta)
+    }
+    fn()
   }
 
   setRecv(file: IFile): void {
@@ -176,7 +185,6 @@ export default class Fgg {
     try {
       const meta = await this.call(methodMeta, null)
       if (meta) {
-        this.onRecvFile()
         this.onMeta(meta)
       }
     } catch (e) {
@@ -186,6 +194,7 @@ export default class Fgg {
   }
 
   private onMeta(meta: Meta): void {
+    this.onRecvFile()
     this.pool.recvMeta(meta)
     this.onPreTran(meta)
   }
@@ -215,6 +224,17 @@ export default class Fgg {
       method: method,
       params: params,
       id: getUniqueID(),
+    }
+
+    const head = JSON.stringify(rpc)
+    this.send(head, new ArrayBuffer(0))
+  }
+
+  private notify(method: string, params: any): void {
+    const rpc = {
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
     }
 
     const head = JSON.stringify(rpc)
