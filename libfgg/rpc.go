@@ -50,7 +50,7 @@ func (t *Fgg) recv(head []byte, body []byte) {
 		} else if rpc.Method == methodData {
 			//fmt.Println("server getdata")
 			_, resBody, _ = t.serverSendData(*rpc.Params)
-			resHead, _ = jsonrpc.NewSuccess(rpc.ID, []byte("nnn")).ToJSON()
+			resHead, _ = jsonrpc.NewSuccess(rpc.ID, *rpc.Params).ToJSON()
 		} else {
 			resHead, _ = jsonrpc.NewError(rpc.ID, 404, "Not Found this Method", nil).ToJSON()
 		}
