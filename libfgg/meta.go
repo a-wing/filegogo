@@ -7,9 +7,13 @@ import (
 )
 
 func (t *Fgg) serverMeta(params []byte) (interface{}, error) {
-	meta, err := t.pool.SendMeta()
-	t.onPreTran(meta)
-	return meta, err
+	if len(params) == 0 {
+		meta, err := t.pool.SendMeta()
+		t.onPreTran(meta)
+		return meta, err
+	} else {
+		return params, t.onMeta(params)
+	}
 }
 
 func (t *Fgg) clientMeta() error {
@@ -35,6 +39,7 @@ func (t *Fgg) onMeta(data []byte) error {
 
 	t.pool.RecvMeta(meta)
 
+	t.OnRecvFile()
 	t.onPreTran(meta)
 	return nil
 }

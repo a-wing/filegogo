@@ -53,6 +53,8 @@ type Fgg struct {
 
 	finish bool
 
+	OnRecvFile func()
+
 	// Callbacks
 	OnPreTran  func(*pool.Meta)
 	OnPostTran func(*pool.Hash)
@@ -65,6 +67,7 @@ func NewFgg() *Fgg {
 		pendingCount: 0,
 
 		pending:    map[jsonrpc.ID]*call{},
+		OnRecvFile: func() {},
 		OnPreTran:  func(meta *pool.Meta) {},
 		OnPostTran: func(meta *pool.Hash) {},
 	}
@@ -95,7 +98,22 @@ func (t *Fgg) DelConn(conn transport.Conn) {
 }
 
 func (t *Fgg) SetSend(file string) error {
-	return t.pool.SetSend(file)
+	if err := t.pool.SetSend(file); err != nil {
+		return err
+	}
+	meta, err := t.pool.SendMeta()
+	if err != nil {
+		return err
+	}
+	t.onPreTran(meta)
+
+	data, err := json.Marshal(meta)
+	if err != nil {
+		log.Error(err)
+	}
+
+	t.notify(methodMeta, data)
+	return err
 }
 
 func (t *Fgg) SetRecv(file string) error {

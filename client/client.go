@@ -146,7 +146,15 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 		fgg.UseWebRTC(c.Config.ServerConfig.ICEServers)
 	}
 
-	fgg.GetMeta()
+	ch := make(chan bool)
+	fgg.OnRecvFile = func() {
+		ch <- true
+	}
+
+	go fgg.GetMeta()
+
+	<-ch
+	log.Println("start download file")
 	if err := fgg.Run(ctx); err != nil {
 		log.Println()
 		log.Println(err)
