@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.22.2",
-    "@types/history": "^5.0.0",
     "@types/md5": "^2.3.2",
     "@types/qrcode": "^1.4.2",
     "@types/react": "^18.0.0",
