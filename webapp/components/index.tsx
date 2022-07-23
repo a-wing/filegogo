@@ -36,27 +36,14 @@ function Index(props: { address: string }) {
     setProgress(c)
     log.debug(progress)
   })
+  fgg.useWebRTC({
+    iceServers: refIce.current,
+  })
 
   const getfile = async () => {
-
     await fgg.run()
-
-    //fgg.useWebRTC({
-    //  iceServers: refIce.current,
-    //}, () => {
-
-    //  // TODO:
-    //  // Need Wait to 1s
-    //  setTimeout(() => {
-    //    fgg.getfile()
-    //  }, 1000)
-    //})
-    //fgg.runWebRTC()
   }
   const handleFile = function(files: FileList) {
-    //fgg.useWebRTC({
-    //  iceServers: refIce.current,
-    //}, () => {})
     fgg.setSend(new DomSendFile(files[0]))
   }
 

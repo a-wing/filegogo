@@ -6,6 +6,7 @@ import { IFile } from "./pool/file/file"
 import { Meta, Hash } from "./pool/data"
 
 import WebSocketConn from './transport/websocket'
+import WebRTCConn from './transport/webrtc'
 
 let uniqueID: number = 0
 
@@ -19,6 +20,10 @@ const maxPendingCount = 1000
 const methodMeta = "meta"
 const methodData = "data"
 const methodHash = "hash"
+
+const methodWebrtcUp  = "webrtc-up"
+const methodWebrtcIce = "webrtc-ice"
+const methodWebrtcSdp = "webrtc-sdp"
 
 type Rpc = {
   [_: string]: (_: any) => Promise<any>
@@ -93,7 +98,9 @@ export default class Fgg {
     }
   }
 
-  run(): Promise<void> {
+  async run(): Promise<void> {
+    await this.rpc[methodWebrtcUp](null)
+
     return new Promise((resolve) => {
       const timer = setInterval(async () => {
         if (maxPendingCount > this.pendingCount) {
@@ -268,6 +275,105 @@ export default class Fgg {
         resolve()
       }
     })
+  }
+
+  async useWebRTC(cfg: RTCConfiguration): Promise<void> {
+    const peerConnection = new RTCPeerConnection(cfg)
+
+    // === Up ===
+    this.rpc[methodWebrtcUp] = async (): Promise<any> => {
+      const offer = await peerConnection.createOffer()
+      await peerConnection.setLocalDescription(offer)
+      const sdp = await this.call(methodWebrtcSdp, offer)
+      await peerConnection.setRemoteDescription(sdp)
+    }
+    // === Up ===
+
+    // === SDP ===
+    this.rpc[methodWebrtcSdp] = async (sdp): Promise<any> => {
+      switch (sdp.type) {
+        case "offer":
+          await peerConnection.setRemoteDescription(sdp)
+          const answer = await peerConnection.createAnswer()
+          await peerConnection.setLocalDescription(answer)
+          return answer
+        case "answer":
+          // TODO
+          break
+        case "pranswer":
+          // TODO:
+          log.error("webrtc.SDPTypePranswer", sdp)
+          break
+        case "rollback":
+          // TODO:
+          log.error("webrtc.SDPTypeRollback", sdp)
+          break
+        default:
+          log.error(sdp)
+          break
+      }
+    }
+    // === SDP ===
+
+    // === DataChannel ===
+    // Create a datachannel with label 'data'
+    const datachannel = peerConnection.createDataChannel("data", {
+      negotiated: true,
+
+      // Chrome needs id < 1024
+      // But: ID An 16-bit numeric ID for the channel; permitted values are 0-65534
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createDataChannel#rtcdatachannelinit_dictionary
+      //id: 1023
+      id: 0
+    })
+
+    let conn: WebRTCConn | null = null
+    datachannel.onopen = () => {
+      conn = new WebRTCConn(datachannel)
+      this.addConn(conn)
+    }
+
+    // This State 'disconnected' no call onClose
+    datachannel.onclose = () => {
+      log.info(`Data channel '${datachannel.label}'-'${datachannel.id}' closed.`)
+      if (conn) {
+        this.delConn(conn)
+        conn = null
+      }
+    }
+
+    datachannel.onerror = (err) => {
+      log.error(err)
+    }
+    // === DataChannel ===
+
+    // === ICECandidate ===
+    this.rpc[methodWebrtcIce] = async (candidate): Promise<any> => {
+      log.trace(`RECV ICE: ${candidate}`)
+      peerConnection.addIceCandidate(candidate)
+    }
+
+    peerConnection.onicecandidate = (ice) => {
+      if (ice.candidate) {
+        //const data = JSON.stringify(ice.candidate)
+        log.trace(`SEND ICE: ${ice.candidate}`)
+        this.notify(methodWebrtcIce, ice.candidate)
+      } else {
+        log.debug("ICE Server already end")
+      }
+    }
+
+    peerConnection.oniceconnectionstatechange = () => {
+      const connectionState = peerConnection.connectionState
+      log.info(`ICE Connection State has changed: ${connectionState}`)
+      if (connectionState == "disconnected") {
+        if (conn) {
+          this.delConn(conn)
+          conn = null
+        }
+      }
+    }
+    // === ICECandidate ===
   }
 
   setOnProgress(fn: (c: number) => void) {
