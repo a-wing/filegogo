@@ -73,11 +73,15 @@ function Index(props: { address: string }) {
 
   useEffect(() => {
     if (enabled) {
-      const addr = getServer() + shareGetRoom(address)
-      fgg.useWebsocket(ProtoHttpToWs(addr))
-
-      setTimeout(() => fgg.clientMeta(), 1000)
       enabled = false
+
+      const init = async() => {
+        const addr = getServer() + shareGetRoom(address)
+        await fgg.useWebsocket(ProtoHttpToWs(addr))
+        fgg.clientMeta()
+      }
+
+      init()
     }
   }, [props.address])
 

@@ -261,7 +261,13 @@ export default class Fgg {
 
   async useWebsocket(addr: string): Promise<void> {
     log.debug("websocket connect: ", addr)
-    this.addConn(new WebSocketConn(new WebSocket(addr)))
+    const ws = new WebSocket(addr)
+    this.addConn(new WebSocketConn(ws))
+    return new Promise((resolve) => {
+      ws.onopen = () => {
+        resolve()
+      }
+    })
   }
 
   setOnProgress(fn: (c: number) => void) {
