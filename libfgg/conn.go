@@ -170,6 +170,7 @@ func (t *Fgg) UseWebRTC(iceServers []webrtc.ICEServer) error {
 			cancel()
 			if conn != nil {
 				t.DelConn(conn)
+				conn = nil
 			}
 		}
 	})
@@ -179,6 +180,7 @@ func (t *Fgg) UseWebRTC(iceServers []webrtc.ICEServer) error {
 		cancel()
 		if conn != nil {
 			t.DelConn(conn)
+			conn = nil
 		}
 	})
 	dataChannel.OnError(func(err error) {
