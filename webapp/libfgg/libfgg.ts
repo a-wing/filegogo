@@ -1,12 +1,10 @@
 import log from 'loglevel'
 
 import Pool from './pool/pool'
+import Conn from './transport/conn'
 import { IConn } from './transport/conn'
 import { IFile } from "./pool/file/file"
 import { Meta, Hash } from "./pool/data"
-
-import WebSocketConn from './transport/websocket'
-import WebRTCConn from './transport/webrtc'
 
 let uniqueID: number = 0
 
@@ -269,7 +267,7 @@ export default class Fgg {
   async useWebsocket(addr: string): Promise<void> {
     log.debug("websocket connect: ", addr)
     const ws = new WebSocket(addr)
-    this.addConn(new WebSocketConn(ws))
+    this.addConn(new Conn(ws))
     return new Promise((resolve) => {
       ws.onopen = () => {
         resolve()
@@ -327,9 +325,9 @@ export default class Fgg {
       id: 0
     })
 
-    let conn: WebRTCConn | null = null
+    let conn: Conn | null = null
     datachannel.onopen = () => {
-      conn = new WebRTCConn(datachannel)
+      conn = new Conn(datachannel)
       this.addConn(conn)
     }
 
