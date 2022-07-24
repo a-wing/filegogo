@@ -36,9 +36,6 @@ function Index(props: { address: string }) {
     setProgress(c)
     log.debug(progress)
   })
-  fgg.useWebRTC({
-    iceServers: refIce.current,
-  })
 
   const getfile = async () => {
     await fgg.run()
@@ -65,6 +62,11 @@ function Index(props: { address: string }) {
       const init = async() => {
         const addr = getServer() + shareGetRoom(address)
         await fgg.useWebsocket(ProtoHttpToWs(addr))
+
+        fgg.useWebRTC({
+          iceServers: refIce.current,
+        })
+
         fgg.clientMeta()
       }
 
