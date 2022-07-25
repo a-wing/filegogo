@@ -2,6 +2,10 @@ name: docker
 
 on:
   push:
+    branches:
+      - main
+      - staging
+      - develop
     tags:
       - 'v*'
 
