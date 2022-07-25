@@ -52,3 +52,29 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  deploy-develop:
+    needs:
+      - docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: develop
+      url: https://develop.send.22333.fun/
+    steps:
+      -
+        name: Deploy Develop
+        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.DEVELOP_KEY }}
+
+  deploy-staging:
+    needs:
+      - docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    environment:
+      name: staging
+      url: https://staging.send.22333.fun/
+    steps:
+      -
+        name: Deploy Staging
+        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STAGING_KEY }}
+
