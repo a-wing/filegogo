@@ -6,12 +6,14 @@ import (
 	"io"
 	"net"
 
+	"filegogo/libfgg/transport/protocol"
+
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	l1Length = 2
-	l2Length = 2
+	l1Length = protocol.LengthHead
+	l2Length = protocol.LengthBody
 )
 
 type Conn struct {

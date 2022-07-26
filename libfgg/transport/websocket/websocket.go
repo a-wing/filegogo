@@ -2,17 +2,13 @@ package websocket
 
 import (
 	"context"
-	"encoding/binary"
 	"sync"
+
+	"filegogo/libfgg/transport/protocol"
 
 	"github.com/gorilla/websocket"
 
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	l1Length = 2
-	l2Length = 2
 )
 
 type Conn struct {
@@ -47,27 +43,12 @@ func (c *Conn) Run(ctx context.Context) {
 			log.Error(err)
 		}
 
-		l1, l2 := binary.BigEndian.Uint16(data[:l1Length]), binary.BigEndian.Uint16(data[l1Length:l1Length+l2Length])
-
-		payload := data[l1Length+l2Length:]
-		head := payload[:l1]
-		body := payload[l1 : l1+l2]
-		c.onMessage(head, body)
+		c.onMessage(protocol.Decode(data))
 	}
 }
 
 func (c *Conn) Send(head, body []byte) error {
-	l1, l2 := len(head), len(body)
-
-	l1b := make([]byte, l1Length)
-	l2b := make([]byte, l2Length)
-	binary.BigEndian.PutUint16(l1b, uint16(l1))
-	binary.BigEndian.PutUint16(l2b, uint16(l2))
-	l1l2 := append(l1b, l2b...)
-
-	log.Debug(l1, l2, l1l2)
-
-	data := append(append(l1l2, head...), body...)
+	data := protocol.Encode(head, body)
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	return c.conn.WriteMessage(websocket.BinaryMessage, data)
