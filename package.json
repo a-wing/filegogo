@@ -5,8 +5,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "ci": "vitest run webapp",
-    "test": "playwright test --config=e2e/playwright.config.ts"
+    "test": "vitest run webapp",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.22.2",

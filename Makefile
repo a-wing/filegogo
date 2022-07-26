@@ -33,7 +33,7 @@ webapp:
 	npm run build
 
 test-e2e: default
-	npm run test
+	npm run test:e2e
 
 webapp-clean:
 	rm -r server/build

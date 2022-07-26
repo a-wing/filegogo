@@ -97,7 +97,9 @@ export default class Fgg {
   }
 
   async run(): Promise<void> {
-    await this.rpc[methodWebrtcUp](null)
+    if (this.rpc[methodWebrtcUp]) {
+      await this.rpc[methodWebrtcUp](null)
+    }
 
     return new Promise((resolve) => {
       const timer = setInterval(async () => {
