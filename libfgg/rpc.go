@@ -57,8 +57,11 @@ func (t *Fgg) recv(head []byte, body []byte) {
 		t.send(resHead, resBody)
 	} else if rpc.Type == jsonrpc.TypeSuccess || rpc.Type == jsonrpc.TypeErrors {
 		t.mutex.Lock()
-		cc := t.pending[*rpc.ID]
+		cc, ok := t.pending[*rpc.ID]
 		t.mutex.Unlock()
+		if !ok {
+			return
+		}
 
 		if cc.req.Method == methodData {
 			t.pendingCount--
