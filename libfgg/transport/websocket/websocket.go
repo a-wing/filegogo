@@ -3,6 +3,7 @@ package websocket
 import (
 	"context"
 	"encoding/binary"
+	"sync"
 
 	"github.com/gorilla/websocket"
 
@@ -16,6 +17,7 @@ const (
 
 type Conn struct {
 	conn      *websocket.Conn
+	mutex     sync.Mutex
 	onMessage func([]byte, []byte)
 }
 
@@ -66,5 +68,7 @@ func (c *Conn) Send(head, body []byte) error {
 	log.Debug(l1, l2, l1l2)
 
 	data := append(append(l1l2, head...), body...)
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	return c.conn.WriteMessage(websocket.BinaryMessage, data)
 }
