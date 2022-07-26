@@ -8,7 +8,7 @@ class DomSendFile implements IFile {
   }
   async getMeta(): Promise<Meta> {
     return {
-      file: this.file.name,
+      name: this.file.name,
       type: this.file.type,
       size: this.file.size,
     }
@@ -27,7 +27,7 @@ class DomRecvFile implements IFile {
   private buffer: Array<ArrayBuffer> = []
   private bytesReceived: number = 0
   private meta: Meta = {
-    file: "",
+    name: "",
     type: "application/octet-stream",
     size: 0
   }
@@ -59,7 +59,7 @@ class DomRecvFile implements IFile {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = this.meta.file
+    a.download = this.meta.name
     document.documentElement.appendChild(a)
     a.click()
     document.documentElement.removeChild(a)

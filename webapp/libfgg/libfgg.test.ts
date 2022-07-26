@@ -52,7 +52,7 @@ describe('io virtual test', async () => {
   await recver.clientMeta()
 
   it('mate test', () => {
-    assert.equal(meta?.file, nameSend)
+    assert.equal(meta?.name, nameSend)
     assert.equal(meta?.size, size)
   })
 
@@ -64,6 +64,6 @@ describe('io virtual test', async () => {
   await recver.run()
 
   it('hash test', () => {
-    assert.equal(hash?.file, nameSend)
+    assert.equal(hash?.name, nameSend)
   })
 })

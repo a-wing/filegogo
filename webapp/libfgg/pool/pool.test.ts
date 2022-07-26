@@ -17,7 +17,7 @@ describe('file pool test', async () => {
   const meta = await sender.sendMeta()
 
   it('meta file name', () => {
-    assert.equal(nameSend, meta.file)
+    assert.equal(nameSend, meta.name)
   })
 
   it('meta file size', () => {

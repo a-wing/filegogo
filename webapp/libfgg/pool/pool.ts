@@ -58,7 +58,7 @@ export default class Pool {
     }
 
     return {
-      file: this.meta?.file || "",
+      name: this.meta?.name || "",
       hash: this.fileHash.sum(),
     }
   }

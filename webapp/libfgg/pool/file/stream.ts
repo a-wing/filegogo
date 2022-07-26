@@ -12,7 +12,7 @@ class StreamRecvFile implements IFile {
   private file: WritableStreamDefaultWriter | null = null
   private bytesReceived: number = 0
   private meta: Meta = {
-    file: "",
+    name: "",
     type: "application/octet-stream",
     size: 0
   }
@@ -22,7 +22,7 @@ class StreamRecvFile implements IFile {
   }
   async setMeta(meta: Meta): Promise<void> {
     this.meta = meta
-    this.file = streamSaver.createWriteStream(meta.file, {
+    this.file = streamSaver.createWriteStream(meta.name, {
       size: meta.size,
       //mitm: meta.type,
     }).getWriter()

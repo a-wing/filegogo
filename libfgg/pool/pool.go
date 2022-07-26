@@ -7,13 +7,13 @@ import (
 )
 
 type Meta struct {
-	File string `json:"file"`
+	Name string `json:"name"`
 	Type string `json:"type"`
 	Size int64  `json:"size"`
 }
 
 type Hash struct {
-	File string `json:"file"`
+	File string `json:"name"`
 	Hash string `json:"hash"`
 }
 
@@ -74,7 +74,7 @@ func (p *Pool) SendMeta() (*Meta, error) {
 
 		stat, err := file.Stat()
 		meta := &Meta{
-			File: file.Name(),
+			Name: file.Name(),
 			Type: mimeType,
 			Size: stat.Size(),
 		}
@@ -88,7 +88,7 @@ func (p *Pool) SendMeta() (*Meta, error) {
 func (p *Pool) RecvMeta(meta *Meta) error {
 	var err error
 	if p.recver == nil {
-		p.recver, err = os.Create(meta.File)
+		p.recver, err = os.Create(meta.Name)
 	}
 	p.meta = meta
 	return err

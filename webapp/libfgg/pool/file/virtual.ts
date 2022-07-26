@@ -10,7 +10,7 @@ export default class VirtualFile implements IFile {
   }
   async getMeta(): Promise<Meta> {
     return {
-      file: this.name,
+      name: this.name,
       size: this.size,
       type: "text/plain",
     }

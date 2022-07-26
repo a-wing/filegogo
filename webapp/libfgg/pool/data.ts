@@ -4,15 +4,14 @@ interface DataChunk {
 }
 
 interface Meta {
-  // TODO: name
-  file: string
+  name: string
   // TODO: mime
   type: string
   size: number
 }
 
 interface Hash {
-  file: string
+  name: string
   hash: string
 }
 
