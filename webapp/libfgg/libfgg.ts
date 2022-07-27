@@ -12,8 +12,8 @@ function getUniqueID(): string {
   return (uniqueID++).toString()
 }
 
-const loopWait        = 10
-const maxPendingCount = 1000
+const loopWait        = 100
+const maxPendingCount = 100
 
 const methodMeta = "meta"
 const methodData = "data"
