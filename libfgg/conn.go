@@ -157,8 +157,8 @@ func (t *Fgg) UseWebRTC(iceServers []webrtc.ICEServer) error {
 			log.Error(err)
 		} else {
 			conn = dcConn.New(dc)
-			go conn.Run(ctx)
 			t.AddConn(conn)
+			go conn.Run(ctx)
 		}
 	})
 

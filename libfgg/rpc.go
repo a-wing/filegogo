@@ -11,8 +11,13 @@ import (
 
 func (t *Fgg) send(head []byte, body []byte) error {
 	log.Trace(string(head), len(body))
+	t.mutex.Lock()
 	if n := len(t.Conn); n > 0 {
-		return t.Conn[n-1].Send(head, body)
+		c := t.Conn[n-1]
+		t.mutex.Unlock()
+		return c.Send(head, body)
+	} else {
+		t.mutex.Unlock()
 	}
 	return errors.New("Not found conn")
 }
@@ -64,7 +69,9 @@ func (t *Fgg) recv(head []byte, body []byte) {
 		}
 
 		if cc.req.Method == methodData {
+			t.pendingMutex.Lock()
 			t.pendingCount--
+			t.pendingMutex.Unlock()
 
 			c := &pool.DataChunk{}
 			json.Unmarshal(*cc.req.Params, c)

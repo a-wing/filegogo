@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 )
 
 type Meta struct {
@@ -29,9 +30,7 @@ type Pool struct {
 	doneCount int
 	nextCount int
 
-	//finish bool
-	//// progress total size
-	//count int64
+	mu sync.Mutex
 
 	OnFinish   func()
 	OnProgress func(c int64)

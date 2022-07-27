@@ -49,6 +49,7 @@ type Fgg struct {
 	mutex   sync.Mutex
 	pending map[jsonrpc.ID]*call
 
+	pendingMutex sync.Mutex
 	pendingCount int
 
 	finish bool
@@ -82,13 +83,17 @@ func NewFgg() *Fgg {
 
 func (t *Fgg) AddConn(conn transport.Conn) {
 	conn.SetOnRecv(t.recv)
+	t.mutex.Lock()
 	t.Conn = append(t.Conn, conn)
+	t.mutex.Unlock()
 }
 
 func (t *Fgg) DelConn(conn transport.Conn) {
 	remove := func(slice []transport.Conn, s int) []transport.Conn {
 		return append(slice[:s], slice[s+1:]...)
 	}
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
 	for i, c := range t.Conn {
 		if c == conn {
 			t.Conn = remove(t.Conn, i)
@@ -136,7 +141,11 @@ func (t *Fgg) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
-			if maxPendingCount > t.pendingCount {
+			t.pendingMutex.Lock()
+			pendingCount := t.pendingCount
+			t.pendingMutex.Unlock()
+
+			if maxPendingCount > pendingCount {
 				t.getData()
 			}
 
@@ -151,7 +160,9 @@ func (t *Fgg) Run(ctx context.Context) error {
 }
 
 func (t *Fgg) getData() {
+	t.pendingMutex.Lock()
 	t.pendingCount++
+	t.pendingMutex.Unlock()
 
 	c := t.pool.Next()
 

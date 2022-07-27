@@ -15,7 +15,9 @@ func (p *Pool) SendData(c *DataChunk) ([]byte, error) {
 }
 
 func (p *Pool) RecvData(c *DataChunk, data []byte) error {
+	p.mu.Lock()
 	p.currentSize += c.Length
+	p.mu.Unlock()
 	p.fileHash.onData(c, data)
 	p.OnProgress(p.fileHash.offset)
 	_, err := p.recver.WriteAt(data, c.Offset)
@@ -23,7 +25,11 @@ func (p *Pool) RecvData(c *DataChunk, data []byte) error {
 }
 
 func (p *Pool) Next() *DataChunk {
-	if p.currentSize >= p.meta.Size {
+	p.mu.Lock()
+	currentSize := p.currentSize
+	p.mu.Unlock()
+
+	if currentSize >= p.meta.Size {
 		p.OnFinish()
 		return nil
 	}
@@ -33,7 +39,7 @@ func (p *Pool) Next() *DataChunk {
 	}
 
 	length := p.chunkSize
-	next := p.currentSize + p.chunkSize
+	next := currentSize + p.chunkSize
 	if next > p.meta.Size {
 		n := next - p.meta.Size
 		length = p.chunkSize - n
