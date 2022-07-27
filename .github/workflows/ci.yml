@@ -31,7 +31,7 @@ jobs:
           cache: true
       -
         name: Go test
-        run: go test ./...
+        run: go test ./... -cover -race
   build:
     name: Build
     needs:

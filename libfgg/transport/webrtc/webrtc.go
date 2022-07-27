@@ -2,6 +2,7 @@ package webrtc
 
 import (
 	"context"
+	"time"
 
 	"filegogo/libfgg/transport/protocol"
 
@@ -26,25 +27,20 @@ func (c *Conn) SetOnRecv(fn func(head, body []byte)) {
 }
 
 func (c *Conn) Run(ctx context.Context) {
-	ctx, cancel := context.WithCancel(ctx)
-	go func() {
+	for {
 		select {
 		case <-ctx.Done():
 			c.conn.Close()
+			return
+		default:
 		}
-	}()
-
-	for {
-		// TODO:
 		data := make([]byte, 1024*64)
 		n, err := c.conn.Read(data)
-
-		log.Tracef("WebRTC DataChannel RECV count(%d): %s\n", n, data[:n])
 		if err != nil {
-			log.Error(err)
-			cancel()
-			return
+			time.Sleep(time.Millisecond)
+			continue
 		}
+		log.Tracef("WebRTC DataChannel RECV count(%d): '%s'", n, data[:n])
 
 		c.onMessage(protocol.Decode(data[:n]))
 	}
