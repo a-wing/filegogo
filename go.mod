@@ -21,3 +21,27 @@ require (
 	github.com/urfave/cli/v2 v2.11.1
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 )
+
+require (
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
+	github.com/pion/dtls/v2 v2.1.5 // indirect
+	github.com/pion/ice/v2 v2.2.6 // indirect
+	github.com/pion/interceptor v0.1.11 // indirect
+	github.com/pion/mdns v0.0.5 // indirect
+	github.com/pion/randutil v0.1.0 // indirect
+	github.com/pion/rtcp v1.2.9 // indirect
+	github.com/pion/rtp v1.7.13 // indirect
+	github.com/pion/sdp/v3 v3.0.5 // indirect
+	github.com/pion/srtp/v2 v2.0.10 // indirect
+	github.com/pion/stun v0.3.5 // indirect
+	github.com/pion/udp v0.1.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	golang.org/x/crypto v0.0.0-20220516162934-403b01795ae8 // indirect
+	golang.org/x/net v0.0.0-20220630215102-69896b714898 // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+)
