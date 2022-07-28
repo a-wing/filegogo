@@ -1,4 +1,4 @@
-FROM node:lts-alpine as builder-node
+FROM node:18-alpine as builder-node
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-FROM golang:1.16-buster AS builder
+FROM golang:1.18-buster AS builder
 
 WORKDIR /src
 
