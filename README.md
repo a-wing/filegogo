@@ -99,6 +99,35 @@ relayMaxPort = 49200
 
 For example: [coturn](https://github.com/coturn/coturn)
 
+#### Docker Deployment Coturn
+
+```bash
+docker run -d --network=host --name=coturn coturn/coturn:alpine \
+           -n --log-file=stdout \
+           --min-port=49160 --max-port=49200 \
+           --lt-cred-mech --fingerprint \
+           --no-multicast-peers --no-cli \
+           --no-tlsv1 --no-tlsv1_1 \
+           --realm=filegogo \
+           --user=filegogo:filegogo \
+           --external-ip='$(detect-external-ip)' \
+           --relay-ip='$(detect-external-ip)' \
+           --listening-ip='$(detect-external-ip)' \
+           --listening-device=eth0
+```
+
+Test Deployment
+
+```bash
+# Test stun
+turnutils_stunclient send.22333.fun
+
+# Test turn
+turnutils_uclient -u filegogo -w filegogo send.22333.fun -y
+```
+
+#### Package Manager Deployment
+
 ```sh
 apt install coturn
 ```
