@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - staging
-      - develop
     tags:
       - 'v*'
 
@@ -52,29 +50,29 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-develop:
+  deploy-master:
     needs:
       - docker
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/master'
     environment:
-      name: develop
+      name: master
       url: https://develop.send.22333.fun/
     steps:
       -
         name: Deploy Develop
         run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.DEVELOP_KEY }}
 
-  deploy-staging:
+  deploy-stable:
     needs:
       - docker
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/v*'
     environment:
-      name: staging
-      url: https://staging.send.22333.fun/
+      name: stable
+      url: https://send.22333.fun/
     steps:
       -
-        name: Deploy Staging
-        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STAGING_KEY }}
+        name: Deploy Stable
+        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STABLE_KEY }}
 
