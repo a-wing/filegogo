@@ -1,47 +1,27 @@
 package cmd
 
 import (
-	"os"
-
-	"filegogo/version"
-
-	"github.com/urfave/cli/v2"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-var (
-	app = &cli.App{
-		Name:    "filegogo",
-		Version: version.Version + " " + version.Commit + " " + version.Date,
-		Usage:   "A file transfer tool that can be used in the browser webrtc p2p",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "config",
-				Aliases: []string{"c"},
-				Value:   "filegogo.toml",
-				Usage:   "Load configuration from `FILE`",
-			},
-			&cli.BoolFlag{
-				Name:  "debug",
-				Value: false,
-				Usage: "Enabled Debug mode",
-			},
-		},
-		Before: func(c *cli.Context) error {
-			if c.Bool("debug") {
-				log.SetReportCaller(true)
-				log.SetLevel(log.DebugLevel)
-			}
-			log.Debugln(c.Path("config"))
-			return nil
-		},
-	}
-)
+var rootCmd = &cobra.Command{
+	Use:   "filegogo",
+	Short: "Filegogo",
+	Long: `Filegogo is a p2p file transport tool
+						https://github.com/a-wing/filegogo`,
+	PreRun: func(c *cobra.Command, args []string) {
+		if verbose, _ := c.Flags().GetBool("verbose"); verbose {
+			log.SetReportCaller(true)
+			log.SetLevel(log.DebugLevel)
+		}
+	},
+}
 
 func Execute() {
-	err := app.Run(os.Args)
-	if err != nil {
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().StringP("config", "c", "filegogo.toml", "Load configuration from `FILE`")
+	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

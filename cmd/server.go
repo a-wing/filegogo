@@ -5,30 +5,32 @@ import (
 	"filegogo/server/httpd"
 
 	"github.com/BurntSushi/toml"
-	"github.com/urfave/cli/v2"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	config := &server.Config{
-		Http: &httpd.Config{
-			Listen:    "0.0.0.0:8080",
-			RoomAlive: 1024,
-			RoomCount: 10000,
-		},
-	}
-	app.Commands = append(app.Commands, &cli.Command{
-		Name:  "server",
-		Usage: "websocket broker server",
-		Before: func(c *cli.Context) error {
-			toml.DecodeFile(c.Path("config"), config)
+	rootCmd.AddCommand(serverCmd)
+}
+
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "websocket broker server",
+	Long:  `webapp, websocket, iceServer Server`,
+	Run: func(cmd *cobra.Command, args []string) {
+		config := &server.Config{
+			Http: &httpd.Config{
+				Listen:    "0.0.0.0:8080",
+				RoomAlive: 1024,
+				RoomCount: 10000,
+			},
+		}
+
+		if cPath, err := cmd.Flags().GetString("config"); err == nil {
+			toml.DecodeFile(cPath, config)
 			log.Debugln(config)
-			return nil
-		},
-		Action: func(c *cli.Context) error {
-			server.Run(config)
-			return nil
-		},
-	})
+		}
+
+		server.Run(config)
+	},
 }
