@@ -4,8 +4,6 @@ import (
 	"filegogo/server"
 	"filegogo/server/httpd"
 
-	"github.com/BurntSushi/toml"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -26,11 +24,7 @@ var serverCmd = &cobra.Command{
 			},
 		}
 
-		if cPath, err := cmd.Flags().GetString("config"); err == nil {
-			toml.DecodeFile(cPath, config)
-			log.Debugln(config)
-		}
-
+		loadConfig(config)
 		server.Run(config)
 	},
 }

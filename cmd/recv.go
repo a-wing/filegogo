@@ -18,6 +18,7 @@ var recvCmd = &cobra.Command{
 	Short: "recv <file>",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := client.DefaultConfig
+		loadConfig(config)
 
 		if share, err := cmd.Flags().GetString("share"); err == nil {
 			config.Server = share
