@@ -26,7 +26,7 @@ function File(props: {
     <>
       <label className={ styles.button } style={{
         background: 'linear-gradient(to right, #f14668 '+ props.percent +'%, #3ec46d '+ props.percent +'%)'
-      }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'getFile' : filename ) : props.percent.toFixed(1) + '%' }</label>
+      }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'Download' : filename ) : props.percent.toFixed(1) + '%' }</label>
       <input
         className={ styles.input }
         // This id e2e test need

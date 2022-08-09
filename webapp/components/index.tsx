@@ -4,10 +4,12 @@ import { ProtoHttpToWs } from '../lib/util'
 import { getServer, getConfig, shareGetRoom } from '../lib/api'
 import LibFgg from '../libfgg/libfgg'
 import log  from 'loglevel'
+import { Meta } from '../libfgg/pool/data'
 
 import Address from './Address'
 import File from './File'
 import Qrcode from './QRCode'
+import Card from './card'
 
 import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
 
@@ -17,14 +19,17 @@ let enabled = true
 function Index(props: { address: string }) {
   const address = props.address
 
+  const [meta, setMeta] = useState<Meta | null>(null)
+
   const [progress, setProgress] = useState<number>(0)
   const [total, setTotal] = useState<number>(10)
   const [recver, setRecver] = useState<boolean>(false)
 
   const refIce = useRef<RTCIceServer[]>([])
 
-  fgg.onPreTran = (meta: any) => {
+  fgg.onPreTran = (meta: Meta) => {
     setTotal(meta.size)
+    setMeta(meta)
   }
 
   fgg.onRecvFile = () => {
@@ -76,8 +81,13 @@ function Index(props: { address: string }) {
 
   return (
     <>
-      <Qrcode address={ address }></Qrcode>
-      <Address address={ address }></Address>
+      { recver && meta
+        ? <Card name={ meta.name } type={ meta.type } size={ meta.size }></Card>
+        : <>
+            <Qrcode address={ address }></Qrcode>
+            <Address address={ address }></Address>
+          </>
+      }
       <File
         recver={ recver }
         percent={ progress / total * 100 }
