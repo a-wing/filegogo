@@ -27,7 +27,7 @@ test('cli to browser', async ({ page }) => {
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.locator('text=getFile').click()
+    page.locator('text=Download').click()
   ]);
 
   const path = await download.path();

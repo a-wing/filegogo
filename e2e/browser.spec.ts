@@ -16,7 +16,7 @@ test('browser to browser', async ({ page, context }) => {
 
   const [download] = await Promise.all([
     page2.waitForEvent('download'),
-    page2.locator('text=getFile').click()
+    page2.locator('text=Download').click()
   ]);
 
   // wait for download to complete
