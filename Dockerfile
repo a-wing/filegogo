@@ -23,7 +23,7 @@ RUN make build
 # Bin
 FROM alpine AS bin
 
-COPY --from=builder /src/filegogo/conf/filegogo.toml /etc/filegogo.toml
+COPY --from=builder /src/conf/filegogo.toml /etc/filegogo.toml
 COPY --from=builder /src/filegogo /usr/bin/filegogo
 
 EXPOSE 8080/tcp
