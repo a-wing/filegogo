@@ -10,7 +10,13 @@ const (
 )
 
 func Decode(data []byte) (head, body []byte) {
+	if len(data) < LengthHead+LengthBody {
+		return
+	}
 	l1, l2 := binary.BigEndian.Uint16(data[:LengthHead]), binary.BigEndian.Uint16(data[LengthHead:LengthHead+LengthBody])
+	if len(data) < int(l1+l2)+LengthHead+LengthBody {
+		return
+	}
 
 	payload := data[LengthHead+LengthBody:]
 	return payload[:l1], payload[l1 : l1+l2]

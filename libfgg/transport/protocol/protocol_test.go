@@ -17,3 +17,27 @@ func TestProtocol(t *testing.T) {
 		t.Error(body)
 	}
 }
+
+func TestProtocolDecodeNil(t *testing.T) {
+	var data []byte
+
+	head, body := Decode(data)
+	if len(head) != 0 {
+		t.Error(head)
+	}
+	if len(body) != 0 {
+		t.Error(body)
+	}
+}
+
+func TestProtocolDecodeError(t *testing.T) {
+	data := []byte("world world !!")
+
+	head, body := Decode(data)
+	if len(head) != 0 {
+		t.Error(head)
+	}
+	if len(body) != 0 {
+		t.Error(body)
+	}
+}

@@ -12,9 +12,16 @@ function encode(head: ArrayBuffer, body: ArrayBuffer): ArrayBuffer {
 }
 
 function decode(data: ArrayBuffer): ArrayBuffer[] {
+  if (data.byteLength < l1Length + l2Length) {
+    return [new ArrayBuffer(0), new ArrayBuffer(0)]
+  }
   const meta = new DataView(data)
   const l1 = meta.getUint16(0)
   const l2 = meta.getUint16(l1Length)
+
+  if (data.byteLength < l1Length + l2Length + l1 + l2) {
+    return [new ArrayBuffer(0), new ArrayBuffer(0)]
+  }
 
   return [
     data.slice(l1Length + l2Length, l1Length + l2Length + l1),

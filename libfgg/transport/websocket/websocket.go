@@ -3,6 +3,7 @@ package websocket
 import (
 	"context"
 	"sync"
+	"time"
 
 	"filegogo/libfgg/transport/protocol"
 
@@ -41,6 +42,11 @@ func (c *Conn) Run(ctx context.Context) {
 		log.Tracef("WebSocket RECV %d: %s\n", typ, data)
 		if err != nil {
 			log.Error(err)
+		}
+
+		if data == nil {
+			time.Sleep(100 * time.Millisecond)
+			continue
 		}
 
 		c.onMessage(protocol.Decode(data))

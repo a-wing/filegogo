@@ -28,3 +28,23 @@ describe('protocol encode decode test', async () => {
     }
   })
 })
+
+describe('protocol decode null test', async () => {
+  const data = await new Blob().arrayBuffer()
+  const [head, body] = decode(data)
+
+  it('length should be equal', () => {
+    assert.equal(head.byteLength, 0)
+    assert.equal(body.byteLength, 0)
+  })
+})
+
+describe('protocol decode error test', async () => {
+  const data = await new Blob(["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]).arrayBuffer()
+  const [head, body] = decode(data)
+
+  it('length should be equal', () => {
+    assert.equal(head.byteLength, 0)
+    assert.equal(body.byteLength, 0)
+  })
+})
