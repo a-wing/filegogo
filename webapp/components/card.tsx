@@ -4,16 +4,16 @@ function Card(props: {name: string, type: string, size: number}) {
   return (
     <div className={ styles.card } >
       <div className={ styles.item } >
-        <label className={ `${styles.tag} ${styles.link}` } >Name</label>
-        <label className={ `${styles.tag} ${styles.primary}` }>{ props.name }</label>
+        <p className={ `${styles.tag} ${styles.link}` } >Name</p>
+        <p className={ `${styles.tag} ${styles.primary}` }>{ props.name }</p>
       </div>
       <div className={ styles.item } >
-        <label className={ `${styles.tag} ${styles.warning}` }>Type</label>
-        <label className={ `${styles.tag} ${styles.danger}` }>{ props.type }</label>
+        <p className={ `${styles.tag} ${styles.warning}` }>Type</p>
+        <p className={ `${styles.tag} ${styles.danger}` }>{ props.type }</p>
       </div>
       <div className={ styles.item } >
-        <label className={ `${styles.tag} ${styles.success}` }>Size</label>
-        <label className={ `${styles.tag} ${styles.info}` }>{ props.size }</label>
+        <p className={ `${styles.tag} ${styles.success}` }>Size</p>
+        <p className={ `${styles.tag} ${styles.info}` }>{ props.size }</p>
       </div>
     </div>
   )

@@ -1,16 +1,19 @@
 .card {
   display: flex;
-  height: 200px;
+  height: 300px;
   flex-direction: column;
   justify-content: space-around;
 }
 
 .item {
+  display: flex;
   flex-direction: row;
   justify-content: center;
 }
 
 .tag {
+  display: flex;
+  align-items: center;
   padding: 10px;
   border-radius: 5px;
 }
