@@ -39,7 +39,7 @@ func (t *Fgg) onMeta(data []byte) error {
 
 	t.pool.RecvMeta(meta)
 
-	t.OnRecvFile()
+	t.OnRecvFile(meta)
 	t.onPreTran(meta)
 	return nil
 }

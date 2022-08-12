@@ -147,7 +147,7 @@ func (c *Client) Recv(ctx context.Context, files []string) {
 	}
 
 	ch := make(chan bool)
-	fgg.OnRecvFile = func() {
+	fgg.OnRecvFile = func(meta *pool.Meta) {
 		ch <- true
 	}
 

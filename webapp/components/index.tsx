@@ -20,19 +20,17 @@ function Index(props: { address: string }) {
   const address = props.address
 
   const [meta, setMeta] = useState<Meta | null>(null)
-
   const [progress, setProgress] = useState<number>(0)
-  const [total, setTotal] = useState<number>(10)
   const [recver, setRecver] = useState<boolean>(false)
 
   const refIce = useRef<RTCIceServer[]>([])
 
-  fgg.onPreTran = (meta: Meta) => {
-    setTotal(meta.size)
+  fgg.onSendFile = (meta: Meta) => {
     setMeta(meta)
   }
 
-  fgg.onRecvFile = () => {
+  fgg.onRecvFile = (meta: Meta) => {
+    setMeta(meta)
     fgg.setRecv(new DomRecvFile())
     setRecver(true)
   }
@@ -90,7 +88,7 @@ function Index(props: { address: string }) {
       }
       <File
         recver={ recver }
-        percent={ progress / total * 100 }
+        percent={ progress / (meta ? meta.size : 0.01) * 100 }
         handleFile={ (files: any) => { handleFile(files) } }
         getFile={ getfile }
       ></File>

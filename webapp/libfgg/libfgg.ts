@@ -62,8 +62,8 @@ export default class Fgg {
 
   private pendingCount: number = 0
 
-  // TODO: need improve
-  onRecvFile: () => void = () => {}
+  onSendFile: (_: Meta) => void = () => {}
+  onRecvFile: (_: Meta) => void = () => {}
 
   onPreTran: (_: Meta) => void = (_: Meta) => {}
   onPostTran: (_: Hash) => void = (_: Hash) => {}
@@ -83,6 +83,7 @@ export default class Fgg {
     this.pool.setSend(file)
     const fn = async () => {
       const meta = await this.pool.sendMeta()
+      this.onSendFile(meta)
       this.notify(methodMeta, meta)
     }
     fn()
@@ -201,7 +202,7 @@ export default class Fgg {
   }
 
   private onMeta(meta: Meta): void {
-    this.onRecvFile()
+    this.onRecvFile(meta)
     this.pool.recvMeta(meta)
     this.onPreTran(meta)
   }
