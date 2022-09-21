@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"io/ioutil"
+	"strings"
 
 	"filegogo/server/httpd"
 	"filegogo/server/turnd"
@@ -18,6 +20,7 @@ import (
 
 //go:embed build
 var dist embed.FS
+var RawIndexHtml string
 
 const (
 	ApiPathConfig = "/config"
@@ -78,7 +81,21 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	sr.PathPrefix("/").Handler(http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))).Methods(http.MethodGet)
+	// read index.html file into memory
+	index_, err2 := fsys.Open("index.html");
+	if err2 != nil {
+		log.Fatal(err2.Error());
+	}
+  data, _ := ioutil.ReadAll(index_);
+	index_.Close();
+	RawIndexHtml = string(data);
+	// if exist __SUB_FOLDER__, replace it by config: SubFolder
+	if strings.Contains(RawIndexHtml, "__SUB_FOLDER__") {
+    RawIndexHtml = strings.ReplaceAll(RawIndexHtml, "__SUB_FOLDER__", cfg.Http.SubFolder)
+	}
+
+	//sr.PathPrefix("/").Handler(http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(httpd.NewSPA(RawIndexHtml, http.FS(fsys))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
 	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))

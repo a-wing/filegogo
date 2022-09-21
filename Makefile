@@ -18,9 +18,6 @@ GOBUILD=CGO_ENABLED=0 \
 .PHONY: default
 default: webapp build
 
-.PHONY: subfolder
-subfolder: webapp_subfolder build
-
 .PHONY: build
 build:
 	GOOS=$(OS) GOARCH=$(ARCH) $(GOBUILD) -o $(NAME) ./main.go
@@ -34,10 +31,6 @@ install:
 .PHONY: webapp
 webapp:
 	npm run build
-
-.PHONY: webapp_subfolder
-webapp_subfolder:
-	npm run build:subfolder
 
 test-e2e: default
 	npm run test:e2e

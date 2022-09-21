@@ -4,7 +4,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:subfolder": "tsc &&VITE_BASE_URL=/filegogo vite build",
     "preview": "vite preview",
     "test": "vitest run webapp",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts"
@@ -32,7 +31,6 @@
     "streamsaver": "^2.0.6",
     "typescript": "^4.6.3",
     "vite": "^3.0.3",
-    "vite-plugin-html": "^3.2.0",
     "vitest": "^0.18.0",
     "web-streams-polyfill": "^3.2.1"
   }
