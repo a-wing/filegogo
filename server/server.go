@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"path"
 
 	"filegogo/server/httpd"
 	"filegogo/server/turnd"
@@ -14,6 +15,10 @@ import (
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
 	"github.com/pion/webrtc/v3"
+	"github.com/rs/xid"
+
+	"github.com/djherbis/stow/v4"
+	bolt "go.etcd.io/bbolt"
 )
 
 //go:embed build
@@ -22,6 +27,12 @@ var dist embed.FS
 const (
 	ApiPathConfig = "/config"
 	ApiPathSignal = "/s/"
+
+	ApiPathFileInfo = "/info/"
+	ApiPathFileRaw  = "/raw/"
+
+	dataPath = "tmp"
+	dbName   = "store.db"
 )
 
 func Run(cfg *Config) {
@@ -35,6 +46,13 @@ func Run(cfg *Config) {
 		}
 		defer turnSrv.Close()
 	}
+
+	db, err := bolt.Open(path.Join(dataPath, dbName), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	store := stow.NewJSONStore(db, []byte("room"))
 
 	sr := mux.NewRouter()
 
@@ -72,6 +90,33 @@ func Run(cfg *Config) {
 			log.Println(err)
 		}
 	})
+
+	sr.HandleFunc(ApiPathFileRaw+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		uxid := xid.New().String()
+
+		f, fh, err := r.FormFile("f")
+		if err != nil {
+			return
+		}
+		f.Close()
+
+		store.Put(mux.Vars(r)["room"], &httpd.Meta{
+			Name: fh.Filename,
+			Size: fh.Size,
+			UXID: uxid,
+		})
+
+		httpd.SaveUploadedFile(fh, path.Join(dataPath, uxid))
+
+	}).Methods(http.MethodPost)
+
+	sr.HandleFunc(ApiPathFileRaw+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		room := mux.Vars(r)["room"]
+		var m httpd.Meta
+		store.Get(room, &m)
+
+		httpd.FileAttachment(w, r, path.Join(dataPath, m.UXID), m.Name)
+	}).Methods(http.MethodGet)
 
 	fsys, err := fs.Sub(dist, "build")
 	if err != nil {
