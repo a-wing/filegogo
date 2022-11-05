@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/pion/datachannel v1.5.2
 	github.com/pion/logging v0.2.2
-	github.com/pion/sctp v1.8.2
+	github.com/pion/sctp v1.8.3
 	github.com/pion/transport v0.13.1
 	github.com/pion/turn/v2 v2.0.8
 	github.com/pion/webrtc/v3 v3.1.43
