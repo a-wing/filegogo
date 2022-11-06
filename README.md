@@ -41,14 +41,6 @@ make
 
 ## Run Development
 
-### Server
-
-```bash
-
-# Default Listen port: 8080
-go run ./main.go server
-```
-
 ### Webapp
 
 ```bash
@@ -58,6 +50,14 @@ npm install
 # Default Listen port: 3000
 # Auto Proxy port: 8080
 npm run dev
+```
+
+### Server
+
+```bash
+
+# Default Listen port: 8080
+go run ./main.go server
 ```
 
 ### Client

@@ -21,6 +21,8 @@ var serverCmd = &cobra.Command{
 				Listen:    "0.0.0.0:8080",
 				RoomAlive: 1024,
 				RoomCount: 10000,
+
+				StoragePath: "data",
 			},
 		}
 

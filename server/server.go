@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"path"
 
 	"filegogo/server/httpd"
@@ -31,8 +32,7 @@ const (
 	ApiPathFileInfo = "/info/"
 	ApiPathFileRaw  = "/raw/"
 
-	dataPath = "tmp"
-	dbName   = "store.db"
+	dbName = "store.db"
 )
 
 func Run(cfg *Config) {
@@ -46,12 +46,14 @@ func Run(cfg *Config) {
 		}
 		defer turnSrv.Close()
 	}
-
-	db, err := bolt.Open(path.Join(dataPath, dbName), 0600, nil)
-	if err != nil {
+	if err := os.MkdirAll(cfg.Http.StoragePath, os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
+	db, err := bolt.Open(path.Join(cfg.Http.StoragePath, dbName), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	store := stow.NewJSONStore(db, []byte("room"))
 
 	sr := mux.NewRouter()
@@ -106,7 +108,7 @@ func Run(cfg *Config) {
 			UXID: uxid,
 		})
 
-		httpd.SaveUploadedFile(fh, path.Join(dataPath, uxid))
+		httpd.SaveUploadedFile(fh, path.Join(cfg.Http.StoragePath, uxid))
 
 	}).Methods(http.MethodPost)
 
@@ -115,7 +117,7 @@ func Run(cfg *Config) {
 		var m httpd.Meta
 		store.Get(room, &m)
 
-		httpd.FileAttachment(w, r, path.Join(dataPath, m.UXID), m.Name)
+		httpd.FileAttachment(w, r, path.Join(cfg.Http.StoragePath, m.UXID), m.Name)
 	}).Methods(http.MethodGet)
 
 	fsys, err := fs.Sub(dist, "build")
