@@ -15,7 +15,7 @@ require (
 	github.com/pion/turn/v2 v2.0.8
 	github.com/pion/webrtc/v3 v3.1.47
 	github.com/sb-im/jsonrpc-lite v0.2.0
-	github.com/schollz/progressbar/v3 v3.12.0
+	github.com/schollz/progressbar/v3 v3.12.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.6.1
