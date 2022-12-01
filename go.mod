@@ -12,7 +12,7 @@ require (
 	github.com/pion/logging v0.2.2
 	github.com/pion/sctp v1.8.3
 	github.com/pion/transport v0.13.1
-	github.com/pion/turn/v2 v2.0.8
+	github.com/pion/turn/v2 v2.0.9
 	github.com/pion/webrtc/v3 v3.1.47
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.12.0
