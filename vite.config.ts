@@ -7,6 +7,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/s': 'http://localhost:8080',
+      '^/raw/.*': 'http://localhost:8080',
       '/config': 'http://localhost:8080',
       '^/s/.*': {
         target: 'ws://localhost:8080',

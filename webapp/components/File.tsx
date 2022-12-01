@@ -23,7 +23,7 @@ function File(props: {
   }
 
   return (
-    <>
+    <form id="form-upload">
       <label className={ styles.button } style={{
         background: 'linear-gradient(to right, #f14668 '+ props.percent +'%, #3ec46d '+ props.percent +'%)'
       }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'Download' : filename ) : props.percent.toFixed(1) + '%' }</label>
@@ -32,10 +32,11 @@ function File(props: {
         // This id e2e test need
         id="upload"
         type="file"
+        name="f"
         ref={ hiddenFileInput }
         onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files) } }
       />
-    </>
+    </form>
   )
 }
 
