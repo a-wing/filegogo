@@ -13,6 +13,7 @@ import Card from './card'
 import Upload from './upload'
 
 import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
+import Download from './download'
 
 const fgg = new LibFgg()
 let enabled = true
@@ -87,13 +88,16 @@ function Index(props: { address: string }) {
             <Address address={ address }></Address>
           </>
       }
-      <File
-        recver={ recver }
-        percent={ progress / (meta ? meta.size : 0.01) * 100 }
-        handleFile={ (files: any) => { handleFile(files) } }
-        getFile={ getfile }
-      ></File>
-      <Upload name={ (new URL(address)).pathname.split("/")[1] } file="ccc" ></Upload>
+      <div style={{ width: '100%' }}>
+        <File
+          recver={ recver }
+          percent={ progress / (meta ? meta.size : 0.01) * 100 }
+          handleFile={ (files: any) => { handleFile(files) } }
+          getFile={ getfile }
+        ></File>
+        <Upload name={ (new URL(address)).pathname.split("/")[1] } file="ccc" ></Upload>
+        <Download name={ (new URL(address)).pathname.split("/")[1] } ></Download>
+      </div>
     </>
   )
 }
