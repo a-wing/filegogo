@@ -26,10 +26,31 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
+async function putRawFile(f: File): Promise<void> {
+  const room = shareGetRoom(window.location.href)
+  if (room === '') throw "not room"
+
+  let formData = new FormData()
+  formData.append('f', f, f.name)
+  await fetch(`/raw/${room}`, {
+    method: "post",
+    body: formData,
+  })
+  return
+}
+
+async function getRawFile(): Promise<void> {
+  const room = shareGetRoom(window.location.href)
+  window.open(`/raw/${room}`)
+}
+
+
 export {
   getServer,
   getConfig,
   getRoom,
   getLogLevel,
+  putRawFile,
+  getRawFile,
   shareGetRoom,
 }

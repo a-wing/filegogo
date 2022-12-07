@@ -1,5 +1,8 @@
 import { useRef, useState, ChangeEvent } from 'react'
 import styles from './File.module.scss'
+import { putRawFile, getRawFile } from '../lib/api'
+
+let tmp: File | undefined
 
 function File(props: {
   recver: boolean,
@@ -23,7 +26,7 @@ function File(props: {
   }
 
   return (
-    <form id="form-upload">
+    <>
       <label className={ styles.button } style={{
         background: 'linear-gradient(to right, #f14668 '+ props.percent +'%, #3ec46d '+ props.percent +'%)'
       }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'Download' : filename ) : props.percent.toFixed(1) + '%' }</label>
@@ -34,9 +37,11 @@ function File(props: {
         type="file"
         name="f"
         ref={ hiddenFileInput }
-        onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files) } }
+        onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files); tmp = ev.target.files?.[0] } }
       />
-    </form>
+      <button className={ styles.button } onClick={ () => tmp ? putRawFile(tmp) : null } >Send Relay Server</button>
+      <button className={ styles.button } onClick={ getRawFile } >Download File</button>
+    </>
   )
 }
 

@@ -10,10 +10,8 @@ import Address from './Address'
 import File from './File'
 import Qrcode from './QRCode'
 import Card from './card'
-import Upload from './upload'
 
 import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
-import Download from './download'
 
 const fgg = new LibFgg()
 let enabled = true
@@ -95,8 +93,6 @@ function Index(props: { address: string }) {
           handleFile={ (files: any) => { handleFile(files) } }
           getFile={ getfile }
         ></File>
-        <Upload name={ (new URL(address)).pathname.split("/")[1] } file="ccc" ></Upload>
-        <Download name={ (new URL(address)).pathname.split("/")[1] } ></Download>
       </div>
     </>
   )
