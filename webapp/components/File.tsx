@@ -7,6 +7,7 @@ let tmp: File | undefined
 function File(props: {
   recver: boolean,
   isBox: boolean,
+  reLoad: () => void,
   percent: number,
   handleFile: (files: FileList | null) => void,
   getFile: () => void }) {
@@ -51,12 +52,19 @@ function File(props: {
         ? <button
             className={ styles.button }
             style={{ backgroundColor: "darksalmon" }}
-            onClick={ delBoxFile }
+            onClick={ async () => {
+              await delBoxFile()
+              props.reLoad()
+            }}
           >Clear</button>
         : <button
             className={ styles.button }
             style={{ backgroundColor: "deepskyblue" }}
-            onClick={ () => tmp ? putBoxFile(tmp) : null }
+            onClick={ async () => {
+              if (tmp) {
+                await putBoxFile(tmp)
+                props.reLoad()
+              } }}
           >Relay Box</button>
       }
     </>

@@ -78,15 +78,19 @@ function Index(props: { address: string }) {
     }
   }, [props.address])
 
-  useEffect(() => {
-    const load = async () => {
-      let data = await getBoxInfo()
-      if (data) {
-        setMeta(data)
-        setIsBox(true)
-        setRecver(true)
-      }
+  const load = async () => {
+    let data = await getBoxInfo()
+    if (data) {
+      setMeta(data)
+      setIsBox(true)
+      setRecver(true)
+    } else {
+      setIsBox(false)
+      setRecver(false)
+      setMeta(null)
     }
+  }
+  useEffect(() => {
     load()
   }, [props.address])
 
@@ -103,6 +107,7 @@ function Index(props: { address: string }) {
         <File
           recver={ recver }
           isBox={ isBox }
+          reLoad={ load }
           percent={ progress / (meta ? meta.size : 0.01) * 100 }
           handleFile={ (files: any) => { handleFile(files) } }
           getFile={ getfile }
