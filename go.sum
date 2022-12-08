@@ -95,6 +95,8 @@ github.com/pion/webrtc/v3 v3.1.47 h1:2dFEKRI1rzFvehXDq43hK9OGGyTGJSusUi3j6QKHC5s
 github.com/pion/webrtc/v3 v3.1.47/go.mod h1:8U39MYZCLVV4sIBn01htASVNkWQN2zDa/rx5xisEXWs=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/qingstor/go-mime v0.1.0 h1:FhTJtM7TRm9pfgCXpjGUxqwbumGojrgE9ecRz5PXvfc=
+github.com/qingstor/go-mime v0.1.0/go.mod h1:EDwWgaMufg74m7futsF0ZGkdA52ajjAycY+XDeV8M88=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.2 h1:YwD0ulJSJytLpiaWua0sBDusfsCZohxjxzVTYjwxfV8=
 github.com/rivo/uniseg v0.4.2/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=

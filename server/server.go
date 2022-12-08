@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"filegogo/server/httpd"
 	"filegogo/server/turnd"
@@ -16,6 +17,7 @@ import (
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
 	"github.com/pion/webrtc/v3"
+	"github.com/qingstor/go-mime"
 	"github.com/rs/xid"
 
 	"github.com/djherbis/stow/v4"
@@ -117,6 +119,7 @@ func Run(cfg *Config) {
 		store.Put(mux.Vars(r)["room"], &httpd.Meta{
 			Name: fh.Filename,
 			Size: fh.Size,
+			Type: mime.DetectFileExt(strings.TrimPrefix(path.Ext(fh.Filename), ".")),
 			UXID: uxid,
 		})
 

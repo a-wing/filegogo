@@ -15,6 +15,7 @@ require (
 	github.com/pion/transport v0.13.1
 	github.com/pion/turn/v2 v2.0.8
 	github.com/pion/webrtc/v3 v3.1.47
+	github.com/qingstor/go-mime v0.1.0
 	github.com/rs/xid v1.4.0
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.12.0
