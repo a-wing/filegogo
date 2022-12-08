@@ -96,10 +96,14 @@ func Run(cfg *Config) {
 	sr.HandleFunc(ApiPathFileInfo+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		room := mux.Vars(r)["room"]
 		var m httpd.Meta
-		store.Get(room, &m)
-		data, _ := json.Marshal(m)
-		w.Header().Add("Content-type", "application/json")
-		w.Write(data)
+		err := store.Get(room, &m)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			data, _ := json.Marshal(m)
+			w.Header().Add("Content-type", "application/json")
+			w.Write(data)
+		}
 	})
 	sr.HandleFunc(ApiPathFileRaw+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		uxid := xid.New().String()

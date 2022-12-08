@@ -44,6 +44,13 @@ async function getRawFile(): Promise<void> {
   window.open(`/raw/${room}`)
 }
 
+async function getRawInfo(): Promise<any> {
+  const room = shareGetRoom(window.location.href)
+  const response = await fetch(`/info/${room}`)
+  if (response.status == 200) {
+    return await response.json()
+  }
+}
 
 export {
   getServer,
@@ -52,5 +59,6 @@ export {
   getLogLevel,
   putRawFile,
   getRawFile,
+  getRawInfo,
   shareGetRoom,
 }

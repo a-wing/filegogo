@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { ProtoHttpToWs } from '../lib/util'
-import { getServer, getConfig, shareGetRoom } from '../lib/api'
+import { getServer, getConfig, shareGetRoom, getRawInfo } from '../lib/api'
 import LibFgg from '../libfgg/libfgg'
 import log  from 'loglevel'
 import { Meta } from '../libfgg/pool/data'
@@ -77,9 +77,21 @@ function Index(props: { address: string }) {
     }
   }, [props.address])
 
+  useEffect(() => {
+    const load = async () => {
+
+      let data = await getRawInfo()
+      console.log(data)
+      if (data) {
+        setMeta(data)
+      }
+    }
+    load()
+  }, [props.address])
+
   return (
     <>
-      { recver && meta
+      { meta
         ? <Card name={ meta.name } type={ meta.type } size={ meta.size }></Card>
         : <>
             <Qrcode address={ address }></Qrcode>

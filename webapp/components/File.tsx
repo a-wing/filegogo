@@ -39,8 +39,10 @@ function File(props: {
         ref={ hiddenFileInput }
         onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files); tmp = ev.target.files?.[0] } }
       />
-      <button className={ styles.button } onClick={ () => tmp ? putRawFile(tmp) : null } >Send Relay Server</button>
-      <button className={ styles.button } onClick={ getRawFile } >Download File</button>
+      <div style={{ display: 'flex' }}>
+        <button className={ styles.button } onClick={ () => tmp ? putRawFile(tmp) : null } >Send Relay</button>
+        <button className={ styles.button } onClick={ getRawFile } >Download</button>
+      </div>
     </>
   )
 }
