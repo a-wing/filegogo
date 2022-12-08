@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { ProtoHttpToWs } from '../lib/util'
-import { getServer, getConfig, shareGetRoom, getRawInfo } from '../lib/api'
+import { getServer, getConfig, shareGetRoom, getBoxInfo } from '../lib/api'
 import LibFgg from '../libfgg/libfgg'
 import log  from 'loglevel'
 import { Meta } from '../libfgg/pool/data'
@@ -22,6 +22,7 @@ function Index(props: { address: string }) {
   const [meta, setMeta] = useState<Meta | null>(null)
   const [progress, setProgress] = useState<number>(0)
   const [recver, setRecver] = useState<boolean>(false)
+  const [isBox, setIsBox] = useState<boolean>(false)
 
   const refIce = useRef<RTCIceServer[]>([])
 
@@ -79,11 +80,11 @@ function Index(props: { address: string }) {
 
   useEffect(() => {
     const load = async () => {
-
-      let data = await getRawInfo()
-      console.log(data)
+      let data = await getBoxInfo()
       if (data) {
         setMeta(data)
+        setIsBox(true)
+        setRecver(true)
       }
     }
     load()
@@ -101,6 +102,7 @@ function Index(props: { address: string }) {
       <div style={{ width: '100%' }}>
         <File
           recver={ recver }
+          isBox={ isBox }
           percent={ progress / (meta ? meta.size : 0.01) * 100 }
           handleFile={ (files: any) => { handleFile(files) } }
           getFile={ getfile }

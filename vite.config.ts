@@ -9,8 +9,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/s': server,
-      '^/raw/.*': server,
-      '^/info/.*': server,
+      '^/api/.*': server,
       '/config': server,
       '^/s/.*': {
         target: 'ws://localhost:8080',

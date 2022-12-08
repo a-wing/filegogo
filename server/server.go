@@ -31,8 +31,8 @@ const (
 	ApiPathConfig = "/config"
 	ApiPathSignal = "/s/"
 
-	ApiPathFileInfo = "/info/"
-	ApiPathFileRaw  = "/raw/"
+	ApiPathBoxInfo = "/api/info/"
+	ApiPathBoxFile = "/api/file/"
 
 	dbName = "store.db"
 )
@@ -95,7 +95,7 @@ func Run(cfg *Config) {
 		}
 	})
 
-	sr.HandleFunc(ApiPathFileInfo+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc(ApiPathBoxInfo+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		room := mux.Vars(r)["room"]
 		var m httpd.Meta
 		err := store.Get(room, &m)
@@ -107,7 +107,8 @@ func Run(cfg *Config) {
 			w.Write(data)
 		}
 	})
-	sr.HandleFunc(ApiPathFileRaw+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		uxid := xid.New().String()
 
 		f, fh, err := r.FormFile("f")
@@ -127,13 +128,22 @@ func Run(cfg *Config) {
 
 	}).Methods(http.MethodPost)
 
-	sr.HandleFunc(ApiPathFileRaw+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		room := mux.Vars(r)["room"]
 		var m httpd.Meta
 		store.Get(room, &m)
 
 		httpd.FileAttachment(w, r, path.Join(cfg.Http.StoragePath, m.UXID), m.Name)
 	}).Methods(http.MethodGet)
+
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		room := mux.Vars(r)["room"]
+		var m httpd.Meta
+		store.Get(room, &m)
+		store.Delete(room)
+		os.Remove(path.Join(cfg.Http.StoragePath, m.UXID))
+
+	}).Methods(http.MethodDelete)
 
 	fsys, err := fs.Sub(dist, "build")
 	if err != nil {
