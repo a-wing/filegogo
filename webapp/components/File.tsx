@@ -1,17 +1,29 @@
 import { useRef, useState, ChangeEvent } from 'react'
 import styles from './File.module.scss'
+import { putBoxFile, getBoxFile, delBoxFile } from '../lib/api'
+
+let tmp: File | undefined
 
 function File(props: {
   recver: boolean,
+  isBox: boolean,
+  reLoad: () => void,
   percent: number,
   handleFile: (files: FileList | null) => void,
   getFile: () => void }) {
 
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const handleClick = () => {
-    props.recver
-    ? props.getFile()
-    : hiddenFileInput.current?.click?.()
+    if (props.recver) {
+      if (props.isBox) {
+        getBoxFile()
+      } else {
+        props.getFile()
+      }
+    } else {
+      hiddenFileInput.current?.click?.()
+    }
+
   }
 
   const [filename, setFilename] = useState('Select File')
@@ -33,8 +45,28 @@ function File(props: {
         id="upload"
         type="file"
         ref={ hiddenFileInput }
-        onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files) } }
+        onChange={ (ev: ChangeEvent<HTMLInputElement>) => { handleFile(ev.target.files); tmp = ev.target.files?.[0] } }
       />
+
+      { props.recver
+        ? <button
+            className={ styles.button }
+            style={{ backgroundColor: "darksalmon" }}
+            onClick={ async () => {
+              await delBoxFile()
+              props.reLoad()
+            }}
+          >Clear</button>
+        : <button
+            className={ styles.button }
+            style={{ backgroundColor: "deepskyblue" }}
+            onClick={ async () => {
+              if (tmp) {
+                await putBoxFile(tmp)
+                props.reLoad()
+              } }}
+          >Relay Box</button>
+      }
     </>
   )
 }

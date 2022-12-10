@@ -22,6 +22,8 @@ type Config struct {
 	Listen    string
 	RoomAlive int
 	RoomCount int
+
+	StoragePath string
 }
 
 type Server struct {
