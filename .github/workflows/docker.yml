@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions-hub/kubectl@master
         with:
-          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:${{ GITHUB_REF#refs/*/v }}
+          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:latest
         #    steps:
         #      -
         #        name: Deploy Stable
