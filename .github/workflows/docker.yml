@@ -71,8 +71,13 @@ jobs:
     environment:
       name: stable
       url: https://send.22333.fun/
-    steps:
-      -
-        name: Deploy Stable
-        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STABLE_KEY }}
+    env:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    uses: actions-hub/kubectl@master
+    with:
+      args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:${{ GITHUB_REF#refs/*/v }}
+        #    steps:
+        #      -
+        #        name: Deploy Stable
+        #        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STABLE_KEY }}
 
