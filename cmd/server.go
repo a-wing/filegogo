@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"filegogo/server"
 	"filegogo/server/httpd"
 
@@ -27,6 +29,12 @@ var serverCmd = &cobra.Command{
 		}
 
 		loadConfig(config)
+
+		// Override `Http.Listen` to 0.0.0.0:$PORT (Automatic configuration for PaaS).
+		if port := os.Getenv("PORT"); port != "" {
+			config.Http.Listen = ":" + port
+		}
+
 		server.Run(config)
 	},
 }
