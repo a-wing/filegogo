@@ -50,35 +50,35 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-            #  deploy-master:
-            #    needs:
-            #      - docker
-            #    runs-on: ubuntu-latest
-            #    if: github.ref == 'refs/heads/master'
-            #    environment:
-            #      name: master
-            #      url: https://develop.send.22333.fun/
-            #    steps:
-            #      -
-            #        name: Deploy Develop
-            #        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.DEVELOP_KEY }}
-            #
+  deploy-master:
+    needs:
+      - docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: master
+      url: https://send-develop.22333.fun/
+    env:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    steps:
+      -
+        uses: actions-hub/kubectl@master
+        with:
+          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:master
+
   deploy-stable:
     needs:
       - docker
     runs-on: ubuntu-latest
-      #    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v')
     environment:
       name: stable
       url: https://send.22333.fun/
     env:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
     steps:
-      - uses: actions-hub/kubectl@master
+      -
+        uses: actions-hub/kubectl@master
         with:
           args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:latest
-        #    steps:
-        #      -
-        #        name: Deploy Stable
-        #        run: curl -X POST https://portainer.22333.fun/api/webhooks/${{ secrets.STABLE_KEY }}
 
