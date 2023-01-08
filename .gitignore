@@ -4,6 +4,7 @@
 /filegogo-server.toml
 
 bin
+data
 build
 node_modules
 

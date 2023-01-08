@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"io/ioutil"
+	"os"
+	"path"
 	"strings"
 
 	"filegogo/server/httpd"
@@ -16,6 +18,11 @@ import (
 	"github.com/a-wing/lightcable"
 	"github.com/gorilla/mux"
 	"github.com/pion/webrtc/v3"
+	"github.com/qingstor/go-mime"
+	"github.com/rs/xid"
+
+	"github.com/djherbis/stow/v4"
+	bolt "go.etcd.io/bbolt"
 )
 
 //go:embed build
@@ -25,6 +32,11 @@ var RawIndexHtml string
 const (
 	ApiPathConfig = "/config"
 	ApiPathSignal = "/s/"
+
+	ApiPathBoxInfo = "/api/info/"
+	ApiPathBoxFile = "/api/file/"
+
+	dbName = "store.db"
 )
 
 func Run(cfg *Config) {
@@ -38,6 +50,15 @@ func Run(cfg *Config) {
 		}
 		defer turnSrv.Close()
 	}
+	if err := os.MkdirAll(cfg.Http.StoragePath, os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := bolt.Open(path.Join(cfg.Http.StoragePath, dbName), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	store := stow.NewJSONStore(db, []byte("room"))
 
 	sr := mux.NewRouter()
 
@@ -75,6 +96,56 @@ func Run(cfg *Config) {
 			log.Println(err)
 		}
 	})
+
+	sr.HandleFunc(ApiPathBoxInfo+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		room := mux.Vars(r)["room"]
+		var m httpd.Meta
+		err := store.Get(room, &m)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			data, _ := json.Marshal(m)
+			w.Header().Add("Content-type", "application/json")
+			w.Write(data)
+		}
+	})
+
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		uxid := xid.New().String()
+
+		f, fh, err := r.FormFile("f")
+		if err != nil {
+			return
+		}
+		f.Close()
+
+		store.Put(mux.Vars(r)["room"], &httpd.Meta{
+			Name: fh.Filename,
+			Size: fh.Size,
+			Type: mime.DetectFileExt(strings.TrimPrefix(path.Ext(fh.Filename), ".")),
+			UXID: uxid,
+		})
+
+		httpd.SaveUploadedFile(fh, path.Join(cfg.Http.StoragePath, uxid))
+
+	}).Methods(http.MethodPost)
+
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		room := mux.Vars(r)["room"]
+		var m httpd.Meta
+		store.Get(room, &m)
+
+		httpd.FileAttachment(w, r, path.Join(cfg.Http.StoragePath, m.UXID), m.Name)
+	}).Methods(http.MethodGet)
+
+	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		room := mux.Vars(r)["room"]
+		var m httpd.Meta
+		store.Get(room, &m)
+		store.Delete(room)
+		os.Remove(path.Join(cfg.Http.StoragePath, m.UXID))
+
+	}).Methods(http.MethodDelete)
 
 	fsys, err := fs.Sub(dist, "build")
 	if err != nil {

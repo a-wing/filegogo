@@ -12,6 +12,9 @@ roomCount = 10000
 # sub folder under the domain name.
 subFolder = ""
 
+# http file relay storage
+storagePath = "data"
+
 # Enable Built-in turn server
 #[turn]
 

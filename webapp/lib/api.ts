@@ -32,10 +32,47 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
+async function putBoxFile(f: File): Promise<void> {
+  const room = shareGetRoom(window.location.href)
+  if (room === '') throw "not room"
+
+  let formData = new FormData()
+  formData.append('f', f, f.name)
+  await fetch(`/api/file/${room}`, {
+    method: "post",
+    body: formData,
+  })
+  return
+}
+
+async function getBoxFile(): Promise<void> {
+  const room = shareGetRoom(window.location.href)
+  window.open(`/api/file/${room}`)
+}
+
+async function delBoxFile(): Promise<void> {
+  const room = shareGetRoom(window.location.href)
+  await fetch(`/api/file/${room}`, {
+    method: "delete",
+  })
+}
+
+async function getBoxInfo(): Promise<any> {
+  const room = shareGetRoom(window.location.href)
+  const response = await fetch(`/api/info/${room}`)
+  if (response.status == 200) {
+    return await response.json()
+  }
+}
+
 export {
   getServer,
   getConfig,
   getRoom,
   getLogLevel,
+  putBoxFile,
+  getBoxFile,
+  delBoxFile,
+  getBoxInfo,
   shareGetRoom,
 }

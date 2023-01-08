@@ -23,6 +23,7 @@ type Config struct {
 	RoomAlive int
 	RoomCount int
 	SubFolder string
+	StoragePath string
 }
 
 type Server struct {
