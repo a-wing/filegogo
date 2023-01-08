@@ -22,7 +22,8 @@ type Config struct {
 	Listen    string
 	RoomAlive int
 	RoomCount int
-	SubFolder string
+
+	PathPrefix  string
 	StoragePath string
 }
 

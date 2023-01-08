@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -27,7 +26,6 @@ import (
 
 //go:embed build
 var dist embed.FS
-var RawIndexHtml string
 
 const (
 	ApiPathConfig = "/config"
@@ -60,7 +58,7 @@ func Run(cfg *Config) {
 	}
 	store := stow.NewJSONStore(db, []byte("room"))
 
-	sr := mux.NewRouter()
+	sr := mux.NewRouter().PathPrefix("/"+cfg.Http.PathPrefix).Subrouter()
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
@@ -152,21 +150,7 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	// read index.html file into memory
-	index_, err2 := fsys.Open("index.html");
-	if err2 != nil {
-		log.Fatal(err2.Error());
-	}
-  data, _ := ioutil.ReadAll(index_);
-	index_.Close();
-	RawIndexHtml = string(data);
-	// if exist __SUB_FOLDER__, replace it by config: SubFolder
-	if strings.Contains(RawIndexHtml, "__SUB_FOLDER__") {
-    RawIndexHtml = strings.ReplaceAll(RawIndexHtml, "__SUB_FOLDER__", cfg.Http.SubFolder)
-	}
-
-	//sr.PathPrefix("/").Handler(http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))).Methods(http.MethodGet)
-	sr.PathPrefix("/").Handler(httpd.NewSPA(RawIndexHtml, http.FS(fsys))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys))))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
 	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))

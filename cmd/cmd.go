@@ -45,7 +45,7 @@ func Exists(name string) bool {
 }
 
 // Priority:
-// - --config XXX
+// - --config <filegogo.toml>
 // - ./
 // - /etc/
 func loadConfig(cfg interface{}) {
@@ -61,6 +61,7 @@ func loadConfig(cfg interface{}) {
 		toml.DecodeReader(f, cfg)
 		f.Close();
 	}
+
 	if Exists(cfgFile) {
 		if f, err := os.Open(cfgFile); err == nil {
 			log.Info("read config file: ", cfgFile)

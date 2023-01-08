@@ -2,12 +2,6 @@ import { useEffect, useState } from 'react'
 import styles from './app.module.scss'
 import { use100vh } from 'react-div-100vh'
 
-declare global {
-  interface Window {
-    sub_folder: String;
-  }
-}
-
 import { getLogLevel, getRoom, shareGetRoom } from './lib/api'
 import log, { LogLevelDesc } from 'loglevel'
 import history from 'history/browser'
@@ -27,7 +21,7 @@ function App() {
         const room = await getRoom()
         if (room) {
           history.push(room)
-          setAddress(document.location.origin + window.sub_folder + '/' + room)
+          setAddress(document.location.origin + '/' + room)
         }
       }
 

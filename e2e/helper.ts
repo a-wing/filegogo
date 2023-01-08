@@ -3,7 +3,7 @@ import http from 'http';
 import fs from 'fs';
 import md5 from 'md5';
 
-const path = window.sub_folder + '/s/'
+const path = '/s/'
 
 async function getRoom(address: string): Promise<string> {
   return new Promise<string>((resolve) => {
