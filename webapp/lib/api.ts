@@ -1,6 +1,12 @@
 import { shareGetRoom } from './share'
 
-const prefix = '/s/'
+declare global {
+  interface Window {
+    sub_folder: String;
+  }
+}
+
+const prefix = window.sub_folder + '/s/'
 
 function getServer(): string {
   return `${import.meta.env.VITE_APP_SERVER || window.location.origin}${prefix}`
@@ -12,7 +18,7 @@ function getLogLevel(): string {
 }
 
 async function getConfig(): Promise<RTCIceServer[]> {
-  const response = await fetch("/config")
+  const response = await fetch(window.sub_folder + "/config")
   const result = await response.json()
   return result.iceServers || []
 }
@@ -21,7 +27,7 @@ async function getRoom(): Promise<string> {
   const str = shareGetRoom(window.location.href)
   if (str !== '') return str
 
-  const response = await fetch("/s/")
+  const response = await fetch(window.sub_folder + "/s/")
   const result = await response.json()
   return result.room || ''
 }
