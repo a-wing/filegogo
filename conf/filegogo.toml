@@ -9,6 +9,9 @@ roomAlive = 1024
 # room id: [0 - 9999]
 roomCount = 10000
 
+# path prefix under the domain name.
+pathPrefix = ""
+
 # http file relay storage
 storagePath = "data"
 

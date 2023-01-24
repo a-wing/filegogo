@@ -58,7 +58,7 @@ func Run(cfg *Config) {
 	}
 	store := stow.NewJSONStore(db, []byte("room"))
 
-	sr := mux.NewRouter()
+	sr := mux.NewRouter().PathPrefix("/"+cfg.Http.PathPrefix).Subrouter()
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
@@ -150,7 +150,7 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	sr.PathPrefix("/").Handler(http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))).Methods(http.MethodGet)
+	sr.PathPrefix("/").Handler(http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys))))).Methods(http.MethodGet)
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
 	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))

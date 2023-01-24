@@ -23,6 +23,7 @@ type Config struct {
 	RoomAlive int
 	RoomCount int
 
+	PathPrefix  string
 	StoragePath string
 }
 
