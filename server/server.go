@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 
 	"filegogo/server/httpd"
 	"filegogo/server/turnd"
@@ -117,11 +119,26 @@ func Run(cfg *Config) {
 		}
 		f.Close()
 
+		remain := httpd.DefaultBoxRemain
+		if t := r.URL.Query().Get("remain"); t != "" {
+			remain, _ = strconv.Atoi(t)
+		}
+
+		expire := time.Now().Add(httpd.DefaultBoxExpire)
+		if t := r.URL.Query().Get("expire"); t != "" {
+			if tt, err := time.ParseDuration(t); err == nil {
+				expire = time.Now().Add(tt)
+			}
+		}
+
 		store.Put(mux.Vars(r)["room"], &httpd.Meta{
 			Name: fh.Filename,
 			Size: fh.Size,
 			Type: mime.DetectFileExt(strings.TrimPrefix(path.Ext(fh.Filename), ".")),
 			UXID: uxid,
+
+			Remain: remain,
+			Expire: expire,
 		})
 
 		httpd.SaveUploadedFile(fh, path.Join(cfg.Http.StoragePath, uxid))
@@ -131,9 +148,22 @@ func Run(cfg *Config) {
 	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		room := mux.Vars(r)["room"]
 		var m httpd.Meta
+
 		store.Get(room, &m)
+		if m.UXID == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// TODO: Need transaction
+		m.Remain = m.Remain - 1
+		store.Put(room, &m)
 
 		httpd.FileAttachment(w, r, path.Join(cfg.Http.StoragePath, m.UXID), m.Name)
+		if m.Remain == 0 {
+			store.Delete(room)
+			os.Remove(path.Join(cfg.Http.StoragePath, m.UXID))
+		}
 	}).Methods(http.MethodGet)
 
 	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
@@ -151,6 +181,16 @@ func Run(cfg *Config) {
 	}
 
 	sr.PathPrefix("/").Handler(http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys))))).Methods(http.MethodGet)
+
+	go run(context.Background(), func() {
+		now := time.Now()
+		store.ForEach(func(key string, val httpd.Meta) {
+			if now.After(val.Expire) {
+				store.Delete(key)
+				os.Remove(path.Join(cfg.Http.StoragePath, val.UXID))
+			}
+		})
+	})
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
 	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))

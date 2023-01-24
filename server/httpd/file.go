@@ -6,7 +6,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 	"unicode"
+)
+
+const (
+	DefaultBoxRemain = 1
+	DefaultBoxExpire = 10 * time.Minute
 )
 
 type Meta struct {
@@ -14,6 +20,9 @@ type Meta struct {
 	Type string `json:"type"`
 	Size int64  `json:"size"`
 	UXID string `json:"uxid"`
+
+	Remain int `json:"remain"`
+	Expire time.Time `json:"expire"`
 }
 
 func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
