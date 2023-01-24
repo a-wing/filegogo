@@ -28,8 +28,8 @@ import (
 var dist embed.FS
 
 const (
-	ApiPathConfig = "/config"
-	ApiPathSignal = "/s/"
+	ApiPathConfig = "/api/config"
+	ApiPathSignal = "/api/signal/"
 
 	ApiPathBoxInfo = "/api/info/"
 	ApiPathBoxFile = "/api/file/"

@@ -1,10 +1,10 @@
 import { shareGetRoom } from './share'
 
-const ws = '/s/'
+const ws = '/signal/'
 
 function getPrefix(): string {
   const url = window.location
-  return url.pathname.slice(0, url.pathname.lastIndexOf('/'))
+  return url.pathname.slice(0, url.pathname.lastIndexOf('/')) + '/api'
 }
 
 function getServer(): string {
@@ -37,7 +37,7 @@ async function putBoxFile(f: File): Promise<void> {
 
   let formData = new FormData()
   formData.append('f', f, f.name)
-  await fetch(`${getPrefix()}/api/file/${room}`, {
+  await fetch(`${getPrefix()}/file/${room}`, {
     method: "post",
     body: formData,
   })
@@ -46,19 +46,19 @@ async function putBoxFile(f: File): Promise<void> {
 
 async function getBoxFile(): Promise<void> {
   const room = shareGetRoom(window.location.href)
-  window.open(`${getPrefix()}/api/file/${room}`)
+  window.open(`${getPrefix()}/file/${room}`)
 }
 
 async function delBoxFile(): Promise<void> {
   const room = shareGetRoom(window.location.href)
-  await fetch(`${getPrefix()}/api/file/${room}`, {
+  await fetch(`${getPrefix()}/file/${room}`, {
     method: "delete",
   })
 }
 
 async function getBoxInfo(): Promise<any> {
   const room = shareGetRoom(window.location.href)
-  const response = await fetch(`${getPrefix()}/api/info/${room}`)
+  const response = await fetch(`${getPrefix()}/info/${room}`)
   if (response.status == 200) {
     return await response.json()
   }

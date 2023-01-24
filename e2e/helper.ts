@@ -3,7 +3,7 @@ import http from 'http';
 import fs from 'fs';
 import md5 from 'md5';
 
-const path = '/s/'
+const path = '/api/signal/'
 
 async function getRoom(address: string): Promise<string> {
   return new Promise<string>((resolve) => {
