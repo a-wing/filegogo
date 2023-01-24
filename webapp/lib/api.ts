@@ -31,13 +31,13 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
-async function putBoxFile(f: File): Promise<void> {
+async function putBoxFile(f: File, remain: number, expire: string): Promise<void> {
   const room = shareGetRoom(window.location.href)
   if (room === '') throw "not room"
 
   let formData = new FormData()
   formData.append('f', f, f.name)
-  await fetch(`${getPrefix()}/file/${room}`, {
+  await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}`, {
     method: "post",
     body: formData,
   })

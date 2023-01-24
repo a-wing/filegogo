@@ -13,24 +13,29 @@ import Card from './card'
 
 import { DomSendFile, DomRecvFile } from '../libfgg/pool/file/dom'
 
+type IMeta = Meta & {
+  remain?: number
+  expire?: string
+}
+
 const fgg = new LibFgg()
 let enabled = true
 
 function Index(props: { address: string }) {
   const address = props.address
 
-  const [meta, setMeta] = useState<Meta | null>(null)
+  const [meta, setMeta] = useState<IMeta | null>(null)
   const [progress, setProgress] = useState<number>(0)
   const [recver, setRecver] = useState<boolean>(false)
   const [isBox, setIsBox] = useState<boolean>(false)
 
   const refIce = useRef<RTCIceServer[]>([])
 
-  fgg.onSendFile = (meta: Meta) => {
+  fgg.onSendFile = (meta: IMeta) => {
     setMeta(meta)
   }
 
-  fgg.onRecvFile = (meta: Meta) => {
+  fgg.onRecvFile = (meta: IMeta) => {
     setMeta(meta)
     fgg.setRecv(new DomRecvFile())
     setRecver(true)
@@ -96,14 +101,20 @@ function Index(props: { address: string }) {
 
   return (
     <>
+      <div style={{ width: '100%' }}>
       { meta
-        ? <Card name={ meta.name } type={ meta.type } size={ meta.size }></Card>
+        ? <Card
+            name={ meta.name }
+            type={ meta.type }
+            size={ meta.size }
+            remain={ meta.remain }
+            expire={ meta.expire }
+          ></Card>
         : <>
             <Qrcode address={ address }></Qrcode>
             <Address address={ address }></Address>
           </>
       }
-      <div style={{ width: '100%' }}>
         <File
           recver={ recver }
           isBox={ isBox }

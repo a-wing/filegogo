@@ -26,6 +26,9 @@ function File(props: {
 
   }
 
+  const [remain, setRemain] = useState<number>(1)
+  const [expire, setExpire] = useState<string>('5m')
+
   const [filename, setFilename] = useState('Select File')
 
   const handleFile = (files: FileList | null) => {
@@ -36,6 +39,43 @@ function File(props: {
 
   return (
     <>
+
+    { !props.recver
+      ? <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+        }}>
+        <div>
+          <label>Remain: </label>
+          <select
+            value={remain}
+            onChange={e => setRemain(Number(e.target.value))}
+          >
+            <option value="1">1</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="7">7</option>
+            <option value="11">11</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Expire: </label>
+          <select
+            value={expire}
+            onChange={e => setExpire(e.target.value)}
+          >
+            <option value="5m">5m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="24h">24h</option>
+          </select>
+        </div>
+        </div>
+      : null
+    }
+
       <label className={ styles.button } style={{
         background: 'linear-gradient(to right, #f14668 '+ props.percent +'%, #3ec46d '+ props.percent +'%)'
       }} onClick={ handleClick } >{ props.percent === 0 ? (props.recver ? 'Download' : filename ) : props.percent.toFixed(1) + '%' }</label>
@@ -62,7 +102,7 @@ function File(props: {
             style={{ backgroundColor: "deepskyblue" }}
             onClick={ async () => {
               if (tmp) {
-                await putBoxFile(tmp)
+                await putBoxFile(tmp, remain, expire)
                 props.reLoad()
               } }}
           >Relay Box</button>
