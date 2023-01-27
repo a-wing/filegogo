@@ -1,7 +1,4 @@
 import QRCode from 'qrcode'
-
-import styles from './QRCode.module.scss'
-
 import { useEffect, useRef } from 'react'
 
 function AppQRCode(props: {address: string}) {
@@ -17,7 +14,7 @@ function AppQRCode(props: {address: string}) {
   }, [props.address])
 
   return (
-    <canvas className={ styles.qrcode } ref={ qrcode }></canvas>
+    <canvas className='rounded-lg' ref={ qrcode }></canvas>
   )
 }
 

@@ -101,7 +101,7 @@ function Index(props: { address: string }) {
 
   return (
     <>
-      <div style={{ width: '100%' }}>
+      <div className='w-full'>
       { meta
         ? <Card
             name={ meta.name }
@@ -111,7 +111,15 @@ function Index(props: { address: string }) {
             expire={ meta.expire }
           ></Card>
         : <>
-            <Qrcode address={ address }></Qrcode>
+            <br/>
+            <div
+              // https://windicss.org/utilities/layout/flexbox.html#flex
+              // https://windicss.org/utilities/layout/positioning.html#justify-content
+              // className='flex justify-center'
+              style={{ display: 'flex', justifyContent: 'center' }}
+            >
+              <Qrcode address={ address }></Qrcode>
+            </div>
             <Address address={ address }></Address>
           </>
       }
