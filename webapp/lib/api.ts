@@ -26,7 +26,7 @@ async function getRoom(): Promise<string> {
   const str = shareGetRoom(window.location.href)
   if (str !== '') return str
 
-  const response = await fetch(`${getPrefix()}/s/`)
+  const response = await fetch(`${getPrefix()}/${ws}/`)
   const result = await response.json()
   return result.room || ''
 }
