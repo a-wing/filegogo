@@ -111,7 +111,9 @@ function Index(props: { address: string }) {
             expire={ meta.expire }
           ></Card>
         : <>
-            <Qrcode address={ address }></Qrcode>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Qrcode address={ address }></Qrcode>
+            </div>
             <Address address={ address }></Address>
           </>
       }
