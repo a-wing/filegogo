@@ -14,7 +14,7 @@ require (
 	github.com/pion/sctp v1.8.6
 	github.com/pion/transport v0.14.1
 	github.com/pion/turn/v2 v2.0.9
-	github.com/pion/webrtc/v3 v3.1.50
+	github.com/pion/webrtc/v3 v3.1.51
 	github.com/qingstor/go-mime v0.1.0
 	github.com/rs/xid v1.4.0
 	github.com/sb-im/jsonrpc-lite v0.2.0
