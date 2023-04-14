@@ -16,7 +16,7 @@ require (
 	github.com/pion/turn/v2 v2.1.0
 	github.com/pion/webrtc/v3 v3.1.58
 	github.com/qingstor/go-mime v0.1.0
-	github.com/rs/xid v1.4.0
+	github.com/rs/xid v1.5.0
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/sirupsen/logrus v1.9.0
