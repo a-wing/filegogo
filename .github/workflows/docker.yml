@@ -62,9 +62,13 @@ jobs:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
     steps:
       -
+        name: Set outputs
+        id: vars
+        run: echo "sha_short=$(echo ${GITHUB_SHA::7})" >> $GITHUB_OUTPUT
+      -
         uses: actions-hub/kubectl@master
         with:
-          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:master
+          args: set image deployments.apps/filegogo-develop backend=ghcr.io/a-wing/filegogo:sha-${{ steps.vars.outputs.sha_short }}
 
   deploy-stable:
     needs:
@@ -78,7 +82,11 @@ jobs:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
     steps:
       -
+        name: Set outputs
+        id: vars
+        run: echo "sha_short=$(echo ${GITHUB_SHA::7})" >> $GITHUB_OUTPUT
+      -
         uses: actions-hub/kubectl@master
         with:
-          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:latest
+          args: set image deployments.apps/filegogo backend=ghcr.io/a-wing/filegogo:sha-${{ steps.vars.outputs.sha_short }}
 
