@@ -54,7 +54,7 @@ func Run(cfg *Config) {
 		log.Fatal(err)
 	}
 
-	db, err := bolt.Open(path.Join(cfg.Http.StoragePath, dbName), 0600, nil)
+	db, err := bolt.Open(path.Join(cfg.Http.StoragePath, dbName), 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
 	}
