@@ -12,11 +12,11 @@ function App() {
           ? <>
               <Recver/>
             </>
-          : <>
-              <section className="w-full h-full">
+          : <div className="w-full h-full grid grid-cols-1 md:grid-cols-2">
+              <section>
                 <SendArea/>
               </section>
-              <section className="w-full h-full">
+              <section>
                 { false
                   ? <div className="m-8" >
                       <h1 className="text-4xl font-bold">Simple, private file sharing</h1>
@@ -25,7 +25,7 @@ function App() {
                   : <ArchiveArea/>
                 }
               </section>
-            </>
+            </div>
         }
       </main>
     </>

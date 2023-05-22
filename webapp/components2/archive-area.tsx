@@ -1,6 +1,7 @@
 import { useRef, useState, ChangeEvent } from "react"
 import { Item } from "../lib/manifest"
 import FileItem from "./file-item"
+import Copy from "copy-to-clipboard"
 
 export default () => {
   const [files, setFiles] = useState<Array<Item>>([{
@@ -54,7 +55,7 @@ export default () => {
             <div className="flex flex-row justify-between">
 
             <FileItem file={file}></FileItem>
-            <p className="p-4 cursor-pointer" onClick={ () => toggleClose(index) }>X</p>
+            <p className="p-4 cursor-pointer" onClick={ () => toggleClose(index) }>x</p>
 
             </div>
             <div>
@@ -74,7 +75,7 @@ export default () => {
             <hr className="my-2" />
             <div className="flex flex-row justify-between">
               <div>Download</div>
-              <div>Copy Link</div>
+              <button className="cursor-pointer" onClick={ () => Copy("Copy Link: " + file.name) }>Copy Link</button>
             </div>
 
           </li>
