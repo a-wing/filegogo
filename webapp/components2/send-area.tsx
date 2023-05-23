@@ -2,10 +2,12 @@ import { useRef, useState, ChangeEvent } from "react"
 
 import Archive, { Meta } from "../lib/archive"
 import FileItem from "./file-item"
-import PizZip from "pizzip"
 import { filesize } from "filesize"
 
-import { putBoxFile, getBoxFile, delBoxFile } from '../lib/api'
+import { putBoxFile, getBoxFile, delBoxFile } from "../lib/api"
+
+import { useAtom } from "jotai"
+import { ItemsAtom } from "../store"
 
 let archive = new Archive()
 
@@ -13,25 +15,10 @@ export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>('5m')
-  const [totalSize, setTotalSize] = useState<number>(0)
-  const [files, setFiles] = useState<Array<Meta>>([
-    //{
-    //  name: "aaa",
-    //  type: "xxx",
-    //  size: 123,
-    //}, {
-    //  name: "aaa2",
-    //  type: "xxx2",
-    //  size: 1234,
-    //}, {
-    //  name: "aaa3",
-    //  type: "xxx3",
-    //  size: 12345,
-    //}
-  ])
-
+  const [total, setTotal] = useState<number>(0)
+  const [files, setFiles] = useState<Array<Meta>>([])
+  const [items, setItems] = useAtom(ItemsAtom)
   const toggleButton = () => {
-    console.log("toggleButton")
     hiddenFileInput.current?.click?.()
   }
 
@@ -41,28 +28,19 @@ export default () => {
       files[i] = filelist[i]
     }
     archive.addFiles(files)
-
-    setTotalSize(archive.files.reduce((t, f) => t + f.size, 0))
-
+    setTotal(archive.size)
     setFiles([...archive.manifest])
   }
 
   const toggleCommit = async () => {
-    console.log("toggleCommit")
-    console.log(archive.files)
-    //hiddenFileInput.current?.click?.()
     const count = archive.files.length
     if (count === 0) {
       return
     }
-    let file = archive.files[0]
+    let file = await archive.exportFile()
 
-    if (count > 1) {
-      const zip = new PizZip()
-      await Promise.all(archive.files.map(async f => zip.file(f.name, await f.text())))
-      file = new File([zip.generate({ type: "blob" })], "filegogo-archive.zip")
-    }
-    putBoxFile(file, remain, expire)
+    await putBoxFile(file, remain, expire)
+    setItems([archive.genManifest(), ...items])
   }
 
   const toggleClose = (i: number) => {
@@ -98,7 +76,7 @@ export default () => {
 
           <div className="p-2 flex flex-row justify-between">
             <button className="font-medium" onClick={toggleButton}>Add File</button>
-            <p>Total size: { filesize(totalSize).toString() }</p>
+            <p>Total size: { filesize(total).toString() }</p>
           </div>
         </ul>
 

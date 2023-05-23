@@ -1,3 +1,8 @@
+import PizZip from "pizzip"
+import { Item } from "../lib/manifest"
+
+const ArchiveName = "filegogo-archive.zip"
+const ArchiveType = "application/zip"
 
 interface Meta {
   name: string
@@ -38,13 +43,47 @@ export default class Archive {
     }))
   }
 
+  get size(): number {
+    return this.files.reduce((total, file) => total + file.size, 0)
+  }
+
+  genManifest(): Item {
+    let count = this.files.length
+    if (count === 0) {
+      throw "not file found"
+    } else if (count === 1) {
+      return {
+        name: this.files[0].name,
+        type: this.files[0].type,
+        size: this.files[0].size,
+        files: [],
+      }
+    } else {
+      return {
+        name: ArchiveName,
+        type: ArchiveType,
+        size: this.size,
+        files: this.manifest,
+      }
+    }
+  }
+
+  async exportFile(): Promise<File> {
+    if (this.files.length === 0) {
+      throw "not found file"
+    }
+
+    const zip = new PizZip()
+    await Promise.all(this.files.map(async f => zip.file(f.name, await f.text())))
+    return new File([zip.generate({ type: "blob" })], ArchiveName)
+  }
+
   addFiles(files: File[]) {
     const newFiles = files.filter(
       file => file.size > 0 && !this.isDuplicate(file)
     )
 
-    //const newSize = newFiles.reduce((total, file) => total + file.size, 0);
-    this.files = this.files.concat(newFiles);
+    this.files = this.files.concat(newFiles)
   }
 
   remove(file: File) {

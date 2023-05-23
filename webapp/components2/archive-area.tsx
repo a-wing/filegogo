@@ -1,45 +1,11 @@
-import { useRef, useState, ChangeEvent } from "react"
-import { Item } from "../lib/manifest"
 import FileItem from "./file-item"
 import Copy from "copy-to-clipboard"
 
+import { useAtom } from "jotai"
+import { ItemsAtom } from "../store"
+
 export default () => {
-  const [files, setFiles] = useState<Array<Item>>([{
-    name: "aaa",
-    type: "xxx",
-    size: 123,
-    files: [],
-  }, {
-    name: "aaa2",
-    type: "xxx2",
-    size: 1234,
-    files: [
-      {
-        name: "a2-1",
-        type: "xxx",
-        size: 123,
-      }, {
-        name: "a2-2",
-        type: "xxx",
-        size: 123,
-      },
-    ],
-  }, {
-    name: "aaa3",
-    type: "xxx3",
-    size: 12345,
-    files: [
-      {
-        name: "a3-1",
-        type: "xxx",
-        size: 123,
-      }, {
-        name: "a3-2",
-        type: "xxx",
-        size: 123,
-      },
-    ],
-  }])
+  const [files, setFiles] = useAtom(ItemsAtom)
 
   const toggleClose = (i: number) => {
     console.log(i)
