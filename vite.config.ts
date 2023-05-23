@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-//import windicss from 'vite-plugin-windicss'
 import UnoCSS from 'unocss/vite'
 import react from '@vitejs/plugin-react'
 
@@ -20,7 +19,5 @@ export default defineConfig({
   build: {
     outDir: "server/build"
   },
-  plugins: [react(), UnoCSS(),
-    //windicss()
-    ]
+  plugins: [react(), UnoCSS()]
 })
