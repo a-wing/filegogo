@@ -8,8 +8,8 @@ export default () => {
   const [files, setFiles] = useAtom(ItemsAtom)
 
   const toggleClose = (i: number) => {
-    console.log(i)
-    files.splice(i, 1)
+    let item = files.splice(i, 1)
+    item[0] ? localStorage.removeItem(item[0].name) : null
     setFiles([...files])
   }
 
@@ -17,7 +17,7 @@ export default () => {
     <>
       <ul className="p-3">
         { files.map((file, index) =>
-          <li key={index} className="m-2 p-4 border-1 border-green-300 rounded-md bg-green-100 shadow-md ">
+          <li key={index} className="m-2 p-4 border-1 border-green-300 rounded-md bg-green-100 shadow-md">
             <div className="flex flex-row justify-between">
 
             <FileItem file={file}></FileItem>

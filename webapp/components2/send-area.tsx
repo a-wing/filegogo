@@ -1,6 +1,7 @@
-import { useRef, useState, ChangeEvent } from "react"
+import { useRef, useState, ChangeEvent, useEffect } from "react"
 
 import Archive, { Meta } from "../lib/archive"
+import { Item } from "../lib/manifest"
 import FileItem from "./file-item"
 import { filesize } from "filesize"
 
@@ -22,6 +23,22 @@ export default () => {
     hiddenFileInput.current?.click?.()
   }
 
+  useEffect(() => {
+    let items: Array<Item> = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (!k) continue
+      try {
+        let value = localStorage.getItem(k)
+        if (!value) continue
+        items.push(JSON.parse(value))
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    setItems(items)
+  }, [])
+
   const handleFile = (filelist: FileList) => {
     let files = new Array<File>(filelist.length)
     for (let i = 0; i < filelist.length; i++) {
@@ -40,7 +57,9 @@ export default () => {
     let file = await archive.exportFile()
 
     await putBoxFile(file, remain, expire)
-    setItems([archive.genManifest(), ...items])
+    let manifest = archive.genManifest()
+    setItems([manifest, ...items])
+    localStorage.setItem(manifest.name, JSON.stringify(manifest))
   }
 
   const toggleClose = (i: number) => {
