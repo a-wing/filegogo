@@ -4,13 +4,21 @@ import Copy from "copy-to-clipboard"
 import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
 
+import { getBoxFile, delBoxFile } from "../lib/api"
+
 export default () => {
   const [files, setFiles] = useAtom(ItemsAtom)
 
-  const toggleClose = (i: number) => {
+  const toggleClose = async (i: number) => {
     let item = files.splice(i, 1)
-    item[0] ? localStorage.removeItem(item[0].name) : null
+    item[0] ? localStorage.removeItem(item[0].uxid) : null
     setFiles([...files])
+    await delBoxFile(item[0].uxid)
+  }
+
+  const toggleDownload = async (i: number) => {
+    let item = files[i]
+    await getBoxFile(item.uxid)
   }
 
   return (
@@ -40,7 +48,7 @@ export default () => {
             }
             <hr className="my-2" />
             <div className="flex flex-row justify-between">
-              <div>Download</div>
+              <button className="cursor-pointer" onClick={ () => { toggleDownload(index) } }>Download</button>
               <button className="cursor-pointer" onClick={ () => Copy("Copy Link: " + file.name) }>Copy Link</button>
             </div>
 

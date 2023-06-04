@@ -1,11 +1,11 @@
 import { useRef, useState, ChangeEvent, useEffect } from "react"
 
 import Archive, { Meta } from "../lib/archive"
-import { Item } from "../lib/manifest"
+import { Manifest } from "../store"
 import FileItem from "./file-item"
 import { filesize } from "filesize"
 
-import { putBoxFile, getBoxFile, delBoxFile } from "../lib/api"
+import { getRoom, putBoxFile } from "../lib/api"
 
 import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
@@ -24,7 +24,7 @@ export default () => {
   }
 
   useEffect(() => {
-    let items: Array<Item> = []
+    let items: Array<Manifest> = []
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
       if (!k) continue
@@ -56,10 +56,14 @@ export default () => {
     }
     let file = await archive.exportFile()
 
-    await putBoxFile(file, remain, expire)
-    let manifest = archive.genManifest()
+    let room = await getRoom()
+    await putBoxFile(room, file, remain, expire)
+    let manifest: Manifest = {
+      ...archive.genManifest(),
+      uxid: room,
+    }
     setItems([manifest, ...items])
-    localStorage.setItem(manifest.name, JSON.stringify(manifest))
+    localStorage.setItem(manifest.uxid, JSON.stringify(manifest))
   }
 
   const toggleClose = (i: number) => {

@@ -31,10 +31,7 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
-async function putBoxFile(f: File, remain: number, expire: string): Promise<void> {
-  const room = shareGetRoom(window.location.href)
-  if (room === '') throw "not room"
-
+async function putBoxFile(room: string, f: File, remain: number, expire: string): Promise<void> {
   let formData = new FormData()
   formData.append('f', f, f.name)
   await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}`, {
@@ -44,20 +41,17 @@ async function putBoxFile(f: File, remain: number, expire: string): Promise<void
   return
 }
 
-async function getBoxFile(): Promise<void> {
-  const room = shareGetRoom(window.location.href)
+async function getBoxFile(room: string): Promise<void> {
   window.open(`${getPrefix()}/file/${room}`)
 }
 
-async function delBoxFile(): Promise<void> {
-  const room = shareGetRoom(window.location.href)
+async function delBoxFile(room: string): Promise<void> {
   await fetch(`${getPrefix()}/file/${room}`, {
     method: "delete",
   })
 }
 
-async function getBoxInfo(): Promise<any> {
-  const room = shareGetRoom(window.location.href)
+async function getBoxInfo(room: string): Promise<any> {
   const response = await fetch(`${getPrefix()}/info/${room}`)
   if (response.status == 200) {
     return await response.json()
