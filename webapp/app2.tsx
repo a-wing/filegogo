@@ -2,13 +2,14 @@ import Header from "./components2/header"
 import SendArea from "./components2/send-area"
 import ArchiveArea from "./components2/archive-area"
 import Recver from "./components2/recver"
+import { shareGetRoom } from "./lib/share"
 
 function App() {
   return (
     <>
       <Header/>
       <main className="container mx-auto rounded-xl shadow-xl p-8 flex">
-        { false
+        { !!shareGetRoom(window.location.href)
           ? <>
               <Recver/>
             </>
