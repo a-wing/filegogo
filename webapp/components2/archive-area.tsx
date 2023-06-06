@@ -4,7 +4,7 @@ import Copy from "copy-to-clipboard"
 import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
 
-import { getBoxFile, delBoxFile } from "../lib/api"
+import { getBoxFile, delBoxFile, generateShare } from "../lib/api"
 
 export default () => {
   const [files, setFiles] = useAtom(ItemsAtom)
@@ -49,7 +49,7 @@ export default () => {
             <hr className="my-2" />
             <div className="flex flex-row justify-between">
               <button className="cursor-pointer" onClick={ () => { toggleDownload(index) } }>Download</button>
-              <button className="cursor-pointer" onClick={ () => Copy("Copy Link: " + file.name) }>Copy Link</button>
+              <button className="cursor-pointer" onClick={ () => Copy(generateShare(file.uxid)) }>Copy Link</button>
             </div>
 
           </li>

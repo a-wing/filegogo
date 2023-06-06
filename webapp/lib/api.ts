@@ -1,4 +1,4 @@
-import { shareGetRoom } from './share'
+import { shareGetRoom, generateShare } from './share'
 
 const ws = '/signal/'
 
@@ -68,4 +68,5 @@ export {
   delBoxFile,
   getBoxInfo,
   shareGetRoom,
+  generateShare,
 }
