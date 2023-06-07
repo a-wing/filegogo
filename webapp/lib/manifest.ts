@@ -7,6 +7,9 @@ interface Item {
   size: number
 
   files: Meta[]
+
+  expire: string
+  remain: number
 }
 
 export type {

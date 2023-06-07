@@ -73,6 +73,10 @@ export default class Archive {
       throw "not found file"
     }
 
+    if (this.files.length === 1) {
+      return this.files[0]
+    }
+
     const zip = new PizZip()
     await Promise.all(this.files.map(async f => zip.file(f.name, await f.text())))
     return new File([zip.generate({ type: "blob" })], ArchiveName)

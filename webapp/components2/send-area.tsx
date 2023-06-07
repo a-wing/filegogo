@@ -61,6 +61,8 @@ export default () => {
     let manifest: Manifest = {
       ...archive.genManifest(),
       uxid: room,
+      remain: remain,
+      expire: expire,
     }
     setItems([manifest, ...items])
     localStorage.setItem(manifest.uxid, JSON.stringify(manifest))

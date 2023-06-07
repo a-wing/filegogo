@@ -20,6 +20,9 @@ export default (props: { file: Item }) => {
             } </details>
             : null
           }
+          <div>
+            Expires after { file.remain } download or { file.expire }
+          </div>
         </li>
       </ul>
 

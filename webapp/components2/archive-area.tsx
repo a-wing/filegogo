@@ -33,7 +33,7 @@ export default () => {
 
             </div>
             <div>
-              Expires after 1 download or 23h 26m
+              Expires after { file.remain } download or { file.expire }
             </div>
             { file.files.length > 1
               ? <details className="cursor-pointer">

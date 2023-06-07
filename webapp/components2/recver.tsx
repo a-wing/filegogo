@@ -1,35 +1,14 @@
-import { useRef, useState, ChangeEvent, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Item } from "../lib/manifest"
 import RecverFile from "./recver-file"
-import { getBoxFile, getBoxInfo, shareGetRoom } from "../lib/api"
+import { getBoxInfo, shareGetRoom } from "../lib/api"
 
-//export default (props: {
-//  file: Item
-//}) => {
 export default () => {
-  const [file, setFile] = useState<Item | null>(
-    //{
-    //  name: "aaa2",
-    //  type: "xxx2",
-    //  size: 1234,
-    //  files: [
-    //    {
-    //      name: "a2-1",
-    //      type: "xxx",
-    //      size: 123,
-    //    }, {
-    //      name: "a2-2",
-    //      type: "xxx",
-    //      size: 123,
-    //    },
-    //  ],
-    //}
-  )
+  const [file, setFile] = useState<Item | null>(null)
 
   const loadFile = async () => {
     setFile(await getBoxInfo(shareGetRoom(window.location.href)))
   }
-
 
   useEffect(() => {
     loadFile()
@@ -45,7 +24,11 @@ export default () => {
       </div>
       { file
         ? <RecverFile file={ file }></RecverFile>
-        : <></>
+        : <div className="flex flex-col items-center">
+            <button className="px-8 py-2 text-white rounded-xl bg-purple-600 border border-purple-200"
+              onClick={ () => window.location.pathname = "/"}
+            >Return Home</button>
+          </div>
       }
    </div>
   )
