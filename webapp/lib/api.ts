@@ -56,6 +56,7 @@ async function getBoxInfo(room: string): Promise<any> {
   if (response.status == 200) {
     return await response.json()
   }
+  return room
 }
 
 export {

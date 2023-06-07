@@ -35,7 +35,7 @@ export default () => {
             <div>
               Expires after { file.remain } download or { file.expire }
             </div>
-            { file.files.length > 1
+            { file.files?.length > 1
               ? <details className="cursor-pointer">
                   <summary>{ file.files.length.toString() + " files" }</summary>
                 { file.files.map((file, index) =>

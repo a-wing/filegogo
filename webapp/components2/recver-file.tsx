@@ -1,7 +1,7 @@
 import FileItem from "./file-item"
-import { Item } from "../lib/manifest"
+import { Manifest } from "../lib/manifest"
 
-export default (props: { file: Item }) => {
+export default (props: { file: Manifest }) => {
   const file = props.file
   return (
     <>

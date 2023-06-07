@@ -9,6 +9,15 @@ interface Item {
   files: Meta[]
 }
 
+interface Manifest extends Item {
+  uxid: string
+
+  expire: string
+  remain: number
+}
+
+
 export type {
-  Item
+  Manifest,
+  Item,
 }

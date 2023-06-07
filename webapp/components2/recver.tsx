@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
-import { Item } from "../lib/manifest"
+import { Manifest } from "../lib/manifest"
 import RecverFile from "./recver-file"
 import { getBoxInfo, shareGetRoom } from "../lib/api"
 
 export default () => {
-  const [file, setFile] = useState<Item | null>(null)
+  const [file, setFile] = useState<Manifest | null>(null)
 
   const loadFile = async () => {
     setFile(await getBoxInfo(shareGetRoom(window.location.href)))

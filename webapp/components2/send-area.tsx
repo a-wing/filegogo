@@ -1,7 +1,7 @@
 import { useRef, useState, ChangeEvent, useEffect } from "react"
 
 import Archive, { Meta } from "../lib/archive"
-import { Manifest } from "../store"
+import { Manifest } from "../lib/manifest"
 import FileItem from "./file-item"
 import { filesize } from "filesize"
 
@@ -9,6 +9,7 @@ import { getRoom, putBoxFile } from "../lib/api"
 
 import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
+import { loadHistory } from "../lib/history"
 
 let archive = new Archive()
 
@@ -23,20 +24,12 @@ export default () => {
     hiddenFileInput.current?.click?.()
   }
 
+  const syncLoad = async () => {
+    setItems(await loadHistory())
+  }
+
   useEffect(() => {
-    let items: Array<Manifest> = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (!k) continue
-      try {
-        let value = localStorage.getItem(k)
-        if (!value) continue
-        items.push(JSON.parse(value))
-      } catch (e) {
-        console.log(e)
-      }
-    }
-    setItems(items)
+    syncLoad()
   }, [])
 
   const handleFile = (filelist: FileList) => {
