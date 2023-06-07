@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -19,11 +20,11 @@ import (
 func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 	uxid := xid.New().String()
 
-	f, fh, err := r.FormFile("f")
+	f, fh, err := r.FormFile("file")
+	defer f.Close()
 	if err != nil {
 		return
 	}
-	f.Close()
 
 	remain := httpd.DefaultBoxRemain
 	if t := r.URL.Query().Get("remain"); t != "" {
@@ -37,7 +38,7 @@ func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.store.Put(mux.Vars(r)["room"], &httpd.Meta{
+	m := &httpd.Meta{
 		Name: fh.Filename,
 		Size: fh.Size,
 		Type: mime.DetectFileExt(strings.TrimPrefix(path.Ext(fh.Filename), ".")),
@@ -45,9 +46,17 @@ func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 
 		Remain: remain,
 		Expire: expire,
-	})
+	}
+
+	h.store.Put(mux.Vars(r)["room"], m)
+	//h.store.Put(uxid, m)
 
 	httpd.SaveUploadedFile(fh, path.Join(h.cfg.Http.StoragePath, uxid))
+
+	w.Header().Add("Content-type", "application/json")
+	if err := json.NewEncoder(w).Encode(m); err != nil {
+		log.Println(err)
+	}
 }
 
 func (h *Handler) GetBoxFile(w http.ResponseWriter, r *http.Request) {

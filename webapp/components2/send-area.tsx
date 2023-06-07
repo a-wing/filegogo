@@ -69,9 +69,8 @@ export default () => {
   }
 
   const toggleClose = (i: number) => {
-    console.log(i)
-    files.splice(i, 1)
-    setFiles([...files])
+    archive.files.splice(i, 1)
+    setFiles([...archive.files])
   }
 
   return (

@@ -33,7 +33,7 @@ async function getRoom(): Promise<string> {
 
 async function putBoxFile(room: string, f: File, remain: number, expire: string): Promise<void> {
   let formData = new FormData()
-  formData.append('f', f, f.name)
+  formData.append('file', f, f.name)
   await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}`, {
     method: "post",
     body: formData,
