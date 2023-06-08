@@ -14,11 +14,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/qingstor/go-mime"
-	"github.com/rs/xid"
+	//"github.com/rs/xid"
 )
 
 func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
-	uxid := xid.New().String()
+	//uxid := xid.New().String()
+	uxid := mux.Vars(r)["room"]
 
 	f, fh, err := r.FormFile("file")
 	defer f.Close()
@@ -48,8 +49,8 @@ func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 		Expire: expire,
 	}
 
-	h.store.Put(mux.Vars(r)["room"], m)
-	//h.store.Put(uxid, m)
+	//h.store.Put(mux.Vars(r)["room"], m)
+	h.store.Put(uxid, m)
 
 	httpd.SaveUploadedFile(fh, path.Join(h.cfg.Http.StoragePath, uxid))
 
