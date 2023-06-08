@@ -1,5 +1,6 @@
 import FileItem from "./file-item"
 import Copy from "copy-to-clipboard"
+import Qrcode from "./qr-code"
 
 import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
@@ -50,6 +51,10 @@ export default () => {
             <hr className="my-2" />
             <div className="flex flex-row justify-between">
               <button className="cursor-pointer" onClick={ () => { toggleDownload(index) } }>Download</button>
+              <details className="cursor-pointer">
+                <summary>QRCode</summary>
+                <Qrcode address={ generateShare(file.uxid) }></Qrcode>
+              </details>
               <button className="cursor-pointer" onClick={ () => Copy(generateShare(file.uxid)) }>Copy Link</button>
             </div>
 

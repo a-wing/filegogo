@@ -1,6 +1,7 @@
 import FileItem from "./file-item"
 import { Manifest } from "../lib/manifest"
 import { ExpiresAtHumanTime } from "../lib/util"
+import Qrcode from "./qr-code"
 
 export default (props: { file: Manifest }) => {
   const file = props.file
@@ -26,6 +27,13 @@ export default (props: { file: Manifest }) => {
           </div>
         </li>
       </ul>
+
+      <div className="w-full flex flex-row justify-center">
+        <details className="cursor-pointer">
+          <summary>QRCode</summary>
+          <Qrcode address={ window.location.href }></Qrcode>
+        </details>
+      </div>
 
       <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold">Download</button>
     </>
