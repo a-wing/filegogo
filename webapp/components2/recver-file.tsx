@@ -1,5 +1,6 @@
 import FileItem from "./file-item"
 import { Manifest } from "../lib/manifest"
+import { ExpiresAtHumanTime } from "../lib/util"
 
 export default (props: { file: Manifest }) => {
   const file = props.file
@@ -21,7 +22,7 @@ export default (props: { file: Manifest }) => {
             : null
           }
           <div>
-            Expires after { file.remain } download or { file.expire }
+            Expires after { file.remain } download or { ExpiresAtHumanTime(file.expire) }
           </div>
         </li>
       </ul>

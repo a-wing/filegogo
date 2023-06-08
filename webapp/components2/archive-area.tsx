@@ -5,6 +5,7 @@ import { useAtom } from "jotai"
 import { ItemsAtom } from "../store"
 
 import { getBoxFile, delBoxFile, generateShare } from "../lib/api"
+import { ExpiresAtHumanTime } from "../lib/util"
 
 export default () => {
   const [files, setFiles] = useAtom(ItemsAtom)
@@ -33,7 +34,7 @@ export default () => {
 
             </div>
             <div>
-              Expires after { file.remain } download or { file.expire }
+              Expires after { file.remain } download or { ExpiresAtHumanTime(file.expire) }
             </div>
             { file.files?.length > 1
               ? <details className="cursor-pointer">
