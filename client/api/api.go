@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"filegogo/server"
+	"filegogo/server/config"
 	"filegogo/server/httpd"
 )
 
@@ -54,13 +55,13 @@ func (a *Api) ToShare() string {
 	return a.server + "/" + a.room
 }
 
-func (a *Api) GetConfig() (*server.ApiConfig, error) {
+func (a *Api) GetConfig() (*config.ApiConfig, error) {
 	res, err := http.Get(a.addressConfig())
 	if err != nil {
 		return nil, err
 	}
 
-	var cfg server.ApiConfig
+	var cfg config.ApiConfig
 	err = json.NewDecoder(res.Body).Decode(&cfg)
 	return &cfg, err
 }

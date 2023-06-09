@@ -1,0 +1,159 @@
+import { useRef, useState, ChangeEvent, useEffect } from "react"
+import { useAtom } from "jotai"
+import { filesize } from "filesize"
+
+import Archive, { Meta } from "../lib/archive"
+import { getRoom, getServer, putBoxFile } from "../lib/api"
+import { loadHistory } from "../lib/history"
+import { Manifest } from "../lib/manifest"
+import FileItem from "./file-item"
+import { ItemsAtom } from "../store"
+
+import LibFgg from "../libfgg/libfgg"
+import { ProtoHttpToWs } from "../lib/util"
+import { DomSendFile } from "../libfgg/pool/file/dom"
+
+let archive = new Archive()
+
+export default () => {
+  const hiddenFileInput = useRef<HTMLInputElement>(null)
+  const [remain, setRemain] = useState<number>(1)
+  const [expire, setExpire] = useState<string>("5m")
+  const [relay, setRelay] = useState<boolean>(true)
+  const [total, setTotal] = useState<number>(0)
+  const [files, setFiles] = useState<Array<Meta>>([])
+  const [items, setItems] = useAtom(ItemsAtom)
+  const toggleButton = () => {
+    hiddenFileInput.current?.click?.()
+  }
+
+  const syncLoad = async () => {
+    setItems(await loadHistory())
+  }
+
+  useEffect(() => {
+    syncLoad()
+  }, [])
+
+  const handleFile = (filelist: FileList) => {
+    let files = new Array<File>(filelist.length)
+    for (let i = 0; i < filelist.length; i++) {
+      files[i] = filelist[i]
+    }
+    archive.addFiles(files)
+    setTotal(archive.size)
+    setFiles([...archive.manifest])
+  }
+
+  const toggleCommit = async (store: boolean) => {
+    const count = archive.files.length
+    if (count === 0) {
+      return
+    }
+    let file = await archive.exportFile()
+
+    let room = await getRoom()
+
+    let action = store ? "relay" : "p2p"
+    await putBoxFile(room, file, remain, expire, action)
+    let manifest: Manifest = {
+      ...archive.genManifest(),
+      uxid: room,
+      action: action,
+      remain: remain,
+      expire: expire,
+    }
+    setItems([manifest, ...items])
+
+    if (store) {
+      localStorage.setItem(manifest.uxid, JSON.stringify(manifest))
+    } else {
+      const fgg = new LibFgg()
+      await fgg.useWebsocket(ProtoHttpToWs(getServer() + room))
+      await fgg.useWebRTC({
+        //@ts-ignore
+        iceServers: window.iceServers,
+      })
+
+      fgg.setSend(new DomSendFile(file))
+    }
+
+  }
+
+  const toggleClose = (i: number) => {
+    archive.files.splice(i, 1)
+    setFiles([...archive.files])
+  }
+
+  return (
+    <>
+      <input
+          style={{ display: "none" }}
+          // This id e2e test need
+          id="upload"
+          type="file"
+          multiple
+          ref={ hiddenFileInput }
+          onChange={ (ev: ChangeEvent<HTMLInputElement>) => ev.target.files ? handleFile(ev.target.files) : null }
+        />
+
+      { !files.length ?
+      <div className="flex flex-col items-center rounded-3xl border-5 border-green-500 border-dashed" onClick={toggleButton}>
+        <button className="px-8 py-2 text-white rounded-xl bg-purple-600 border border-purple-200">Select Files</button>
+      </div>
+    : <>
+        <ul className="p-3 bg-gray-100">
+          { files.map((file, index) =>
+            <li key={ index } className="m-2 border-1 border-green-300 rounded-md bg-green-100 shadow-md flex flex-row justify-between">
+              <FileItem file={file}></FileItem>
+              <p className="p-4 cursor-pointer" onClick={ () => toggleClose(index) }>x</p>
+            </li>
+          )}
+
+          <div className="p-2 flex flex-row justify-between">
+            <button className="font-medium" onClick={toggleButton}>Add File</button>
+            <p>Total size: { filesize(total).toString() }</p>
+          </div>
+        </ul>
+
+        <div className="p-2">
+
+          <label>Expires after </label>
+          <select className="rounded-md cursor-pointer pl-1 pr-8 py-2 border-1"
+            value={remain}
+            onChange={e => setRemain(Number(e.target.value))}
+          >
+            <option value="1">1 Download</option>
+            <option value="3">3 Downloads</option>
+            <option value="5">5 Downloads</option>
+            <option value="7">7 Downloads</option>
+            <option value="11">11 Downloads</option>
+          </select>
+
+          <label> Or </label>
+          <select className="rounded-md cursor-pointer pl-1 pr-8 py-2 border-1"
+            value={expire}
+            onChange={e => setExpire(e.target.value)}
+          >
+            <option value="5m">5m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="24h">24h</option>
+          </select>
+
+        </div>
+          <hr className="border-2"/>
+
+          <div className="p-2 flex flex-row justify-between">
+            <div>
+              <input className="mr-1" type="checkbox" id="relay" name="scales" checked={ relay } onChange={ e => setRelay(e.target.checked) } />
+              <label>Server Relay</label>
+            </div>
+
+          </div>
+
+          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold" onClick={ () => toggleCommit(relay) }>Commit</button>
+      </>
+    }</>
+  )
+}

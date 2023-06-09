@@ -1,5 +1,5 @@
-import QRCode from 'qrcode'
-import { useEffect, useRef } from 'react'
+import QRCode from "qrcode"
+import { useEffect, useRef } from "react"
 
 function AppQRCode(props: {address: string}) {
   const qrcode = useRef<HTMLCanvasElement>(null)

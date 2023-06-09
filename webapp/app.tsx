@@ -31,7 +31,7 @@ function App() {
 
   return (
     <div className={ styles.app } style={{ height: use100vh() || '100vh' }}>
-      <div className={ styles.card }>
+      <div className='w-80 rounded-lg shadow-lg'>
         { address
           ? <Index address={ address }></Index>
           : <div>Not Get Share Link</div>

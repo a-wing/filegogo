@@ -49,6 +49,7 @@ function File(props: {
         <div>
           <label>Remain: </label>
           <select
+            className='rounded-xl'
             value={remain}
             onChange={e => setRemain(Number(e.target.value))}
           >
@@ -75,6 +76,8 @@ function File(props: {
         </div>
       : null
     }
+
+      <br/>
 
       <label className={ styles.button } style={{
         background: 'linear-gradient(to right, #f14668 '+ props.percent +'%, #3ec46d '+ props.percent +'%)'

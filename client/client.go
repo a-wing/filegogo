@@ -9,7 +9,7 @@ import (
 	"filegogo/client/util"
 	"filegogo/libfgg"
 	"filegogo/libfgg/pool"
-	"filegogo/server"
+	"filegogo/server/config"
 
 	bar "github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ var (
 	DefaultConfig = &ClientConfig{
 		ShowQRcode:   true,
 		ShowProgress: true,
-		ServerConfig: &server.ApiConfig{},
+		ServerConfig: &config.ApiConfig{},
 		QRcodeConfig: &qrcode.Config{
 			Foreground: "black",
 			Background: "white",
@@ -35,7 +35,7 @@ type ClientConfig struct {
 
 	ShowQRcode   bool
 	ShowProgress bool
-	ServerConfig *server.ApiConfig
+	ServerConfig *config.ApiConfig
 	QRcodeConfig *qrcode.Config
 	Level        string
 	NoIceServer  bool

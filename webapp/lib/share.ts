@@ -7,7 +7,12 @@ function shareGetRoom(addr: string): string {
   return ''
 }
 
+function generateShare(id: string): string {
+  return window.location.href + id
+}
+
 export {
   shareGetRoom,
+  generateShare,
 }
 

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"filegogo/server"
+	"filegogo/server/config"
 	"filegogo/server/httpd"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ var serverCmd = &cobra.Command{
 	Short: "websocket broker server",
 	Long:  `webapp, websocket, iceServer Server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config := &server.Config{
+		config := &config.Config{
 			Http: &httpd.Config{
 				Listen:    "0.0.0.0:8080",
 				RoomAlive: 1024,
