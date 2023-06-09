@@ -17,6 +17,11 @@ export default (props: { file: Manifest }) => {
       const fgg = new LibFgg()
       const addr = getServer() + uxid
       await fgg.useWebsocket(ProtoHttpToWs(addr))
+      await fgg.useWebRTC({
+        //@ts-ignore
+        iceServers: window.iceServers,
+      })
+
       await fgg.clientMeta()
       fgg.setRecv(new DomRecvFile())
       await fgg.run()

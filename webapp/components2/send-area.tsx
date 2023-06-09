@@ -54,10 +54,12 @@ export default () => {
 
     let room = await getRoom()
 
-    await putBoxFile(room, file, remain, expire, store ? "relay" : "p2p")
+    let action = store ? "relay" : "p2p"
+    await putBoxFile(room, file, remain, expire, action)
     let manifest: Manifest = {
       ...archive.genManifest(),
       uxid: room,
+      action: action,
       remain: remain,
       expire: expire,
     }
@@ -68,6 +70,11 @@ export default () => {
     } else {
       const fgg = new LibFgg()
       await fgg.useWebsocket(ProtoHttpToWs(getServer() + room))
+      await fgg.useWebRTC({
+        //@ts-ignore
+        iceServers: window.iceServers,
+      })
+
       fgg.setSend(new DomSendFile(file))
     }
 
