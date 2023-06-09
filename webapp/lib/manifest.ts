@@ -12,6 +12,7 @@ interface Item {
 interface Manifest extends Item {
   uxid: string
 
+  action: string
   expire: string
   remain: number
 }

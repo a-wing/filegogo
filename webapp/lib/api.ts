@@ -31,10 +31,10 @@ async function getRoom(): Promise<string> {
   return result.room || ''
 }
 
-async function putBoxFile(room: string, f: File, remain: number, expire: string): Promise<void> {
+async function putBoxFile(room: string, f: File, remain: number, expire: string, action: string): Promise<void> {
   let formData = new FormData()
   formData.append('file', f, f.name)
-  await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}`, {
+  await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}&action=${action}`, {
     method: "post",
     body: formData,
   })

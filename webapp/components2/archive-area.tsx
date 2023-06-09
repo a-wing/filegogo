@@ -1,10 +1,9 @@
-import FileItem from "./file-item"
-import Copy from "copy-to-clipboard"
-import Qrcode from "./qr-code"
-
 import { useAtom } from "jotai"
-import { ItemsAtom } from "../store"
+import Copy from "copy-to-clipboard"
 
+import Qrcode from "./qr-code"
+import FileItem from "./file-item"
+import { ItemsAtom } from "../store"
 import { getBoxFile, delBoxFile, generateShare } from "../lib/api"
 import { ExpiresAtHumanTime } from "../lib/util"
 

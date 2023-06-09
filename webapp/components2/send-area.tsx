@@ -1,22 +1,25 @@
 import { useRef, useState, ChangeEvent, useEffect } from "react"
-
-import Archive, { Meta } from "../lib/archive"
-import { Manifest } from "../lib/manifest"
-import FileItem from "./file-item"
+import { useAtom } from "jotai"
 import { filesize } from "filesize"
 
-import { getRoom, putBoxFile } from "../lib/api"
-
-import { useAtom } from "jotai"
-import { ItemsAtom } from "../store"
+import Archive, { Meta } from "../lib/archive"
+import { getRoom, getServer, putBoxFile } from "../lib/api"
 import { loadHistory } from "../lib/history"
+import { Manifest } from "../lib/manifest"
+import FileItem from "./file-item"
+import { ItemsAtom } from "../store"
+
+import LibFgg from "../libfgg/libfgg"
+import { ProtoHttpToWs } from "../lib/util"
+import { DomSendFile } from "../libfgg/pool/file/dom"
 
 let archive = new Archive()
 
 export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [remain, setRemain] = useState<number>(1)
-  const [expire, setExpire] = useState<string>('5m')
+  const [expire, setExpire] = useState<string>("5m")
+  const [relay, setRelay] = useState<boolean>(true)
   const [total, setTotal] = useState<number>(0)
   const [files, setFiles] = useState<Array<Meta>>([])
   const [items, setItems] = useAtom(ItemsAtom)
@@ -42,7 +45,7 @@ export default () => {
     setFiles([...archive.manifest])
   }
 
-  const toggleCommit = async () => {
+  const toggleCommit = async (store: boolean) => {
     const count = archive.files.length
     if (count === 0) {
       return
@@ -50,7 +53,8 @@ export default () => {
     let file = await archive.exportFile()
 
     let room = await getRoom()
-    await putBoxFile(room, file, remain, expire)
+
+    await putBoxFile(room, file, remain, expire, store ? "relay" : "p2p")
     let manifest: Manifest = {
       ...archive.genManifest(),
       uxid: room,
@@ -58,7 +62,15 @@ export default () => {
       expire: expire,
     }
     setItems([manifest, ...items])
-    localStorage.setItem(manifest.uxid, JSON.stringify(manifest))
+
+    if (store) {
+      localStorage.setItem(manifest.uxid, JSON.stringify(manifest))
+    } else {
+      const fgg = new LibFgg()
+      await fgg.useWebsocket(ProtoHttpToWs(getServer() + room))
+      fgg.setSend(new DomSendFile(file))
+    }
+
   }
 
   const toggleClose = (i: number) => {
@@ -127,17 +139,13 @@ export default () => {
 
           <div className="p-2 flex flex-row justify-between">
             <div>
-              <input className="mr-1" type="checkbox" id="relay" name="scales" />
+              <input className="mr-1" type="checkbox" id="relay" name="scales" checked={ relay } onChange={ e => setRelay(e.target.checked) } />
               <label>Server Relay</label>
             </div>
 
-            <div>
-              <input className="mr-1" type="checkbox" id="encryption" name="scales" />
-              <label>P2P encryption</label>
-            </div>
           </div>
 
-        <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold" onClick={ toggleCommit }>Commit</button>
+          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold" onClick={ () => toggleCommit(relay) }>Commit</button>
       </>
     }</>
   )

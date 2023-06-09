@@ -39,12 +39,18 @@ func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	action := "http"
+	if t := r.URL.Query().Get("action"); t != "" {
+		action = t
+	}
+
 	m := &httpd.Meta{
 		Name: fh.Filename,
 		Size: fh.Size,
 		Type: mime.DetectFileExt(strings.TrimPrefix(path.Ext(fh.Filename), ".")),
 		UXID: uxid,
 
+		Action: action,
 		Remain: remain,
 		Expire: expire,
 	}
