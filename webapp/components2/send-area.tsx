@@ -17,6 +17,7 @@ let archive = new Archive()
 
 export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
+  const [progress, setProgress] = useState<number>(0)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>("5m")
   const [relay, setRelay] = useState<boolean>(true)
@@ -73,6 +74,10 @@ export default () => {
       await fgg.useWebRTC({
         //@ts-ignore
         iceServers: window.iceServers,
+      })
+
+      fgg.setOnProgress((c: number): void => {
+        setProgress(c)
       })
 
       fgg.setSend(new DomSendFile(file))
@@ -142,7 +147,8 @@ export default () => {
           </select>
 
         </div>
-          <hr className="border-2"/>
+        <progress className="w-full h-1" value={ progress } max={ archive.size } ></progress>
+
 
           <div className="p-2 flex flex-row justify-between">
             <div>
