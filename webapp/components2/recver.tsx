@@ -17,7 +17,7 @@ export default () => {
   return (
     <div className="w-full flex flex-col">
       <div className="flex flex-row justify-center">
-        <h1 className="font-bold text-4xl">Download files</h1>
+        <h1 className="font-bold text-4xl">files</h1>
       </div>
       <div className="flex flex-row justify-center">
         <p>This file was shared via Send with end-to-end encryption and a link that automatically expires.</p>
