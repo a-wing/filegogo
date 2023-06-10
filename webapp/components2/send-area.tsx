@@ -8,6 +8,7 @@ import { loadHistory } from "../lib/history"
 import { Manifest } from "../lib/manifest"
 import FileItem from "./file-item"
 import { ItemsAtom } from "../store"
+import SendFile from "./send-file"
 
 import LibFgg from "../libfgg/libfgg"
 import { ProtoHttpToWs } from "../lib/util"
@@ -18,6 +19,7 @@ let archive = new Archive()
 export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number>(0)
+  const [detail, setDetail] = useState<Manifest | null>(null)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>("5m")
   const [relay, setRelay] = useState<boolean>(true)
@@ -83,6 +85,7 @@ export default () => {
       fgg.setSend(new DomSendFile(file))
     }
 
+    setDetail(manifest)
   }
 
   const toggleClose = (i: number) => {
@@ -92,6 +95,9 @@ export default () => {
 
   return (
     <>
+      { detail
+        ? <SendFile file={ detail } callback={ setDetail } />
+    : <>
       <input
           style={{ display: "none" }}
           // This id e2e test need
@@ -160,6 +166,7 @@ export default () => {
 
           <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold" onClick={ () => toggleCommit(relay) }>Commit</button>
       </>
+    }</>
     }</>
   )
 }
