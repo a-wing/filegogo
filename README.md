@@ -33,6 +33,21 @@
 docker run -p 8080:8080 ghcr.io/a-wing/filegogo:latest server
 ```
 
+## Architecture
+
+![filegogo-arch](./filegogo-arch.png)
+
+### Components
+
+- app
+  - [x] server
+  - [x] webapp
+  - [ ] client-cli (current, have many problems)
+- lib
+  - [ ] libfgg.js (only browser)
+  - [ ] libfgg.go
+  - [ ] libfgg.rs
+
 ## Build && Install
 
 ```sh
@@ -148,3 +163,11 @@ user=filegogo:filegogo
 realm=filegogo
 
 ```
+
+## Acknowledgments
+
+- [pion](https://github.com/pion/webrtc)
+- [croc](https://github.com/schollz/croc)
+- [firefox-send](https://github.com/mozilla/send)
+- [ffsend](https://github.com/timvisee/ffsend)
+
