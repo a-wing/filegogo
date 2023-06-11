@@ -20,7 +20,7 @@ export default () => {
         <h1 className="font-bold text-4xl">files</h1>
       </div>
       <div className="flex flex-row justify-center">
-        <p>This file was shared via Send with end-to-end encryption and a link that automatically expires.</p>
+        <p>This file was shared via Send with a link that automatically expires.</p>
       </div>
       { file
         ? <RecverFile file={ file }></RecverFile>

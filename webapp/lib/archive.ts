@@ -43,6 +43,10 @@ export default class Archive {
     }))
   }
 
+  get name(): string {
+    return this.files.length > 1 ? ArchiveName : (this.files.length > 0 ? this.files[0].name : "")
+  }
+
   get size(): number {
     return this.files.reduce((total, file) => total + file.size, 0)
   }

@@ -22,8 +22,14 @@ export default (props: { file: Manifest }) => {
         iceServers: window.iceServers,
       })
 
+      let p = new Promise<void>(resolve => {
+        fgg.onRecvFile = (_) => {
+          fgg.setRecv(new DomRecvFile())
+          resolve()
+        }
+      })
       await fgg.clientMeta()
-      fgg.setRecv(new DomRecvFile())
+      await p
       await fgg.run()
     }
   }
