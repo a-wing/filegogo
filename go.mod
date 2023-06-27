@@ -13,7 +13,7 @@ require (
 	github.com/pion/logging v0.2.2
 	github.com/pion/sctp v1.8.7
 	github.com/pion/transport v0.14.1
-	github.com/pion/turn/v2 v2.1.0
+	github.com/pion/turn/v2 v2.1.1
 	github.com/pion/webrtc/v3 v3.2.10
 	github.com/qingstor/go-mime v0.1.0
 	github.com/sb-im/jsonrpc-lite v0.2.0
@@ -40,7 +40,7 @@ require (
 	github.com/pion/rtp v1.7.13 // indirect
 	github.com/pion/sdp/v3 v3.0.6 // indirect
 	github.com/pion/srtp/v2 v2.0.15 // indirect
-	github.com/pion/stun v0.6.0 // indirect
+	github.com/pion/stun v0.6.1 // indirect
 	github.com/pion/transport/v2 v2.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
