@@ -7,22 +7,22 @@ import (
 
 	"filegogo/server/config"
 	"filegogo/server/turnd"
+	"filegogo/server/store"
 
-	"github.com/djherbis/stow/v4"
 	"github.com/pion/webrtc/v3"
 )
 
 type Handler struct {
-	cfg         *config.Config
-	store       *stow.Store
-	turndServer *turnd.Server
+	cfg   *config.Config
+	store *store.Store
+	turnd *turnd.Server
 }
 
-func NewHandler(cfg *config.Config, store *stow.Store, turndServer *turnd.Server) *Handler {
+func NewHandler(cfg *config.Config, store *store.Store, turnd *turnd.Server) *Handler {
 	return &Handler{
-		cfg:         cfg,
-		store:       store,
-		turndServer: turndServer,
+		cfg:   cfg,
+		store: store,
+		turnd: turnd,
 	}
 }
 
@@ -32,7 +32,7 @@ func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {
 	var builtInICEServer *webrtc.ICEServer
 	if h.cfg.Turn != nil {
 		uaername, password := turnd.RandomUser()
-		h.turndServer.NewUser(uaername + ":" + password)
+		h.turnd.NewUser(uaername + ":" + password)
 
 		builtInICEServer = &webrtc.ICEServer{
 			URLs:       []string{"turn:" + h.cfg.Turn.Listen},

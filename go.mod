@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/a-wing/lightcable v0.1.1
-	github.com/djherbis/stow/v4 v4.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru v0.5.4
@@ -21,7 +20,6 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.7.0
-	go.etcd.io/bbolt v1.3.7
 	golang.org/x/term v0.8.0
 )
 

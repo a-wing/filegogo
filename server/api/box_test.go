@@ -7,14 +7,11 @@ import (
 	"mime/multipart"
 	"net/http/httptest"
 	"os"
-	"path"
 	"testing"
 
 	"filegogo/server/config"
 	"filegogo/server/httpd"
-
-	"github.com/djherbis/stow/v4"
-	bolt "go.etcd.io/bbolt"
+	"filegogo/server/store"
 )
 
 func TestBox(t *testing.T) {
@@ -57,15 +54,7 @@ func TestBox(t *testing.T) {
 		},
 	}
 
-	dbPath := path.Join(os.TempDir(), "dbName")
-	db, err := bolt.Open(dbPath, 0600, nil)
-	defer os.Remove(dbPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	store := stow.NewJSONStore(db, []byte("room"))
-
-	handler := NewHandler(cfg, store, nil)
+	handler := NewHandler(cfg, store.NewStore(), nil)
 
 	req := httptest.NewRequest("POST", "http://example.com/foo", buf)
 	req.Header.Add("Content-Type", writer.FormDataContentType())

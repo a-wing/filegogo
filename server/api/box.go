@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -14,11 +15,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/qingstor/go-mime"
-	//"github.com/rs/xid"
 )
 
 func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
-	//uxid := xid.New().String()
 	uxid := mux.Vars(r)["room"]
 
 	f, fh, err := r.FormFile("file")
@@ -55,7 +54,6 @@ func (h *Handler) NewBoxFile(w http.ResponseWriter, r *http.Request) {
 		Expire: expire,
 	}
 
-	//h.store.Put(mux.Vars(r)["room"], m)
 	h.store.Put(uxid, m)
 
 	httpd.SaveUploadedFile(fh, path.Join(h.cfg.Http.StoragePath, uxid))
@@ -82,7 +80,7 @@ func (h *Handler) GetBoxFile(w http.ResponseWriter, r *http.Request) {
 
 	httpd.FileAttachment(w, r, path.Join(h.cfg.Http.StoragePath, m.UXID), m.Name)
 	if m.Remain == 0 {
-		h.store.Delete(room)
+		h.store.Del(room)
 		os.Remove(path.Join(h.cfg.Http.StoragePath, m.UXID))
 	}
 }
@@ -91,7 +89,7 @@ func (h *Handler) DelBoxFile(w http.ResponseWriter, r *http.Request) {
 	room := mux.Vars(r)["room"]
 	var m httpd.Meta
 	h.store.Get(room, &m)
-	h.store.Delete(room)
+	h.store.Del(room)
 	os.Remove(path.Join(h.cfg.Http.StoragePath, m.UXID))
 }
 
@@ -99,6 +97,12 @@ func (h *Handler) GetBoxInfo(w http.ResponseWriter, r *http.Request) {
 	room := mux.Vars(r)["room"]
 	var m httpd.Meta
 	err := h.store.Get(room, &m)
+	if time.Now().After(m.Expire) || m.Remain == 0 {
+		h.store.Del(room)
+		os.Remove(path.Join(h.cfg.Http.StoragePath, m.UXID))
+		err = errors.New("key already expired or remain 0")
+	}
+
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 	} else {
