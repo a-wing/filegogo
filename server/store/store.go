@@ -37,10 +37,3 @@ func (s *Store) Del(key string) {
 	delete(s.store, key)
 	s.mutex.Unlock()
 }
-
-//func (s *Store) Export() []byte {
-//	s.mutex.Lock()
-//	data, _ := json.Marshal(s.store)
-//	s.mutex.Unlock()
-//	return data
-//}
