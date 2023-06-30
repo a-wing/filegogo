@@ -13,7 +13,7 @@ require (
 	github.com/pion/sctp v1.8.7
 	github.com/pion/transport v0.14.1
 	github.com/pion/turn/v2 v2.1.0
-	github.com/pion/webrtc/v3 v3.2.10
+	github.com/pion/webrtc/v3 v3.2.11
 	github.com/qingstor/go-mime v0.1.0
 	github.com/sb-im/jsonrpc-lite v0.2.0
 	github.com/schollz/progressbar/v3 v3.13.1
@@ -30,7 +30,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
-	github.com/pion/ice/v2 v2.3.7 // indirect
+	github.com/pion/ice/v2 v2.3.8 // indirect
 	github.com/pion/interceptor v0.1.17 // indirect
 	github.com/pion/mdns v0.0.7 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
