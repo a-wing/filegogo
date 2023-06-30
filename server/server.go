@@ -47,7 +47,7 @@ func Run(cfg *config.Config) {
 	if err := os.MkdirAll(cfg.Http.StoragePath, os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	sr := mux.NewRouter().PathPrefix("/"+cfg.Http.PathPrefix).Subrouter()
+	sr := mux.NewRouter().PathPrefix("/" + cfg.Http.PathPrefix).Subrouter()
 
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())

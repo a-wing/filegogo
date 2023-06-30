@@ -10,24 +10,24 @@ import (
 )
 
 var (
-  // Used for flags.
-  cfgFile = ""
+	// Used for flags.
+	cfgFile = ""
 	rootCmd = &cobra.Command{
-	Use:   "filegogo",
-	Short: "Filegogo",
-	Long: `Filegogo is a p2p file transport tool
+		Use:   "filegogo",
+		Short: "Filegogo",
+		Long: `Filegogo is a p2p file transport tool
 						https://github.com/a-wing/filegogo`,
-	PersistentPreRun: func(c *cobra.Command, args []string) {
-		if verbose, _ := c.Flags().GetBool("verbose"); verbose {
-			log.SetReportCaller(true)
-			log.SetLevel(log.DebugLevel)
-		}
-  },
-  }
+		PersistentPreRun: func(c *cobra.Command, args []string) {
+			if verbose, _ := c.Flags().GetBool("verbose"); verbose {
+				log.SetReportCaller(true)
+				log.SetLevel(log.DebugLevel)
+			}
+		},
+	}
 )
 
 func Execute() {
-  rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is /etc/filegogo.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is /etc/filegogo.toml)")
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
@@ -53,20 +53,20 @@ func loadConfig(cfg interface{}) {
 	if f, err := os.Open("/etc/" + name); err == nil {
 		log.Info("read config file: /etc/", name)
 		toml.DecodeReader(f, cfg)
-		f.Close();
+		f.Close()
 	}
 
 	if f, err := os.Open(name); err == nil {
 		log.Info("read config file: ", name)
 		toml.DecodeReader(f, cfg)
-		f.Close();
+		f.Close()
 	}
 
 	if Exists(cfgFile) {
 		if f, err := os.Open(cfgFile); err == nil {
 			log.Info("read config file: ", cfgFile)
 			toml.DecodeReader(f, cfg)
-			f.Close();
+			f.Close()
 		}
 	}
 

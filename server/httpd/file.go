@@ -21,8 +21,8 @@ type Meta struct {
 	Size int64  `json:"size"`
 	UXID string `json:"uxid"`
 
-	Action string `json:"action"`
-	Remain int `json:"remain"`
+	Action string    `json:"action"`
+	Remain int       `json:"remain"`
 	Expire time.Time `json:"expire"`
 }
 

@@ -21,10 +21,10 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config := &config.Config{
 			Http: &httpd.Config{
-				Listen:    "0.0.0.0:8080",
-				RoomAlive: 1024,
-				RoomCount: 10000,
-				PathPrefix: "",
+				Listen:      "0.0.0.0:8080",
+				RoomAlive:   1024,
+				RoomCount:   10000,
+				PathPrefix:  "",
 				StoragePath: "data",
 			},
 		}
