@@ -4,22 +4,22 @@ import Copy from "copy-to-clipboard"
 import Qrcode from "./qr-code"
 import FileItem from "./file-item"
 import { ItemsAtom } from "../store"
-import { getBoxFile, delBoxFile, generateShare } from "../lib/api"
+import { getRaw, delBox, generateShare } from "../lib/api"
 import { ExpiresAtHumanTime } from "../lib/util"
 
 export default () => {
   const [files, setFiles] = useAtom(ItemsAtom)
 
   const toggleClose = async (i: number) => {
-    let item = files.splice(i, 1)
-    item[0] ? localStorage.removeItem(item[0].uxid) : null
+    let item = files.splice(i, 1)[0]
+    localStorage.removeItem(item.uxid)
     setFiles([...files])
-    await delBoxFile(item[0].uxid)
+    item.secret && await delBox(item.uxid, item.secret)
   }
 
   const toggleDownload = async (i: number) => {
     let item = files[i]
-    await getBoxFile(item.uxid)
+    await getRaw(item.uxid)
   }
 
   return (

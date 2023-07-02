@@ -1,8 +1,7 @@
 import { atom } from "jotai"
-import { Manifest } from "./lib/manifest"
+import { Box } from "./lib/box"
 
-const ItemsAtom = atom<Array<Manifest>>([])
-
+const ItemsAtom = atom<Array<Box>>([])
 
 interface Config {
   iceServers: RTCIceServer[]

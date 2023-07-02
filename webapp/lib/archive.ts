@@ -1,5 +1,5 @@
 import PizZip from "pizzip"
-import { Item } from "../lib/manifest"
+import { Item } from "../lib/box"
 
 const ArchiveName = "filegogo-archive.zip"
 const ArchiveType = "application/zip"

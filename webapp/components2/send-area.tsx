@@ -3,9 +3,9 @@ import { useAtom } from "jotai"
 import { filesize } from "filesize"
 
 import Archive, { Meta } from "../lib/archive"
-import { getRoom, getServer, putBoxFile } from "../lib/api"
+import { getServer, putBox } from "../lib/api"
 import { loadHistory } from "../lib/history"
-import { Manifest } from "../lib/manifest"
+import { Box } from "../lib/box"
 import FileItem from "./file-item"
 import { ItemsAtom } from "../store"
 import SendFile from "./send-file"
@@ -19,7 +19,7 @@ let archive = new Archive()
 export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number>(0)
-  const [detail, setDetail] = useState<Manifest | null>(null)
+  const [detail, setDetail] = useState<Box | null>(null)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>("5m")
   const [relay, setRelay] = useState<boolean>(true)
@@ -55,24 +55,15 @@ export default () => {
     }
     let file = await archive.exportFile()
 
-    let room = await getRoom()
-
     let action = store ? "relay" : "p2p"
-    await putBoxFile(room, file, remain, expire, action)
-    let manifest: Manifest = {
-      ...archive.genManifest(),
-      uxid: room,
-      action: action,
-      remain: remain,
-      expire: expire,
-    }
+    let manifest = await putBox(file, remain, expire, action)
     setItems([manifest, ...items])
 
     if (store) {
       localStorage.setItem(manifest.uxid, JSON.stringify(manifest))
     } else {
       const fgg = new LibFgg()
-      await fgg.useWebsocket(ProtoHttpToWs(getServer() + room))
+      await fgg.useWebsocket(ProtoHttpToWs(getServer() + manifest.uxid))
       await fgg.useWebRTC({
         //@ts-ignore
         iceServers: window.iceServers,

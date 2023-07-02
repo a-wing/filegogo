@@ -1,16 +1,16 @@
-import { Manifest } from "./manifest"
-import { getBoxInfo } from "./api"
+import { Box } from "./box"
+import { getBox } from "./api"
 
-type warpResult = Promise<{ uxid: string, data: Manifest }>
+type warpResult = Promise<{ uxid: string, data: Box }>
 
 async function loadApiInfo(uxid: string): warpResult {
   return {
     uxid: uxid,
-    data: await getBoxInfo(uxid),
+    data: await getBox(uxid) as Box,
   }
 }
 
-async function loadHistory(): Promise<Array<Manifest>> {
+async function loadHistory(): Promise<Array<Box>> {
   let promises: Array<warpResult> = []
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)

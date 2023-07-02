@@ -8,6 +8,7 @@ import (
 	"filegogo/server/config"
 	"filegogo/server/store"
 	"filegogo/server/turnd"
+	"filegogo/server/utils"
 
 	"github.com/pion/webrtc/v3"
 )
@@ -24,6 +25,10 @@ func NewHandler(cfg *config.Config, store *store.Store, turnd *turnd.Server) *Ha
 		store: store,
 		turnd: turnd,
 	}
+}
+
+func (h *Handler) genID() string {
+	return utils.GenNumberSecret(6)
 }
 
 func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {

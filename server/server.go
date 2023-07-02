@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"filegogo/server/api"
 	"filegogo/server/config"
@@ -15,18 +16,19 @@ import (
 	"filegogo/server/turnd"
 
 	"github.com/a-wing/lightcable"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 //go:embed build
 var dist embed.FS
 
 const (
-	ApiPathConfig = "/api/config"
+	//ApiPathConfig = "/api/config"
 	ApiPathSignal = "/api/signal/"
 
-	ApiPathBoxInfo = "/api/info/"
-	ApiPathBoxFile = "/api/file/"
+	//ApiPathBoxInfo = "/api/info/"
+	//ApiPathBoxFile = "/api/file/"
 )
 
 func Run(cfg *config.Config) {
@@ -47,30 +49,49 @@ func Run(cfg *config.Config) {
 	if err := os.MkdirAll(cfg.Http.StoragePath, os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	sr := mux.NewRouter().PathPrefix("/" + cfg.Http.PathPrefix).Subrouter()
-
 	cable := lightcable.New(lightcable.DefaultConfig)
 	go cable.Run(context.Background())
-	httpServer := httpd.NewServer(cable, cfg.Http)
-
-	sr.HandleFunc(ApiPathSignal, httpServer.ApplyCable)
-	sr.Handle(ApiPathSignal+"{room:[0-9]+}", cable)
 
 	hander := api.NewHandler(cfg, store.NewStore(), turndServer)
 
-	sr.HandleFunc(ApiPathConfig, hander.GetConfig)
-	sr.HandleFunc(ApiPathBoxInfo+"{room:[0-9]+}", hander.GetBoxInfo)
-	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", hander.NewBoxFile).Methods(http.MethodPost)
-	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", hander.GetBoxFile).Methods(http.MethodGet)
-	sr.HandleFunc(ApiPathBoxFile+"{room:[0-9]+}", hander.DelBoxFile).Methods(http.MethodDelete)
+	r := chi.NewRouter()
+	// A good base middleware stack
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	// Set a timeout value on the request context (ctx), that will signal
+	// through ctx.Done() that the request has timed out and further
+	// processing should be stopped.
+	r.Use(middleware.Timeout(60 * time.Second))
+
+	//r.Handle(ApiPathSignal+"{room:[0-9]+}", cable)
 
 	fsys, err := fs.Sub(dist, "build")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	sr.PathPrefix("/").Handler(http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys))))).Methods(http.MethodGet)
+	r.Route("/" + cfg.Http.PathPrefix, func(r chi.Router) {
+		r.Route("/api", func(r chi.Router) {
+			r.Get("/config", hander.GetConfig)
+			r.Handle("/signal/*", cable)
+
+			r.Route("/raw", func(r chi.Router) {
+				r.Get("/{ID}", hander.GetRaw)
+			})
+
+			r.Route("/box", func(r chi.Router) {
+				r.Post("/", hander.NewBox)
+				r.Get("/{ID}", hander.GetBox)
+				r.Delete("/{ID}", hander.DelBox)
+			})
+		})
+
+		r.Handle("/*", http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))))
+	})
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)
-	log.Fatal(http.ListenAndServe(cfg.Http.Listen, sr))
+	log.Fatal(http.ListenAndServe(cfg.Http.Listen, r))
 }

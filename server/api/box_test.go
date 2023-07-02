@@ -59,9 +59,9 @@ func TestBox(t *testing.T) {
 	req := httptest.NewRequest("POST", "http://example.com/foo", buf)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	w := httptest.NewRecorder()
-	handler.NewBoxFile(w, req)
+	handler.NewBox(w, req)
 
-	m := &httpd.Meta{}
+	m := &httpd.Box{}
 	if err := json.NewDecoder(w.Body).Decode(m); err != nil {
 		t.Error(err)
 	}

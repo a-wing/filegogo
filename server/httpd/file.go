@@ -15,12 +15,13 @@ const (
 	DefaultBoxExpire = 10 * time.Minute
 )
 
-type Meta struct {
+type Box struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 	Size int64  `json:"size"`
 	UXID string `json:"uxid"`
 
+	Secret string    `json:"secret,omitempty"`
 	Action string    `json:"action"`
 	Remain int       `json:"remain"`
 	Expire time.Time `json:"expire"`

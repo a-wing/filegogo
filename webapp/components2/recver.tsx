@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react"
-import { Manifest } from "../lib/manifest"
+import { Box } from "../lib/box"
 import RecverFile from "./recver-file"
-import { getBoxInfo, shareGetRoom } from "../lib/api"
+import { getBox, shareGetRoom } from "../lib/api"
 
 export default () => {
-  const [file, setFile] = useState<Manifest | null>(null)
+  const [file, setFile] = useState<Box | null>(null)
 
   const loadFile = async () => {
-    setFile(await getBoxInfo(shareGetRoom(window.location.href)))
+    const box = await getBox(shareGetRoom(window.location.href))
+    box && setFile(box)
   }
 
   useEffect(() => {

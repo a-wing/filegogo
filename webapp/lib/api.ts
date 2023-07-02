@@ -1,4 +1,5 @@
-import { shareGetRoom, generateShare } from './share'
+import { Box } from "./box"
+import { shareGetRoom, generateShare } from "./share"
 
 const ws = '/signal/'
 
@@ -22,37 +23,27 @@ async function getConfig(): Promise<RTCIceServer[]> {
   return result.iceServers || []
 }
 
-async function getRoom(): Promise<string> {
-  const str = shareGetRoom(window.location.href)
-  if (str !== '') return str
-
-  const response = await fetch(`${getPrefix()}/${ws}/`)
-  const result = await response.json()
-  return result.room || ''
-}
-
-async function putBoxFile(room: string, f: File, remain: number, expire: string, action: string): Promise<void> {
+async function putBox(f: File, remain: number, expire: string, action: string): Promise<Box> {
   let formData = new FormData()
   formData.append('file', f, f.name)
-  await fetch(`${getPrefix()}/file/${room}?remain=${remain}&expire=${expire}&action=${action}`, {
+  return (await fetch(`${getPrefix()}/box?remain=${remain}&expire=${expire}&action=${action}`, {
     method: "post",
     body: formData,
-  })
-  return
+  })).json()
 }
 
-async function getBoxFile(room: string): Promise<void> {
-  window.open(`${getPrefix()}/file/${room}`)
-}
-
-async function delBoxFile(room: string): Promise<void> {
-  await fetch(`${getPrefix()}/file/${room}`, {
+async function delBox(uxid: string, secret: string): Promise<void> {
+  await fetch(`${getPrefix()}/box/${uxid}?secret=${secret}`, {
     method: "delete",
   })
 }
 
-async function getBoxInfo(room: string): Promise<any> {
-  const response = await fetch(`${getPrefix()}/info/${room}`)
+async function getRaw(uxid: string): Promise<void> {
+  window.open(`${getPrefix()}/raw/${uxid}`)
+}
+
+async function getBox(room: string): Promise<Box | void> {
+  const response = await fetch(`${getPrefix()}/box/${room}`)
   if (response.status == 200) {
     return await response.json()
   }
@@ -61,12 +52,14 @@ async function getBoxInfo(room: string): Promise<any> {
 export {
   getServer,
   getConfig,
-  getRoom,
   getLogLevel,
-  putBoxFile,
-  getBoxFile,
-  delBoxFile,
-  getBoxInfo,
+
+  putBox,
+  getBox,
+  delBox,
+
+  getRaw,
+
   shareGetRoom,
   generateShare,
 }

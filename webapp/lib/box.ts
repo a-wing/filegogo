@@ -9,9 +9,10 @@ interface Item {
   files: Meta[]
 }
 
-interface Manifest extends Item {
+interface Box extends Item {
   uxid: string
 
+  secret?: string
   action: string
   expire: string
   remain: number
@@ -19,6 +20,6 @@ interface Manifest extends Item {
 
 
 export type {
-  Manifest,
+  Box,
   Item,
 }

@@ -1,8 +1,8 @@
 import Qrcode from "./qr-code"
-import { Manifest } from "../lib/manifest"
+import { Box } from "../lib/box"
 import { generateShare } from "../lib/api"
 
-export default (props: { file: Manifest, callback: (_: Manifest | null) => void }) => {
+export default (props: { file: Box, callback: (_: Box | null) => void }) => {
   const file = props.file
 
   return (

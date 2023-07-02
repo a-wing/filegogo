@@ -1,18 +1,18 @@
 import FileItem from "./file-item"
-import { Manifest } from "../lib/manifest"
+import { Box } from "../lib/box"
 import { ExpiresAtHumanTime } from "../lib/util"
 import Qrcode from "./qr-code"
-import { getBoxFile, getServer } from "../lib/api"
+import { getRaw, getServer } from "../lib/api"
 import LibFgg from "../libfgg/libfgg"
 import { ProtoHttpToWs } from "../lib/util"
 import { DomRecvFile } from '../libfgg/pool/file/dom'
 
-export default (props: { file: Manifest }) => {
+export default (props: { file: Box }) => {
   const file = props.file
 
   const toggleDownload = async (uxid: string) => {
     if (file.action === "relay") {
-      await getBoxFile(uxid)
+      await getRaw(uxid)
     } else {
       const fgg = new LibFgg()
       const addr = getServer() + uxid
