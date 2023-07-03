@@ -1,4 +1,4 @@
-import { Box } from "./box"
+import { Box } from "../libfgg"
 import { getBox } from "./api"
 
 type warpResult = Promise<{ uxid: string, data: Box }>

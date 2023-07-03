@@ -1,4 +1,4 @@
-import { Box } from "./box"
+import { Box } from "../libfgg/index"
 import { shareGetRoom, generateShare } from "./share"
 
 const ws = '/signal/'

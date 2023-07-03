@@ -1,5 +1,5 @@
 import FileItem from "./file-item"
-import { Box } from "../lib/box"
+import { Box } from "../libfgg/index"
 import { ExpiresAtHumanTime } from "../lib/util"
 import Qrcode from "./qr-code"
 import { getRaw, getServer } from "../lib/api"

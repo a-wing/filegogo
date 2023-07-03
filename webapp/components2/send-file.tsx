@@ -1,5 +1,5 @@
 import Qrcode from "./qr-code"
-import { Box } from "../lib/box"
+import { Box } from "../libfgg/index"
 import { generateShare } from "../lib/api"
 
 export default (props: { file: Box, callback: (_: Box | null) => void }) => {

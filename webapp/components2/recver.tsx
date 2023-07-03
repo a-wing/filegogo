@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Box } from "../lib/box"
+import { Box } from "../libfgg/index"
 import RecverFile from "./recver-file"
 import { getBox, shareGetRoom } from "../lib/api"
 

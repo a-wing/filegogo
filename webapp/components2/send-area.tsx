@@ -2,15 +2,14 @@ import { useRef, useState, ChangeEvent, useEffect } from "react"
 import { useAtom } from "jotai"
 import { filesize } from "filesize"
 
-import Archive, { Meta } from "../lib/archive"
+import Archive from "../lib/archive"
+import LibFgg, { Box, Meta } from "../libfgg"
 import { getServer, putBox } from "../lib/api"
 import { loadHistory } from "../lib/history"
-import { Box } from "../lib/box"
 import FileItem from "./file-item"
 import { ItemsAtom } from "../store"
 import SendFile from "./send-file"
 
-import LibFgg from "../libfgg/libfgg"
 import { ProtoHttpToWs } from "../lib/util"
 import { DomSendFile } from "../libfgg/pool/file/dom"
 

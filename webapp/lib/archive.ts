@@ -1,19 +1,8 @@
 import PizZip from "pizzip"
-import { Item } from "../lib/box"
+import { Item, Meta } from "../libfgg/index"
 
 const ArchiveName = "filegogo-archive.zip"
 const ArchiveType = "application/zip"
-
-interface Meta {
-  name: string
-  // TODO: mime
-  type: string
-  size: number
-}
-
-export type {
-  Meta
-}
 
 export default class Archive {
   //private

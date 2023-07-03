@@ -1,4 +1,4 @@
-import { Meta } from "../lib/archive"
+import { Meta } from "./pool/data"
 
 interface Item {
   name: string

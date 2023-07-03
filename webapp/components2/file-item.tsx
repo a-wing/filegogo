@@ -1,4 +1,4 @@
-import { Meta } from "../lib/archive"
+import { Meta } from "../libfgg"
 import logo from "/logo192.png"
 import { filesize } from "filesize"
 

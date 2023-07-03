@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { Box } from "./lib/box"
+import { Box } from "./libfgg"
 
 const ItemsAtom = atom<Array<Box>>([])
 
