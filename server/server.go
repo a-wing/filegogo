@@ -23,14 +23,6 @@ import (
 //go:embed build
 var dist embed.FS
 
-const (
-	//ApiPathConfig = "/api/config"
-	ApiPathSignal = "/api/signal/"
-
-	//ApiPathBoxInfo = "/api/info/"
-	//ApiPathBoxFile = "/api/file/"
-)
-
 func Run(cfg *config.Config) {
 	var turndServer *turnd.Server
 	if cfg.Turn != nil {
@@ -65,8 +57,6 @@ func Run(cfg *config.Config) {
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
-
-	//r.Handle(ApiPathSignal+"{room:[0-9]+}", cable)
 
 	fsys, err := fs.Sub(dist, "build")
 	if err != nil {

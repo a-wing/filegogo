@@ -7,9 +7,16 @@ import (
 	"regexp"
 	"strings"
 
-	"filegogo/server"
 	"filegogo/server/config"
 	"filegogo/server/httpd"
+)
+
+const (
+	ApiPathConfig = "/api/config"
+	ApiPathSignal = "/api/signal/"
+
+	ApiPathBox = "/api/box/"
+	ApiPathRaw = "/api/raw/"
 )
 
 func shareGetRoom(addr string) string {
@@ -40,15 +47,15 @@ func NewApi(server string) *Api {
 }
 
 func (a *Api) addressConfig() string {
-	return a.server + server.ApiPathConfig
+	return a.server + ApiPathConfig
 }
 
 func (a *Api) addressSignal() string {
-	return a.server + server.ApiPathSignal
+	return a.server + ApiPathSignal
 }
 
 func (a *Api) RoomAddress() string {
-	return a.server + server.ApiPathSignal + a.room
+	return a.server + ApiPathSignal + a.room
 }
 
 func (a *Api) ToShare() string {
