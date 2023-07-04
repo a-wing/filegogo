@@ -12,12 +12,14 @@ import SendFile from "./send-file"
 
 import { ProtoHttpToWs } from "../lib/util"
 import { DomSendFile } from "../libfgg/pool/file/dom"
+import Loading from "./loading"
 
 let archive = new Archive()
 
 export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
   const [detail, setDetail] = useState<Box | null>(null)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>("5m")
@@ -52,6 +54,7 @@ export default () => {
     if (count === 0) {
       return
     }
+    setLoading(true)
     let file = await archive.exportFile()
 
     let action = store ? "relay" : "p2p"
@@ -75,6 +78,7 @@ export default () => {
       fgg.setSend(new DomSendFile(file))
     }
 
+    setLoading(false)
     setDetail(manifest)
   }
 
@@ -154,7 +158,17 @@ export default () => {
 
           </div>
 
-          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold" onClick={ () => toggleCommit(relay) }>Commit</button>
+          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold flex flex-row justify-center" onClick={ () => toggleCommit(relay) }>
+            { loading
+              ? <Loading></Loading>
+              : null
+            }
+            Commit
+            { loading
+              ? "..."
+              : null
+            }
+          </button>
       </>
     }</>
     }</>
