@@ -25,7 +25,9 @@ async function getConfig(): Promise<RTCIceServer[]> {
 
 async function putBox(f: File, remain: number, expire: string, action: string): Promise<Box> {
   let formData = new FormData()
-  formData.append('file', f, f.name)
+  if (action === "relay") {
+    formData.append('file', f, f.name)
+  }
   return (await fetch(`${getPrefix()}/box?remain=${remain}&expire=${expire}&action=${action}`, {
     method: "post",
     body: formData,
