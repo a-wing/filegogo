@@ -158,7 +158,7 @@ export default () => {
 
           </div>
 
-          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold flex flex-row justify-center" onClick={ () => toggleCommit(relay) }>
+          <button className="p-3 w-full block border-1 rounded-md bg-blue-500 text-white font-bold flex flex-row justify-center" disabled={ loading } onClick={ () => toggleCommit(relay) }>
             { loading
               ? <Loading></Loading>
               : null
