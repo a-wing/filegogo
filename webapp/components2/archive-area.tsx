@@ -1,13 +1,13 @@
 import { useAtom } from "jotai"
 import Copy from "copy-to-clipboard"
 
-import Qrcode from "./qr-code"
 import FileItem from "./file-item"
-import { ItemsAtom } from "../store"
+import { ItemsAtom, DetailAtom } from "../store"
 import { getRaw, delBox, generateShare } from "../lib/api"
 import { ExpiresAtHumanTime } from "../lib/util"
 
 export default () => {
+  const [_, setDetail] = useAtom(DetailAtom)
   const [files, setFiles] = useAtom(ItemsAtom)
 
   const toggleClose = async (i: number) => {
@@ -17,10 +17,8 @@ export default () => {
     item.secret && await delBox(item.uxid, item.secret)
   }
 
-  const toggleDownload = async (i: number) => {
-    let item = files[i]
-    await getRaw(item.uxid)
-  }
+  const toggleShow = async (i: number) => setDetail(files[i])
+  const toggleDownload = async (uxid: string) => await getRaw(uxid)
 
   return (
     <>
@@ -49,11 +47,8 @@ export default () => {
             }
             <hr className="my-2" />
             <div className="flex flex-row justify-between">
-              <button className="cursor-pointer" onClick={ () => { toggleDownload(index) } }>Download</button>
-              <details className="cursor-pointer">
-                <summary>QRCode</summary>
-                <Qrcode address={ generateShare(file.uxid) }></Qrcode>
-              </details>
+              <button className="cursor-pointer" onClick={ () => toggleDownload(file.uxid) }>Download</button>
+              <button className="cursor-pointer" onClick={ () => toggleShow(index) }>Show</button>
               <button className="cursor-pointer" onClick={ () => Copy(generateShare(file.uxid)) }>Copy Link</button>
             </div>
 

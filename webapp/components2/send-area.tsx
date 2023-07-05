@@ -3,11 +3,11 @@ import { useAtom } from "jotai"
 import { filesize } from "filesize"
 
 import Archive from "../lib/archive"
-import LibFgg, { Box, Meta } from "../libfgg"
+import LibFgg, { Meta } from "../libfgg"
 import { getServer, putBox } from "../lib/api"
 import { loadHistory } from "../lib/history"
 import FileItem from "./file-item"
-import { ItemsAtom } from "../store"
+import { ItemsAtom, DetailAtom } from "../store"
 import SendFile from "./send-file"
 
 import { ProtoHttpToWs } from "../lib/util"
@@ -20,7 +20,7 @@ export default () => {
   const hiddenFileInput = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
-  const [detail, setDetail] = useState<Box | null>(null)
+  const [detail, setDetail] = useAtom(DetailAtom)
   const [remain, setRemain] = useState<number>(1)
   const [expire, setExpire] = useState<string>("5m")
   const [relay, setRelay] = useState<boolean>(true)
@@ -90,7 +90,7 @@ export default () => {
   return (
     <>
       { detail
-        ? <SendFile file={ detail } callback={ setDetail } />
+        ? <SendFile file={ detail } />
     : <>
       <input
           style={{ display: "none" }}
