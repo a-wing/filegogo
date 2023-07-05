@@ -17,7 +17,7 @@ function getLogLevel(): string {
   return loglevel ? loglevel : 'info'
 }
 
-async function getConfig(): Promise<RTCIceServer[]> {
+async function getIceServers(): Promise<RTCIceServer[]> {
   const response = await fetch(`${getPrefix()}/config`)
   const result = await response.json()
   return result.iceServers || []
@@ -53,7 +53,7 @@ async function getBox(room: string): Promise<Box | void> {
 
 export {
   getServer,
-  getConfig,
+  getIceServers,
   getLogLevel,
 
   putBox,

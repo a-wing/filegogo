@@ -2,7 +2,7 @@ import FileItem from "./file-item"
 import { Box } from "../libfgg/index"
 import { ExpiresAtHumanTime } from "../lib/util"
 import Qrcode from "./qr-code"
-import { getRaw, getServer } from "../lib/api"
+import { getIceServers, getRaw, getServer } from "../lib/api"
 import LibFgg from "../libfgg/libfgg"
 import { ProtoHttpToWs } from "../lib/util"
 import { DomRecvFile } from '../libfgg/pool/file/dom'
@@ -18,8 +18,7 @@ export default (props: { file: Box }) => {
       const addr = getServer() + uxid
       await fgg.useWebsocket(ProtoHttpToWs(addr))
       await fgg.useWebRTC({
-        //@ts-ignore
-        iceServers: window.iceServers,
+        iceServers: await getIceServers(),
       })
 
       let p = new Promise<void>(resolve => {

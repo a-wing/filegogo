@@ -1,21 +1,10 @@
-import { useEffect } from "react"
 import Header from "./components2/header"
 import SendArea from "./components2/send-area"
 import ArchiveArea from "./components2/archive-area"
 import Recver from "./components2/recver"
 import { shareGetRoom } from "./lib/share"
-import { getConfig } from "./lib/api"
 
 function App() {
-  const loadConfig = async () => {
-    // @ts-ignore
-    window.iceServers = await getConfig()
-  }
-
-  useEffect(() => {
-    loadConfig()
-  }, [])
-
   return (
     <>
       <Header/>

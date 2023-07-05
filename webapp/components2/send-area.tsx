@@ -4,7 +4,7 @@ import { filesize } from "filesize"
 
 import Archive from "../lib/archive"
 import LibFgg, { Meta } from "../libfgg"
-import { getServer, putBox } from "../lib/api"
+import { getIceServers, getServer, putBox } from "../lib/api"
 import { loadHistory } from "../lib/history"
 import FileItem from "./file-item"
 import { ItemsAtom, DetailAtom } from "../store"
@@ -67,8 +67,7 @@ export default () => {
       const fgg = new LibFgg()
       await fgg.useWebsocket(ProtoHttpToWs(getServer() + manifest.uxid))
       await fgg.useWebRTC({
-        //@ts-ignore
-        iceServers: window.iceServers,
+        iceServers: await getIceServers(),
       })
 
       fgg.setOnProgress((c: number): void => {
