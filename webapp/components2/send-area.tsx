@@ -98,12 +98,13 @@ export default () => {
           type="file"
           multiple
           ref={ hiddenFileInput }
-          onChange={ (ev: ChangeEvent<HTMLInputElement>) => ev.target.files ? handleFile(ev.target.files) : null }
+          onChange={ (ev: ChangeEvent<HTMLInputElement>) => !!ev.target.files && handleFile(ev.target.files) }
         />
 
       { !files.length ?
       <div className="flex flex-col items-center rounded-3xl border-5 border-green-500 border-dashed" onClick={toggleButton}>
-        <button className="px-8 py-2 text-white rounded-xl bg-purple-600 border border-purple-200">Select Files</button>
+        <p className="font-bold m-18" >You can click here</p>
+        <button className="m-4 px-8 py-2 font-bold text-white rounded-xl bg-purple-600 border border-purple-200">Select files to share</button>
       </div>
     : <>
         <ul className="p-3 bg-gray-100">
