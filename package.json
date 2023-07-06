@@ -1,6 +1,6 @@
 {
   "name": "webapp",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
