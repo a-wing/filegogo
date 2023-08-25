@@ -12,7 +12,11 @@ RUN npm run build
 
 FROM golang:1.18-buster AS builder
 
-WORKDIR /src
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
 
 COPY . .
 
@@ -23,9 +27,11 @@ RUN make build
 # Bin
 FROM alpine AS bin
 
-COPY --from=builder /src/conf/filegogo.toml /etc/filegogo.toml
-COPY --from=builder /src/filegogo /usr/bin/filegogo
+COPY --from=builder /app/conf/filegogo.toml /etc/filegogo.toml
+COPY --from=builder /app/filegogo /usr/bin/filegogo
 
 EXPOSE 8080/tcp
+
+CMD ["server"]
 
 ENTRYPOINT ["/usr/bin/filegogo"]
