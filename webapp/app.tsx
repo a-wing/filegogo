@@ -25,7 +25,7 @@ function App() {
                 { !files.length
                   ? <div className="m-8" >
                       <h1 className="text-4xl font-bold">Simple, private file sharing</h1>
-                      <p>Send lets you share files with a link that automatically expires. So you can keep what you share private and make sure your stuff doesn’t stay online forever.</p>
+                      <p>Filegogo lets you share files with a link that automatically expires. So you can keep what you share private and make sure your stuff doesn’t stay online forever.</p>
                     </div>
                   : <ArchiveArea/>
                 }
