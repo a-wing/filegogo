@@ -20,7 +20,7 @@ RUN go mod download
 
 COPY . .
 
-COPY --from=builder-node /app/server/build /src/server/build
+COPY --from=builder-node /app/server/build /app/server/build
 
 RUN make build
 
