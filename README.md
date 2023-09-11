@@ -35,7 +35,7 @@ docker run -p 8080:8080 ghcr.io/a-wing/filegogo:latest server
 
 ## Architecture
 
-![filegogo-arch](./filegogo-arch.png)
+![filegogo-arch](./filegogo-arch.excalidraw.svg)
 
 ### Components
 
