@@ -135,10 +135,12 @@ Test Deployment
 
 ```bash
 # Test stun
-turnutils_stunclient send.22333.fun
+turnutils_stunclient cn.22333.fun
+turnutils_stunclient stun.22333.fun
 
 # Test turn
-turnutils_uclient -u filegogo -w filegogo send.22333.fun -y
+turnutils_uclient -u filegogo -w filegogo -y cn.22333.fun
+turnutils_uclient -u filegogo -w filegogo -y turn.22333.fun
 ```
 
 #### Package Manager Deployment
