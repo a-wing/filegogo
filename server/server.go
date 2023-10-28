@@ -2,26 +2,21 @@ package server
 
 import (
 	"context"
-	"embed"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/a-wing/lightcable"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"filegogo/server/api"
 	"filegogo/server/config"
 	"filegogo/server/httpd"
 	"filegogo/server/store"
 	"filegogo/server/turnd"
-
-	"github.com/a-wing/lightcable"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
-
-//go:embed build
-var dist embed.FS
 
 func Run(cfg *config.Config) {
 	var turndServer *turnd.Server
@@ -58,12 +53,7 @@ func Run(cfg *config.Config) {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	fsys, err := fs.Sub(dist, "build")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r.Route("/" + cfg.Http.PathPrefix, func(r chi.Router) {
+	r.Route("/"+cfg.Http.PathPrefix, func(r chi.Router) {
 		r.Route("/api", func(r chi.Router) {
 			r.Get("/config", hander.GetConfig)
 			r.Handle("/signal/*", cable)
@@ -79,7 +69,7 @@ func Run(cfg *config.Config) {
 			})
 		})
 
-		r.Handle("/*", http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(fsys)))))
+		r.Handle("/*", http.StripPrefix("/"+cfg.Http.PathPrefix, http.FileServer(httpd.NewSPA("index.html", http.FS(dist)))))
 	})
 
 	log.Printf("=== Listen Port: %s ===\n", cfg.Http.Listen)

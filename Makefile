@@ -13,7 +13,7 @@ LD_FLAGS='\
 '
 
 GOBUILD=CGO_ENABLED=0 \
-				go build -trimpath -ldflags $(LD_FLAGS)
+				go build -tags release -trimpath -ldflags $(LD_FLAGS)
 
 .PHONY: default
 default: webapp build
